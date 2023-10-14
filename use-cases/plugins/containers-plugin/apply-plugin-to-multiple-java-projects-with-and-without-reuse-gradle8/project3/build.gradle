@@ -1,0 +1,23 @@
+plugins {
+    id "java"
+    id "io.huskit.gradle.containers-plugin"
+}
+
+serviceContainers {
+    mongo {
+        image = 'mongo:4.4.8'
+        fixedPort = 1
+        shouldStartBefore {
+            task("test")
+        }
+        reuse {
+            newDatabaseForEachTask = true
+            reuseBetweenBuilds = true
+        }
+    }
+}
+
+
+dependencies {
+    implementation(project(":mongo-logic"))
+}

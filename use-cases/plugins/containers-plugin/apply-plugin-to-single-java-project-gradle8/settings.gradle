@@ -1,0 +1,14 @@
+static String pathToRoot(File dir, List<String> parts = null) {
+    def rootProjectDirName = 'gradle-plugins'
+    if (dir.name == rootProjectDirName) {
+        return parts.collect({ "../" }).join("")
+    } else if (dir == null) {
+        throw new IllegalStateException("Cannot find root project dir ${rootProjectDirName}")
+    } else {
+        return pathToRoot(dir.parentFile, parts == null ? [dir.name] : parts + [dir.name])
+    }
+}
+
+if (!providers.environmentVariable("FUNCTIONAL_SPEC_RUN").isPresent()) {
+    includeBuild(pathToRoot(rootProject.projectDir))
+}

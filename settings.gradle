@@ -1,0 +1,45 @@
+pluginManagement {
+    repositories {
+        if (providers.environmentVariable("CI").getOrNull() != null) {
+            mavenLocal()
+        }
+        gradlePluginPortal()
+    }
+    plugins {
+        id("org.gradle.toolchains.foojay-resolver-convention") version(providers.gradleProperty("foojayToolchainPluginVersion").get())
+    }
+    includeBuild("internal-convention-plugin")
+}
+
+plugins {
+    id("org.gradle.toolchains.foojay-resolver-convention")
+}
+
+rootProject.name = "huskit"
+
+String ci = providers.environmentVariable("CI").getOrNull()
+boolean isCi = ci != null && ci != "false"
+
+buildCache {
+    local {
+        enabled = !isCi
+        push = !isCi
+    }
+}
+
+enableFeaturePreview("STABLE_CONFIGURATION_CACHE")
+enableFeaturePreview("TYPESAFE_PROJECT_ACCESSORS")
+
+includeBuild("internal-convention-plugin")
+
+include(
+        "common-test",
+        "function-test",
+        "plugins:aspectj-plugin",
+        "plugins:spock-plugin",
+        "plugins:properties-plugin",
+        "plugins:common-plugin",
+        "plugins:containers-plugin:containers-gradle-plugin",
+        "plugins:containers-plugin:containers-model",
+        "plugins:containers-plugin:containers-testcontainers",
+)

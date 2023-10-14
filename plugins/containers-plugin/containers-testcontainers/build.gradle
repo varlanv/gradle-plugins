@@ -1,0 +1,15 @@
+plugins {
+    id "io.huskit.gradle.internal-gradle-convention-plugin"
+    id "java-library"
+    id "maven-publish"
+    id "groovy"
+}
+
+dependencies {
+    implementation(project(":plugins:containers-plugin:containers-model"))
+    implementation("org.testcontainers:testcontainers:${testContainersVersion}")
+    implementation("org.testcontainers:mongodb:${testContainersVersion}")
+    implementation("org.testcontainers:postgresql:${testContainersVersion}")
+    implementation("org.testcontainers:kafka:${testContainersVersion}")
+    implementation("org.testcontainers:rabbitmq:${testContainersVersion}")
+}
