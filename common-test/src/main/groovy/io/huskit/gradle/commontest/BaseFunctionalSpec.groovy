@@ -7,7 +7,7 @@ import spock.lang.Tag
 import spock.lang.TempDir
 
 @Tag("functional-test")
-class BaseFunctionalSpec extends BaseSpec {
+abstract class BaseFunctionalSpec extends BaseSpec {
 
     @TempDir
     File testProjectDir
@@ -64,7 +64,7 @@ class BaseFunctionalSpec extends BaseSpec {
         def mark = ("*" * 40) as String
         System.err.println(lineStart)
         System.err.println()
-        System.err.println("${mark} STARTING GRADLE FUNCTIONAL TEST BUILD FOR SPEC ${getClass().getSimpleName()}. LOGS BEFORE ARE COMMING FROM GRADLE BUILD UNDER TEST ${mark}")
+        System.err.println("${mark} STARTING GRADLE FUNCTIONAL TEST BUILD FOR SPEC ${getClass().getSimpleName()}. LOGS BELOW ARE COMMING FROM GRADLE BUILD UNDER TEST ${mark}")
         System.err.println("Java version - ${System.getProperty("java.version")}")
         System.err.println()
         System.err.println(lineStart)

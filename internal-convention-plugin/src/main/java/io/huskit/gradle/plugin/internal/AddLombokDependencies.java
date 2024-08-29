@@ -13,7 +13,7 @@ public class AddLombokDependencies {
 
     public void add() {
         pluginManager.withPlugin("java", plugin -> {
-            String lombokDependency = internalProperties.get("lombokVersion").map(version -> "org.projectlombok:lombok:" + version).get();
+            var lombokDependency = internalProperties.getLib("lombok");
             dependencies.add("compileOnly", lombokDependency);
             dependencies.add("annotationProcessor", lombokDependency);
         });

@@ -1,0 +1,23 @@
+[versions]
+spock = "2.3-groovy-3.0"
+groovy = "3.0.17"
+testContainers = "1.19.0"
+junit = "5.10.0"
+assertj = "3.24.2"
+pluginLombok = "1.18.30"
+lombok = "1.18.24"
+foojayToolchainPlugin = "0.7.0"
+
+[libraries]
+testcontainers-core = { group = "org.testcontainers", name = "testcontainers", version.ref = "testContainers" }
+testcontainers-mongodb = { group = "org.testcontainers", name = "mongodb", version.ref = "testContainers" }
+testcontainers-postgresql = { group = "org.testcontainers", name = "postgresql", version.ref = "testContainers" }
+testcontainers-kafka = { group = "org.testcontainers", name = "kafka", version.ref = "testContainers" }
+testcontainers-rabbitmq = { group = "org.testcontainers", name = "rabbitmq", version.ref = "testContainers" }
+groovy-all = { group = "org.codehaus.groovy", name = "groovy-all", version.ref = "groovy" }
+spock-core = { group = "org.spockframework", name = "spock-core", version.ref = "spock" }
+lombok = { group = "org.projectlombok", name = "lombok", version.ref = "lombok" }
+
+#[plugins]
+#huskit-internal-convention = "io.huskit.gradle.internal-gradle-convention-plugin"
+#foojay-convention = { id = "org.gradle.toolchains.foojay-resolver-convention", version.ref = "foojayToolchainPlugin" }

@@ -1,10 +1,10 @@
 plugins {
-    id "io.huskit.gradle.internal-gradle-convention-plugin"
+    id("io.huskit.gradle.internal-gradle-convention-plugin")
 }
 
 gradlePlugin {
     plugins {
-        huskitAspectJGradlePlugin {
+        create("huskitAspectJGradlePlugin") {
             id = "io.huskit.gradle.aspectj-plugin"
             implementationClass = "io.huskit.gradle.aspectj.plugin.HuskitAspectJPlugin"
         }

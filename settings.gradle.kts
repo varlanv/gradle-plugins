@@ -5,25 +5,22 @@ pluginManagement {
         }
         gradlePluginPortal()
     }
-    plugins {
-        id("org.gradle.toolchains.foojay-resolver-convention") version(providers.gradleProperty("foojayToolchainPluginVersion").get())
-    }
     includeBuild("internal-convention-plugin")
 }
 
 plugins {
-    id("org.gradle.toolchains.foojay-resolver-convention")
+    id("org.gradle.toolchains.foojay-resolver-convention").version(providers.gradleProperty("foojayToolchainPluginVersion").get())
 }
 
 rootProject.name = "huskit"
 
-String ci = providers.environmentVariable("CI").getOrNull()
-boolean isCi = ci != null && ci != "false"
+val ci = providers.environmentVariable("CI").getOrNull()
+val isCi = ci != null && ci != "false"
 
 buildCache {
     local {
-        enabled = !isCi
-        push = !isCi
+        isEnabled = !isCi
+        isPush = !isCi
     }
 }
 

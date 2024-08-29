@@ -12,7 +12,7 @@ import java.nio.file.Files
 import java.util.function.Consumer
 
 @Tag("integration-test")
-class BaseIntegrationSpec extends BaseSpec {
+abstract class BaseIntegrationSpec extends BaseSpec {
 
     @TempDir
     File projectDir

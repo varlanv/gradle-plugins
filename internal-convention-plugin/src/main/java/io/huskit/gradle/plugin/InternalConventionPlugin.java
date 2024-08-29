@@ -6,6 +6,7 @@ import io.huskit.gradle.plugin.internal.InternalProperties;
 import lombok.RequiredArgsConstructor;
 import org.gradle.api.Plugin;
 import org.gradle.api.Project;
+import org.gradle.api.artifacts.VersionCatalogsExtension;
 import org.gradle.api.plugins.ExtraPropertiesExtension;
 import org.gradle.api.provider.ProviderFactory;
 
@@ -25,7 +26,9 @@ public class InternalConventionPlugin implements Plugin<Project> {
         }
         var properties = (InternalProperties) extensions.findByName(InternalProperties.EXTENSION_NAME);
         if (properties == null) {
-            properties = new InternalProperties(providers, (ExtraPropertiesExtension) project.getExtensions().getByName("ext"));
+            properties = new InternalProperties(
+                    ((VersionCatalogsExtension) extensions.getByName("versionCatalogs")).named("libs")
+            );
         }
         var huskitConventionExtension = (HuskitInternalConventionExtension) extensions.findByName(HuskitInternalConventionExtension.EXTENSION_NAME);
         if (huskitConventionExtension == null) {

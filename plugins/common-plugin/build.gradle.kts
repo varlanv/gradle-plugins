@@ -1,10 +1,10 @@
 plugins {
-    id "io.huskit.gradle.internal-gradle-convention-plugin"
+    id("io.huskit.gradle.internal-gradle-convention-plugin")
 }
 
 gradlePlugin {
     plugins {
-        huskitCommonGradlePlugin {
+        create("huskitCommonGradlePlugin") {
             id = "io.huskit.gradle.common-plugin"
             implementationClass = "io.huskit.gradle.common.plugin.HuskitCommonPlugin"
         }

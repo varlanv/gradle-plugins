@@ -1,12 +1,12 @@
 package io.huskit.gradle.containers.plugin
 
-import io.huskit.gradle.commontest.BaseFunctionalSpec
+import io.huskit.gradle.commontest.BaseDockerFunctionalSpec
 import io.huskit.gradle.commontest.DataTables
 import io.huskit.gradle.containers.plugin.api.ContainersExtension
 import spock.lang.Subject
 
 @Subject(HuskitContainersPlugin)
-class HuskitContainersPluginFunctionalSpec extends BaseFunctionalSpec {
+class HuskitContainersPluginFunctionalSpec extends BaseDockerFunctionalSpec {
 
     def "should add 'serviceContainers' extension"() {
         given:

@@ -13,8 +13,8 @@ public class AddSpockDependencies {
 
     public void add() {
         pluginManager.withPlugin("groovy", plugin -> {
-            String spockVersion = internalProperties.get("spockVersion").map(version -> "org.spockframework:spock-core:" + version).get();
-            String groovyVersion = internalProperties.get("groovyVersion").map(version -> "org.codehaus.groovy:groovy-all:" + version).get();
+            var spockVersion = internalProperties.getLib("spock-core");
+            var groovyVersion = internalProperties.getLib("groovy-all");
             dependencies.add("testImplementation", spockVersion);
             dependencies.add("testImplementation", groovyVersion);
         });

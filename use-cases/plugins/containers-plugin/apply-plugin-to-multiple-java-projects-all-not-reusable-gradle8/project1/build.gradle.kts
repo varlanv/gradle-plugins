@@ -1,8 +1,9 @@
 plugins {
-    id "java"
-    id "io.huskit.gradle.containers-plugin"
+    java
+    id("io.huskit.gradle.containers-plugin")
 }
 
 dependencies {
     implementation(project(":mongo-logic"))
 }
+
