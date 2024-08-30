@@ -1,6 +1,6 @@
 plugins {
-    id "io.huskit.gradle.internal-gradle-convention-plugin"
-    id "groovy"
+    groovy
+    id("io.huskit.gradle.internal-gradle-convention-plugin")
 }
 
 dependencies {
