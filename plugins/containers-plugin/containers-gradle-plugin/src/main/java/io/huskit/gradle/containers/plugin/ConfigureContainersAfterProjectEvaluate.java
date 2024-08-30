@@ -1,10 +1,10 @@
 package io.huskit.gradle.containers.plugin;
 
-import io.huskit.containers.model.Log;
 import io.huskit.gradle.containers.plugin.internal.ContainersTask;
 import io.huskit.gradle.containers.plugin.internal.DockerContainersExtension;
 import io.huskit.gradle.containers.plugin.internal.ShouldStartBeforeSpec;
 import io.huskit.gradle.containers.plugin.internal.buildservice.ContainersBuildService;
+import io.huskit.log.Log;
 import lombok.RequiredArgsConstructor;
 import org.gradle.api.Action;
 import org.gradle.api.Project;
@@ -61,7 +61,7 @@ public class ConfigureContainersAfterProjectEvaluate implements Action<Project> 
     }
 
     private Optional<TaskProvider<Task>> getTaskTaskProviderFromTaskName(ShouldStartBeforeSpec shouldStartBeforeSpec) {
-        String taskName = shouldStartBeforeSpec.getShouldRunBeforeTaskName().getOrNull();
+        var taskName = shouldStartBeforeSpec.getShouldRunBeforeTaskName().getOrNull();
         if (taskName != null) {
             log.info("Using task name to find task provider for shouldRunBeforeTask: [{}]", taskName);
             return Optional.of(tasks.named(taskName));
@@ -72,7 +72,7 @@ public class ConfigureContainersAfterProjectEvaluate implements Action<Project> 
     }
 
     private Optional<TaskProvider<Task>> getShouldRunBeforeTaskProvider(ShouldStartBeforeSpec shouldStartBeforeSpec) {
-        TaskProvider<Task> provider = shouldStartBeforeSpec.getShouldRunBeforeTaskProvider().getOrNull();
+        var provider = shouldStartBeforeSpec.getShouldRunBeforeTaskProvider().getOrNull();
         if (provider != null) {
             log.info("Found task provider for shouldRunBeforeTask: [{}]", provider.getName());
             return Optional.of(provider);

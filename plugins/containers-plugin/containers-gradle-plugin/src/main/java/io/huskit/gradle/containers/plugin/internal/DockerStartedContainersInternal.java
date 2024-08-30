@@ -1,10 +1,10 @@
 package io.huskit.gradle.containers.plugin.internal;
 
-import io.huskit.containers.model.Log;
 import io.huskit.containers.model.request.RequestedContainer;
 import io.huskit.containers.model.started.StartedContainer;
 import io.huskit.containers.model.started.StartedContainerInternal;
 import io.huskit.containers.model.started.StartedContainersInternal;
+import io.huskit.log.Log;
 import lombok.RequiredArgsConstructor;
 
 import java.util.ArrayList;
@@ -29,9 +29,9 @@ public class DockerStartedContainersInternal implements StartedContainersInterna
 
     @Override
     public StartedContainer startOrCreateAndStart(String source, RequestedContainer requestedContainer) {
-        String key = requestedContainer.id().value();
+        var key = requestedContainer.id().value();
         log.info("Starting container with key [{}]", key);
-        StartedContainerInternal startedContainer = startedContainersById.get(key);
+        var startedContainer = startedContainersById.get(key);
         if (requestedContainer.containerReuse().allowed()) {
             log.info("Container with key [{}] is reusable", key);
             if (startedContainer == null) {
@@ -47,7 +47,7 @@ public class DockerStartedContainersInternal implements StartedContainersInterna
                 }
             }
         } else {
-            String nonReusableKey = source + key;
+            var nonReusableKey = source + key;
             log.info("Container with key [{}] is not reusable", nonReusableKey);
             startedContainer = startedContainersBySourceAndId.get(nonReusableKey);
             if (startedContainer == null) {

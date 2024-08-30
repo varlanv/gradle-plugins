@@ -26,8 +26,8 @@ public abstract class DockerContainersExtension implements ContainersExtension {
 
     @Override
     public void mongo(Action<MongoContainerRequestedByUser> action) {
-        MongoContainerRequestedByUser requested = getObjects().newInstance(MongoContainerRequestedByUser.class);
-        MongoContainerReuseRequestedByUser reuse = getObjects().newInstance(MongoContainerReuseRequestedByUser.class);
+        var requested = getObjects().newInstance(MongoContainerRequestedByUser.class);
+        var reuse = getObjects().newInstance(MongoContainerReuseRequestedByUser.class);
         reuse.getAllowed().convention(false);
         reuse.getNewDatabaseForEachTask().convention(false);
         reuse.getReuseBetweenBuilds().convention(false);
@@ -41,7 +41,7 @@ public abstract class DockerContainersExtension implements ContainersExtension {
 
     @Override
     public void shouldStartBefore(Action<ShouldStartBefore> action) {
-        ShouldStartBeforeSpec spec = getObjects().newInstance(ShouldStartBeforeSpec.class);
+        var spec = getObjects().newInstance(ShouldStartBeforeSpec.class);
         action.execute(spec);
         getShouldStartBeforeSpec().set(spec);
     }

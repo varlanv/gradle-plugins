@@ -7,7 +7,6 @@ import io.huskit.containers.model.started.StartedContainers;
 import lombok.RequiredArgsConstructor;
 
 import java.util.HashSet;
-import java.util.Set;
 
 @RequiredArgsConstructor
 public class ValidatedDockerContainers implements Containers {
@@ -17,7 +16,7 @@ public class ValidatedDockerContainers implements Containers {
 
     @Override
     public StartedContainers start() {
-        Set<String> containersIds = new HashSet<>();
+        var containersIds = new HashSet<>();
         requestedContainers.list().forEach(requestedContainer -> {
             String containerId = requestedContainer.id().value();
             if (!containersIds.add(containerId)) {

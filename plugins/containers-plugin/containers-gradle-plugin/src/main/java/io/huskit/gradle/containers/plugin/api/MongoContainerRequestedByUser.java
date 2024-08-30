@@ -29,13 +29,13 @@ public interface MongoContainerRequestedByUser extends ContainerRequestedByUserF
     }
 
     default void reuse(Action<MongoContainerReuseRequestedByUser> action) {
-        MongoContainerReuseRequestedByUser reuse = getReuse().get();
+        var reuse = getReuse().get();
         reuse.getAllowed().set(true);
         action.execute(reuse);
     }
 
     default void reuse() {
-        MongoContainerReuseRequestedByUser reuse = getReuse().get();
+        var reuse = getReuse().get();
         reuse.getAllowed().set(true);
     }
 

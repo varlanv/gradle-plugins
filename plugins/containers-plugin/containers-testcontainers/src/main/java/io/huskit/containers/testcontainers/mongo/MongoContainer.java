@@ -1,12 +1,11 @@
 package io.huskit.containers.testcontainers.mongo;
 
-import io.huskit.containers.model.Log;
 import io.huskit.containers.model.MongoStartedContainer;
 import io.huskit.containers.model.id.ContainerId;
 import io.huskit.containers.model.port.ContainerPort;
 import io.huskit.containers.model.port.FixedContainerPort;
 import io.huskit.containers.model.request.MongoRequestedContainer;
-import io.huskit.containers.model.reuse.MongoContainerReuse;
+import io.huskit.log.Log;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import org.testcontainers.containers.MongoDBContainer;
@@ -43,11 +42,11 @@ public class MongoContainer implements MongoStartedContainer {
     public void close() throws Exception {
         if (mongoDBContainer != null) {
             if (mongoRequestedContainer.containerReuse().dontStop()) {
-                String dropCommand = "mongo --eval 'db.adminCommand(\"listDatabases\").databases.forEach(d => {if(![\"admin\", \"config\", \"local\"].includes(d.name)) { db.getSiblingDB(d.name).dropDatabase();} });'";
+                var dropCommand = "mongo --eval 'db.adminCommand(\"listDatabases\").databases.forEach(d => {if(![\"admin\", \"config\", \"local\"].includes(d.name)) { db.getSiblingDB(d.name).dropDatabase();} });'";
                 mongoDBContainer.execInContainer("/bin/sh", "-c", dropCommand);
             } else {
                 log.info("Stopping mongo container [{}]", mongoRequestedContainer.id());
-                long before = System.currentTimeMillis();
+                var before = System.currentTimeMillis();
                 mongoDBContainer.stop();
                 log.info("Stopped mongo container [{}] in [{}] ms", mongoRequestedContainer.id(), System.currentTimeMillis() - before);
             }
@@ -56,11 +55,11 @@ public class MongoContainer implements MongoStartedContainer {
 
     @Override
     public String connectionString() {
-        MongoContainerReuse mongoContainerReuse = mongoRequestedContainer.containerReuse();
-        String connectionString = getAndStartIfNeeded().getConnectionString();
+        var mongoContainerReuse = mongoRequestedContainer.containerReuse();
+        var connectionString = getAndStartIfNeeded().getConnectionString();
         if (mongoContainerReuse.allowed() && mongoContainerReuse.newDatabaseForEachRequest()) {
-            String dbName = mongoRequestedContainer.databaseName() + "_" + counter.incrementAndGet();
-            String result = connectionString + "/" + dbName;
+            var dbName = mongoRequestedContainer.databaseName() + "_" + counter.incrementAndGet();
+            var result = connectionString + "/" + dbName;
             log.info("Reusable connection string - " + result);
             return result;
         } else {
@@ -71,14 +70,14 @@ public class MongoContainer implements MongoStartedContainer {
 
     @Override
     public Map<String, String> environment() {
-        String connectionStringEnvironmentVariableName = "MONGO_CONNECTION_STRING";
-        String dbNameEnvironmentVariable = "MONGO_DB_NAME";
-        String portEnvironmentVariableName = "MONGO_PORT";
-        MongoContainerReuse mongoContainerReuse = mongoRequestedContainer.containerReuse();
-        String connectionString = getAndStartIfNeeded().getConnectionString();
+        var connectionStringEnvironmentVariableName = "MONGO_CONNECTION_STRING";
+        var dbNameEnvironmentVariable = "MONGO_DB_NAME";
+        var portEnvironmentVariableName = "MONGO_PORT";
+        var mongoContainerReuse = mongoRequestedContainer.containerReuse();
+        var connectionString = getAndStartIfNeeded().getConnectionString();
         if (mongoContainerReuse.allowed() && mongoContainerReuse.newDatabaseForEachRequest()) {
-            String dbName = mongoRequestedContainer.databaseName() + "_" + counter.incrementAndGet();
-            String result = connectionString + "/" + dbName;
+            var dbName = mongoRequestedContainer.databaseName() + "_" + counter.incrementAndGet();
+            var result = connectionString + "/" + dbName;
             log.info("Reusable connection string - " + result);
             return Map.of(
                     connectionStringEnvironmentVariableName, result,
@@ -121,7 +120,7 @@ public class MongoContainer implements MongoStartedContainer {
     }
 
     private void startAndLog(boolean isReuse) {
-        long before = System.currentTimeMillis();
+        var before = System.currentTimeMillis();
         mongoDBContainer.start();
         if (isReuse) {
             log.info("Started mongo reusable container [{}] in [{}] ms", mongoRequestedContainer.id(), System.currentTimeMillis() - before);

@@ -1,9 +1,9 @@
 package io.huskit.gradle.containers.plugin;
 
-import io.huskit.containers.model.Log;
 import io.huskit.gradle.containers.plugin.internal.ContainersTask;
 import io.huskit.gradle.containers.plugin.internal.DockerContainersExtension;
 import io.huskit.gradle.containers.plugin.internal.buildservice.ContainersBuildService;
+import io.huskit.log.Log;
 import lombok.RequiredArgsConstructor;
 import org.gradle.api.Action;
 import org.gradle.api.Task;

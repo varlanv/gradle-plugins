@@ -1,3 +1,7 @@
+import java.io.File
+
+rootProject.name = "apply-plugin-to-multiple-java-projects-all-not-reusable-gradle8"
+
 fun pathToRoot(dir: File, parts: MutableList<String> = mutableListOf()): String {
     val targetFolderName = "internal-convention-plugin"
     return when {
@@ -7,11 +11,21 @@ fun pathToRoot(dir: File, parts: MutableList<String> = mutableListOf()): String 
     }
 }
 
+val useCasesDir = when {
+    providers.environmentVariable("FUNCTIONAL_SPEC_RUN").isPresent -> "../common-containers-plugin-use-case-logic"
+    else -> pathToRoot(rootProject.projectDir) + "/use-cases/common-use-cases-logic/common-containers-plugin-use-case-logic"
+}
+
+includeBuild(useCasesDir) {
+    dependencySubstitution {
+        substitute(module("plugin-usecases:usecases")).using(project(":"))
+    }
+}
+
 include(
         "project1",
         "project2",
         "project3",
-        "mongo-logic"
 )
 
 if (!providers.environmentVariable("FUNCTIONAL_SPEC_RUN").isPresent) {

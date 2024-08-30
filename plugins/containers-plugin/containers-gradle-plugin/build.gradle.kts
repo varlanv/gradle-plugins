@@ -12,6 +12,8 @@ gradlePlugin {
 }
 
 dependencies {
+    implementation(projects.logging.loggingGradle)
+    implementation(projects.logging.loggingApi)
     implementation(projects.plugins.containersPlugin.containersModel)
     implementation(projects.plugins.containersPlugin.containersTestcontainers)
     implementation(projects.plugins.commonPlugin)

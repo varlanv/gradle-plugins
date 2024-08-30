@@ -3,21 +3,17 @@ package io.huskit.gradle.containers.plugin.internal;
 import io.huskit.containers.model.ContainerType;
 import io.huskit.containers.model.Containers;
 import io.huskit.containers.model.DockerContainers;
-import io.huskit.containers.model.Log;
 import io.huskit.containers.model.request.MongoRequestedContainer;
 import io.huskit.containers.model.request.RequestedContainers;
 import io.huskit.containers.model.started.StartedContainer;
 import io.huskit.containers.model.started.StartedContainersInternal;
 import io.huskit.containers.testcontainers.mongo.MongoContainer;
-import io.huskit.gradle.containers.plugin.GradleLog;
-import io.huskit.gradle.containers.plugin.GradleProjectLog;
 import io.huskit.gradle.containers.plugin.ProjectDescription;
+import io.huskit.log.Log;
 import lombok.RequiredArgsConstructor;
 
-import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
@@ -27,10 +23,10 @@ public class ContainersApplication {
     private final Log log;
     private volatile StartedContainersInternal startedContainersInternal;
 
-    public Containers containers(ProjectDescription projectDescription, RequestedContainers requestedContainers) {
+    public Containers containers(ProjectDescription projectDescription, RequestedContainers requestedContainers, Log log) {
         return new ValidatedDockerContainers(
                 new DockerContainers(
-                        new GradleProjectLog(DockerContainers.class, projectDescription),
+                        log,
                         projectDescription.path(),
                         getDockerStartedContainersInternal(),
                         requestedContainers
@@ -40,16 +36,16 @@ public class ContainersApplication {
     }
 
     public void stop() throws Exception {
-        List<StartedContainer> startedContainers = getDockerStartedContainersInternal().list();
+        var startedContainers = getDockerStartedContainersInternal().list();
         if (!startedContainers.isEmpty()) {
-            long timeMillis = System.currentTimeMillis();
+            var timeMillis = System.currentTimeMillis();
             if (startedContainers.size() == 1) {
                 tryStop(startedContainers.get(0));
                 log.lifecycle("Stopped single container in [{}] ms", System.currentTimeMillis() - timeMillis);
             } else {
-                CountDownLatch countDownLatch = new CountDownLatch(startedContainers.size());
-                ExecutorService executorService = Executors.newFixedThreadPool(startedContainers.size());
-                for (StartedContainer startedContainer : startedContainers) {
+                var countDownLatch = new CountDownLatch(startedContainers.size());
+                var executorService = Executors.newFixedThreadPool(startedContainers.size());
+                for (var startedContainer : startedContainers) {
                     executorService.execute(() -> {
                         try {
                             tryStop(startedContainer);
@@ -70,12 +66,12 @@ public class ContainersApplication {
                 if (startedContainersInternal == null) {
                     log.info("startedContainersInternal is not created, entering synchronized block to create instance");
                     startedContainersInternal = new DockerStartedContainersInternal(
-                            new GradleLog(DockerStartedContainersInternal.class),
+                            log,
                             new KnownDockerContainers(
-                                    new GradleLog(KnownDockerContainers.class),
+                                    log,
                                     Map.of(
                                             ContainerType.MONGO, requestedContainer -> new MongoContainer(
-                                                    new GradleLog(MongoContainer.class),
+                                                    log,
                                                     (MongoRequestedContainer) requestedContainer
                                             )
                                     )
