@@ -1,24 +1,29 @@
 import io.huskit.gradle.containers.plugin.HuskitContainersPlugin
 import io.huskit.gradle.containers.plugin.api.ContainersExtension
+import org.gradle.api.tasks.testing.logging.TestLogEvent
 
 plugins {
     id("io.huskit.gradle.containers-plugin").apply(false)
 }
 
 subprojects {
+    project.apply(mapOf("plugin" to "java"))
+    project.apply(mapOf("plugin" to "io.huskit.gradle.containers-plugin"))
+
     plugins.withId("java") {
         repositories {
             mavenCentral()
         }
         tasks.withType<Test> {
             useJUnitPlatform()
+            testLogging {
+                showStandardStreams = true
+            }
             outputs.upToDateWhen { false }
         }
 
         project.dependencies {
-            add("implementation", "org.mongodb:mongodb-driver-sync:4.10.2")
-            add("testImplementation", "org.junit.jupiter:junit-jupiter-api:5.9.2")
-            add("testRuntimeOnly", "org.junit.jupiter:junit-jupiter-engine:5.9.2")
+            add("implementation", "plugin-usecases:usecases")
         }
     }
 

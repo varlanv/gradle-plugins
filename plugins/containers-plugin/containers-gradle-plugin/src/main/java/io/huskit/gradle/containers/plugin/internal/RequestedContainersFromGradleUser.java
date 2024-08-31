@@ -2,7 +2,6 @@ package io.huskit.gradle.containers.plugin.internal;
 
 import io.huskit.containers.model.ContainerType;
 import io.huskit.containers.model.DefaultRequestedContainer;
-import io.huskit.containers.model.Log;
 import io.huskit.containers.model.image.DefaultContainerImage;
 import io.huskit.containers.model.port.FixedContainerPort;
 import io.huskit.containers.model.request.DefaultMongoRequestedContainer;
@@ -12,7 +11,7 @@ import io.huskit.containers.model.reuse.DefaultMongoContainerReuse;
 import io.huskit.gradle.containers.plugin.api.ContainerRequestedByUser;
 import io.huskit.gradle.containers.plugin.api.ContainerRequestedByUserForTask;
 import io.huskit.gradle.containers.plugin.api.MongoContainerRequestedByUser;
-import io.huskit.gradle.containers.plugin.api.MongoContainerReuseRequestedByUser;
+import io.huskit.log.Log;
 import lombok.RequiredArgsConstructor;
 
 import java.util.Collection;
@@ -34,8 +33,8 @@ public class RequestedContainersFromGradleUser implements RequestedContainers {
                     ContainerType containerType = requested.containerType();
                     log.info("Preparing container request with type [{}], id [{}]", containerType, requested.id());
                     if (containerType == ContainerType.MONGO) {
-                        MongoContainerRequestedByUser mongoRequested = (MongoContainerRequestedByUser) requested;
-                        MongoContainerReuseRequestedByUser containerReuseSpec = mongoRequested.getReuse().getOrNull();
+                        var mongoRequested = (MongoContainerRequestedByUser) requested;
+                        var containerReuseSpec = mongoRequested.getReuse().getOrNull();
                         return new DefaultMongoRequestedContainer(
                                 new DefaultRequestedContainer(
                                         () -> requested.getProjectPath().get(),

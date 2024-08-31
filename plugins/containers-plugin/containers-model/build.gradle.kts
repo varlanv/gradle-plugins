@@ -4,3 +4,7 @@ plugins {
     id("groovy")
     id("maven-publish")
 }
+
+dependencies {
+    implementation(projects.logging.loggingApi)
+}

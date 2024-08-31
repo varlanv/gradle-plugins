@@ -1,10 +1,10 @@
 package io.huskit.containers.model;
 
-import io.huskit.containers.model.request.RequestedContainer;
 import io.huskit.containers.model.request.RequestedContainers;
 import io.huskit.containers.model.started.StartedContainer;
 import io.huskit.containers.model.started.StartedContainers;
 import io.huskit.containers.model.started.StartedContainersInternal;
+import io.huskit.log.Log;
 import lombok.RequiredArgsConstructor;
 
 import java.util.ArrayList;
@@ -24,7 +24,7 @@ public class DockerContainers implements Containers {
     public StartedContainers start() {
         log.info("Requesting containers to start");
         return () -> {
-            List<RequestedContainer> requestedContainerList = requestedContainers.list();
+            var requestedContainerList = requestedContainers.list();
             if (requestedContainerList.isEmpty()) {
                 log.info("Requested container list is empty, so no containers will be started");
                 return List.of();
@@ -33,9 +33,9 @@ public class DockerContainers implements Containers {
                 return List.of(startedContainersInternal.startOrCreateAndStart(source, requestedContainerList.get(0)));
             } else {
                 log.info("Requested container list has [{}] containers, so they will be started asynchronously in separate threads", requestedContainerList.size());
-                ExecutorService executorService = Executors.newFixedThreadPool(requestedContainerList.size());
-                List<Future<StartedContainer>> startedContainerFutureList = new ArrayList<>(requestedContainerList.size());
-                for (RequestedContainer requestedContainer : requestedContainerList) {
+                var executorService = Executors.newFixedThreadPool(requestedContainerList.size());
+                var startedContainerFutureList = new ArrayList<Future<StartedContainer>>(requestedContainerList.size());
+                for (var requestedContainer : requestedContainerList) {
                     startedContainerFutureList.add(executorService.submit(() ->
                             startedContainersInternal.startOrCreateAndStart(source, requestedContainer)));
                 }

@@ -5,11 +5,14 @@ pluginManagement {
         }
         gradlePluginPortal()
     }
+    plugins {
+        id("org.gradle.toolchains.foojay-resolver-convention").version(providers.gradleProperty("foojayToolchainPluginVersion").get())
+    }
     includeBuild("internal-convention-plugin")
 }
 
 plugins {
-    id("org.gradle.toolchains.foojay-resolver-convention").version(providers.gradleProperty("foojayToolchainPluginVersion").get())
+    id("org.gradle.toolchains.foojay-resolver-convention")
 }
 
 rootProject.name = "huskit"
@@ -30,6 +33,8 @@ enableFeaturePreview("TYPESAFE_PROJECT_ACCESSORS")
 includeBuild("internal-convention-plugin")
 
 include(
+        "logging:logging-api",
+        "logging:logging-gradle",
         "common-test",
         "function-test",
         "plugins:aspectj-plugin",

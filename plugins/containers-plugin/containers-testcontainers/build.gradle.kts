@@ -6,6 +6,7 @@ plugins {
 }
 
 dependencies {
+    implementation(projects.logging.loggingApi)
     implementation(projects.plugins.containersPlugin.containersModel)
     implementation(libs.testcontainers.core)
     implementation(libs.testcontainers.mongodb)

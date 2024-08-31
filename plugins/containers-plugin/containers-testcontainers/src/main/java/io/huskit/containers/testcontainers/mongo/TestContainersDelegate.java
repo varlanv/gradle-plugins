@@ -17,18 +17,18 @@ public class TestContainersDelegate {
         if (!initialized.get()) {
             synchronized (TestContainersDelegate.class) {
                 if (!initialized.get()) {
-                    String userHomePath = System.getProperty("user.home");
-                    File userHome = new File(userHomePath);
-                    File properties = new File(userHome, ".testcontainers.properties");
+                    var userHomePath = System.getProperty("user.home");
+                    var userHome = new File(userHomePath);
+                    var properties = new File(userHome, ".testcontainers.properties");
                     if (!properties.exists()) {
                         properties.createNewFile();
                     }
-                    Properties props = new Properties();
-                    try (FileReader reader = new FileReader(properties)) {
+                    var props = new Properties();
+                    try (var reader = new FileReader(properties)) {
                         props.load(reader);
                     }
                     props.put("testcontainers.reuse.enable", "true");
-                    try (FileWriter writer = new FileWriter(properties)) {
+                    try (var writer = new FileWriter(properties)) {
                         props.store(writer, "Modified by gradle-containers-plugin");
                     }
                     initialized.set(true);

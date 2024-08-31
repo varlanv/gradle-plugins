@@ -3,14 +3,6 @@ package io.huskit.gradle.containers.plugin
 import groovy.transform.Canonical
 import groovy.transform.CompileStatic
 import groovy.transform.TupleConstructor
-import io.huskit.containers.model.ContainerType
-import io.huskit.containers.model.DefaultRequestedContainer
-import io.huskit.containers.model.DefaultRequestedContainers
-import io.huskit.containers.model.exception.NonUniqueContainerException
-import io.huskit.containers.model.id.DefaultContainerId
-import io.huskit.containers.model.image.DefaultContainerImage
-import io.huskit.containers.model.port.DynamicContainerPort
-import io.huskit.containers.model.request.DefaultMongoRequestedContainer
 import io.huskit.gradle.commontest.BaseIntegrationSpec
 import io.huskit.gradle.containers.plugin.api.ContainersExtension
 import io.huskit.gradle.containers.plugin.api.MongoContainerRequestedByUser

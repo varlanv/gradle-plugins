@@ -1,7 +1,7 @@
 package io.huskit.gradle.containers.plugin;
 
-import io.huskit.containers.model.Log;
 import io.huskit.gradle.containers.plugin.internal.buildservice.ContainersBuildService;
+import io.huskit.log.Log;
 import lombok.RequiredArgsConstructor;
 import org.gradle.api.provider.Provider;
 import org.gradle.api.services.BuildServiceRegistry;
@@ -15,7 +15,7 @@ public class RegisterContainersBuildService {
     private final BuildServiceRegistry sharedServices;
 
     public Provider<ContainersBuildService> register() {
-        String containersServiceName = ContainersBuildService.name();
+        var containersServiceName = ContainersBuildService.name();
         var buildServiceProvider = sharedServices.registerIfAbsent(
                 containersServiceName,
                 ContainersBuildService.class,

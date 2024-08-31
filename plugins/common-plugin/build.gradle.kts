@@ -10,3 +10,7 @@ gradlePlugin {
         }
     }
 }
+
+dependencies {
+    implementation(projects.logging.loggingApi)
+}

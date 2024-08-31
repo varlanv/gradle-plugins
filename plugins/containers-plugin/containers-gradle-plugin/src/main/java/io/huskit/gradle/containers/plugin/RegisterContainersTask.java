@@ -1,10 +1,10 @@
 package io.huskit.gradle.containers.plugin;
 
-import io.huskit.containers.model.Log;
+import io.huskit.gradle.common.plugin.model.string.CapitalizedString;
 import io.huskit.gradle.containers.plugin.internal.ContainersTask;
 import io.huskit.gradle.containers.plugin.internal.DockerContainersExtension;
 import io.huskit.gradle.containers.plugin.internal.buildservice.ContainersBuildService;
-import io.huskit.gradle.common.plugin.model.string.CapitalizedString;
+import io.huskit.log.Log;
 import lombok.RequiredArgsConstructor;
 import org.gradle.api.provider.Provider;
 import org.gradle.api.tasks.TaskContainer;
@@ -21,7 +21,7 @@ public class RegisterContainersTask {
     private final String dependentTaskName;
 
     public TaskProvider<ContainersTask> register() {
-        String taskName = ContainersTask.NAME + "For" + CapitalizedString.capitalize(dependentTaskName);
+        var taskName = ContainersTask.NAME + "For" + CapitalizedString.capitalize(dependentTaskName);
         log.info("Registering containers task with name: [{}]", taskName);
         return tasks.register(
                 taskName,

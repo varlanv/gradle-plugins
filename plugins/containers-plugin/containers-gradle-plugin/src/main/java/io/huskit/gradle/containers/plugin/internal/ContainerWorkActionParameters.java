@@ -1,7 +1,7 @@
 package io.huskit.gradle.containers.plugin.internal;
 
-import io.huskit.gradle.containers.plugin.internal.buildservice.ContainersBuildService;
 import io.huskit.gradle.containers.plugin.api.ContainerRequestedByUser;
+import io.huskit.gradle.containers.plugin.internal.buildservice.ContainersBuildService;
 import org.gradle.api.provider.ListProperty;
 import org.gradle.api.provider.Property;
 import org.gradle.api.tasks.Input;
