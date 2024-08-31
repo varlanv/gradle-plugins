@@ -5,11 +5,14 @@ pluginManagement {
         }
         gradlePluginPortal()
     }
+    plugins {
+        id("org.gradle.toolchains.foojay-resolver-convention").version(providers.gradleProperty("foojayToolchainPluginVersion").get())
+    }
     includeBuild("internal-convention-plugin")
 }
 
 plugins {
-    id("org.gradle.toolchains.foojay-resolver-convention").version(providers.gradleProperty("foojayToolchainPluginVersion").get())
+    id("org.gradle.toolchains.foojay-resolver-convention")
 }
 
 rootProject.name = "huskit"
