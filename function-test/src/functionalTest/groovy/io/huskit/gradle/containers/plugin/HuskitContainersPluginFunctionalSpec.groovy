@@ -5,6 +5,8 @@ import io.huskit.gradle.commontest.BaseDockerFunctionalSpec
 import io.huskit.gradle.commontest.DataTable
 import io.huskit.gradle.commontest.DataTables
 import io.huskit.gradle.containers.plugin.api.ContainersExtension
+import io.huskit.gradle.containers.plugin.api.MongoContainerRequestedByUser
+import org.apache.commons.lang3.StringUtils
 import spock.lang.Subject
 
 @Subject(HuskitContainersPlugin)
@@ -46,8 +48,47 @@ class HuskitContainersPluginFunctionalSpec extends BaseDockerFunctionalSpec {
     }
 
     def "apply-plugin-to-single-java-project should work correctly"() {
-        expect:
-        runUseCase("apply-plugin-to-single-java-project", dataTable)
+        when:
+        def result = runUseCase("apply-plugin-to-single-java-project-gradle8", dataTable)
+
+        then: "Output should contain all expected messages"
+        def messages = result.findMarkedMessages("MONGO_CONNECTION_STRING").values()
+
+        and: "There are 2 unique mongo connection strings"
+        messages.size() == 2
+        messages.toSet().size() == 2
+
+        where:
+        dataTable << DataTables.default.get()
+    }
+
+    def "apply-plugin-to-multiple-java-projects should work correctly"() {
+        when:
+        def result = runUseCase("apply-plugin-to-multiple-java-projects-gradle8", dataTable)
+
+        then: "Output should contain all expected messages"
+        def messages = result.findMarkedMessages("MONGO_CONNECTION_STRING").values()
+
+        and: "Mongo containers were requested 6 times while only 1 unique connection string is used"
+        messages.size() == 6
+        def mongoHosts = messages.collect({ StringUtils.substringBefore(StringUtils.substringAfter(it, "mongodb://"), "/") })
+        mongoHosts.toSet().size() == 1
+
+        where:
+        dataTable << DataTables.default.get()
+    }
+
+    def "apply-plugin-to-multiple-java-projects-with-and-without-reuse should work correctly"() {
+        when:
+        def result = runUseCase("apply-plugin-to-multiple-java-projects-with-and-without-reuse-gradle8", dataTable)
+
+        then: "Output should contain all expected messages"
+        def messages = result.findMarkedMessages("MONGO_CONNECTION_STRING").values()
+
+        and: "Mongo containers were requested 6 times while only 3 unique connection string is used"
+        messages.size() == 6
+        def mongoHosts = messages.collect({ StringUtils.substringBefore(StringUtils.substringAfter(it, "mongodb://"), "/") })
+        mongoHosts.toSet().size() == 3
 
         where:
         dataTable << DataTables.default.get()
@@ -69,25 +110,10 @@ class HuskitContainersPluginFunctionalSpec extends BaseDockerFunctionalSpec {
     }
 
     private File useCaseDir(String useCaseDirName) {
-        return new File(
-                new File(
-                        new File(
-                                useCasesDir(),
-                                "plugins"
-                        ),
-                        "containers-plugin"
-                ),
-                useCaseDirName
-        )
+        return new File("${huskitProjectRoot.absolutePath}${File.separator}use-cases${File.separator}plugins${File.separator}containers-plugin${File.separator}${useCaseDirName}")
     }
 
     private File useCasesCommonLogicDir() {
-        return new File(
-                new File(
-                        huskitProjectRoot,
-                        "use-cases"
-                ),
-                "common-use-cases-logic"
-        )
+        return new File("${huskitProjectRoot.absolutePath}${File.separator}use-cases${File.separator}common-use-cases-logic")
     }
 }

@@ -13,6 +13,8 @@ import org.testcontainers.utility.DockerImageName;
 
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.concurrent.locks.ReadWriteLock;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 @RequiredArgsConstructor
 public class MongoContainer implements MongoStartedContainer {
@@ -22,6 +24,7 @@ public class MongoContainer implements MongoStartedContainer {
     private final MongoRequestedContainer mongoRequestedContainer;
     @Getter
     private volatile MongoDBContainer mongoDBContainer;
+    private final ReadWriteLock stopLock = new ReentrantReadWriteLock();
 
     @Override
     public ContainerId id() {
@@ -40,15 +43,24 @@ public class MongoContainer implements MongoStartedContainer {
 
     @Override
     public void close() throws Exception {
-        if (mongoDBContainer != null) {
-            if (mongoRequestedContainer.containerReuse().dontStop()) {
-                var dropCommand = "mongo --eval 'db.adminCommand(\"listDatabases\").databases.forEach(d => {if(![\"admin\", \"config\", \"local\"].includes(d.name)) { db.getSiblingDB(d.name).dropDatabase();} });'";
-                mongoDBContainer.execInContainer("/bin/sh", "-c", dropCommand);
-            } else {
-                log.info("Stopping mongo container [{}]", mongoRequestedContainer.id());
-                var before = System.currentTimeMillis();
-                mongoDBContainer.stop();
-                log.info("Stopped mongo container [{}] in [{}] ms", mongoRequestedContainer.id(), System.currentTimeMillis() - before);
+        synchronized (this) {
+            try {
+                stopLock.writeLock().lock();
+                if (mongoDBContainer != null) {
+                    if (mongoRequestedContainer.containerReuse().dontStop()) {
+                        // if container is reused - drop all databases except the default ones, instead of stopping the container
+                        var dropCommand = "mongo --eval 'db.adminCommand(\"listDatabases\").databases.forEach(d => {if(![\"admin\", \"config\", \"local\"].includes(d.name)) { db.getSiblingDB(d.name).dropDatabase();} });'";
+                        mongoDBContainer.execInContainer("/bin/sh", "-c", dropCommand);
+                    } else {
+                        log.info("Stopping mongo container [{}]", mongoRequestedContainer.id());
+                        var before = System.currentTimeMillis();
+                        mongoDBContainer.stop();
+                        log.info("Stopped mongo container [{}] in [{}] ms", mongoRequestedContainer.id(), System.currentTimeMillis() - before);
+                    }
+                    mongoDBContainer = null;
+                }
+            } finally {
+                stopLock.writeLock().unlock();
             }
         }
     }
@@ -98,19 +110,24 @@ public class MongoContainer implements MongoStartedContainer {
         if (mongoDBContainer == null) {
             synchronized (this) {
                 if (mongoDBContainer == null) {
-                    TestContainersDelegate.setReuse();
-                    mongoDBContainer = new MongoDBContainer(
-                            DockerImageName.parse(
-                                    mongoRequestedContainer.image().value()
-                            ).asCompatibleSubstituteFor("mongo")
-                    );
-                    if (mongoRequestedContainer.containerReuse().allowed()) {
-                        mongoDBContainer = mongoDBContainer.withLabel("id", id().toString());
-                    } else {
-                        mongoDBContainer = mongoDBContainer.withLabel("id", mongoRequestedContainer.source().value() + id().toString());
+                    try {
+                        stopLock.readLock().lock();
+                        TestContainersDelegate.setReuse();
+                        mongoDBContainer = new MongoDBContainer(
+                                DockerImageName.parse(
+                                        mongoRequestedContainer.image().value()
+                                ).asCompatibleSubstituteFor("mongo")
+                        );
+                        if (mongoRequestedContainer.containerReuse().allowed()) {
+                            mongoDBContainer = mongoDBContainer.withLabel("id", id().toString());
+                        } else {
+                            mongoDBContainer = mongoDBContainer.withLabel("id", mongoRequestedContainer.source().value() + id().toString());
+                        }
+                        mongoDBContainer = mongoDBContainer.withReuse(true);
+                        startAndLog(mongoRequestedContainer.containerReuse().newDatabaseForEachRequest());
+                    } finally {
+                        stopLock.readLock().unlock();
                     }
-                    mongoDBContainer = mongoDBContainer.withReuse(true);
-                    startAndLog(mongoRequestedContainer.containerReuse().newDatabaseForEachRequest());
                 }
             }
         } else {

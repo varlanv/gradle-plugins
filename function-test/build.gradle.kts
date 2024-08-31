@@ -15,5 +15,6 @@ dependencies {
     implementation(projects.plugins.containersPlugin.containersGradlePlugin)
     implementation(libs.groovy.all)
     implementation(libs.spock.core)
+    implementation(libs.apache.commons)
     testImplementation(gradleTestKit())
 }

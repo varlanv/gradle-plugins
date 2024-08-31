@@ -23,7 +23,7 @@ abstract class BaseFunctionalSpec extends BaseSpec {
     File huskitProjectRoot
 
     def setupSpec() {
-        huskitProjectRoot = findDir({ file -> file.listFiles().find({ it.name == "internal-convention-plugin" }) != null })
+        huskitProjectRoot = findDirContaining({ file -> file.name == "internal-convention-plugin" })
     }
 
     def setup() {
@@ -129,9 +129,11 @@ abstract class BaseFunctionalSpec extends BaseSpec {
         def srcDir = new File(srcDirPath)
         def destDir = new File(destDirPath)
 
+        if (!srcDir.exists()) {
+            throw new IllegalArgumentException("Cannot copy from non-existing directory '${srcDirPath}'!")
+        }
         if (!srcDir.isDirectory()) {
-            println "${srcDirPath} is not a directory!"
-            return
+            throw new IllegalArgumentException("Cannot copy from non-directory '${srcDirPath}'!")
         }
 
         if (!destDir.exists()) {
@@ -150,25 +152,24 @@ abstract class BaseFunctionalSpec extends BaseSpec {
     }
 
     protected File useCasesDir() {
-        return findDir("use-cases")
+        return findDirContaining({ file -> file.name == "use-cases" })
     }
 
     protected File findDir(String dirName) {
         return findDir({ file -> file.name == dirName })
     }
 
-    protected File findDir(Predicate<File> predicate, File current = null) {
-        if (current == null) {
-            current = new File("").canonicalFile
-        }
-        def files = current.listFiles().toList()
-        def result = files.stream().filter(predicate).findFirst().orElse(null)
-        if (result != null) {
-            return result
+    protected File findDirContaining(Predicate<File> predicate) {
+        return findDir(file -> file.listFiles().toList().stream().anyMatch(predicate))
+    }
+
+    protected File findDir(Predicate<File> predicate, File current = new File("").canonicalFile) {
+        if (predicate.test(current)) {
+            return current
         } else {
             def parentFile = current.parentFile
             if (parentFile == null) {
-                throw new RuntimeException("use-cases directory not found")
+                throw new RuntimeException("Cannot find directory with predicate: ${predicate}")
             }
             return findDir(predicate, parentFile)
         }

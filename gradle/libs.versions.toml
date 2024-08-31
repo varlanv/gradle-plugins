@@ -8,6 +8,7 @@ pluginLombok = "1.18.30"
 lombok = "1.18.24"
 foojayToolchainPlugin = "0.7.0"
 slf4j = "2.0.9"
+apacheCommons = "3.17.0"
 
 [libraries]
 testcontainers-core = { group = "org.testcontainers", name = "testcontainers", version.ref = "testContainers" }
@@ -19,6 +20,7 @@ groovy-all = { group = "org.codehaus.groovy", name = "groovy-all", version.ref =
 spock-core = { group = "org.spockframework", name = "spock-core", version.ref = "spock" }
 lombok = { group = "org.projectlombok", name = "lombok", version.ref = "lombok" }
 slf4j-api = { group = "org.slf4j", name = "slf4j-api", version.ref = "slf4j" }
+apache-commons = { group = "org.apache.commons", name = "commons-lang3", version.ref = "apacheCommons" }
 
 #[plugins]
 #huskit-internal-convention = "io.huskit.gradle.internal-gradle-convention-plugin"
