@@ -1,11 +1,13 @@
 package io.huskit.gradle.common.plugin.model.string;
 
+import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.jetbrains.annotations.NotNull;
 
 @RequiredArgsConstructor
 public class CapitalizedString implements CharSequence {
 
+    @NonNull
     private final String original;
 
     public static String capitalize(String original) {
@@ -36,11 +38,11 @@ public class CapitalizedString implements CharSequence {
 
     @Override
     public int hashCode() {
-        return capitalize(original).hashCode();
+        return toString().hashCode();
     }
 
     @Override
     public boolean equals(Object obj) {
-        return capitalize(original).equals(obj);
+        return toString().equals(obj);
     }
 }

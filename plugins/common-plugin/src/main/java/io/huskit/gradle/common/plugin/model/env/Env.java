@@ -4,7 +4,7 @@ import io.huskit.gradle.common.plugin.model.DefaultInternalExtensionName;
 
 public interface Env {
 
-    String EXTENSION_NAME = DefaultInternalExtensionName.value("env");
+    String EXTENSION_NAME = new DefaultInternalExtensionName("env").toString();
 
     boolean isCi();
 

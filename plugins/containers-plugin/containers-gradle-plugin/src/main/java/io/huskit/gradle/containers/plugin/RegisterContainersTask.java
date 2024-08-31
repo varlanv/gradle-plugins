@@ -21,7 +21,7 @@ public class RegisterContainersTask {
     private final String dependentTaskName;
 
     public TaskProvider<ContainersTask> register() {
-        var taskName = ContainersTask.NAME + "For" + CapitalizedString.capitalize(dependentTaskName);
+        var taskName = ContainersTask.NAME + "For" + new CapitalizedString(dependentTaskName);
         log.info("Registering containers task with name: [{}]", taskName);
         return tasks.register(
                 taskName,

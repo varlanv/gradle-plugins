@@ -4,7 +4,7 @@ import io.huskit.gradle.common.plugin.model.DefaultInternalExtensionName;
 
 public interface Props {
 
-    String EXTENSION_NAME = DefaultInternalExtensionName.value("props");
+    String EXTENSION_NAME = new DefaultInternalExtensionName("props").toString();
 
     boolean hasProp(CharSequence name);
 

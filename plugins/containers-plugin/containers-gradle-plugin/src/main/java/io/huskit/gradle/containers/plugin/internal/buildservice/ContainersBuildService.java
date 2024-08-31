@@ -15,7 +15,7 @@ import java.io.Serializable;
 public abstract class ContainersBuildService implements BuildService<ContainersBuildServiceParams>, AutoCloseable, Serializable {
 
     public static String name() {
-        return DefaultInternalExtensionName.value("containers_build_service");
+        return new DefaultInternalExtensionName("containers_build_service").toString();
     }
 
     private transient volatile ContainersApplication containersApplication;
