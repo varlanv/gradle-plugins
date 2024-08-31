@@ -2,11 +2,9 @@
 spock = "2.3-groovy-3.0"
 groovy = "3.0.17"
 testContainers = "1.19.0"
-junit = "5.10.0"
-assertj = "3.24.2"
-pluginLombok = "1.18.30"
+junitJupiter = "5.11.0"
+junitPlatform = "1.11.0"
 lombok = "1.18.24"
-foojayToolchainPlugin = "0.7.0"
 slf4j = "2.0.9"
 apacheCommons = "3.17.0"
 
@@ -21,6 +19,8 @@ spock-core = { group = "org.spockframework", name = "spock-core", version.ref = 
 lombok = { group = "org.projectlombok", name = "lombok", version.ref = "lombok" }
 slf4j-api = { group = "org.slf4j", name = "slf4j-api", version.ref = "slf4j" }
 apache-commons = { group = "org.apache.commons", name = "commons-lang3", version.ref = "apacheCommons" }
+junit-jupiter-api = { group = "org.junit.jupiter", name = "junit-jupiter", version.ref = "junitJupiter" }
+junit-platform-launcher = { group = "org.junit.platform", name = "junit-platform-launcher", version.ref = "junitPlatform" }
 
 #[plugins]
 #huskit-internal-convention = "io.huskit.gradle.internal-gradle-convention-plugin"

@@ -7,11 +7,11 @@ public class AddCommonDependencies {
 
     private final AddLombokDependencies addLombokDependencies;
     private final AddSpockDependencies addSpockDependencies;
-    private final AddCommonTestDependency addCommonTestDependency;
+    private final AddTestDependencies addTestDependencies;
 
     public void add() {
         addLombokDependencies.add();
         addSpockDependencies.add();
-        addCommonTestDependency.add();
+        addTestDependencies.add();
     }
 }

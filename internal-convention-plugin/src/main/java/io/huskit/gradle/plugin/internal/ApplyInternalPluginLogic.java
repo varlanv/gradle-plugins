@@ -56,12 +56,13 @@ public class ApplyInternalPluginLogic {
                         properties,
                         dependencies
                 ),
-                new AddCommonTestDependency(
+                new AddTestDependencies(
                         pluginManager,
                         projectPath,
                         environment,
                         dependencies,
-                        commonTestProject
+                        commonTestProject,
+                        properties
                 )
         ).add();
         project.afterEvaluate(evaluated -> {

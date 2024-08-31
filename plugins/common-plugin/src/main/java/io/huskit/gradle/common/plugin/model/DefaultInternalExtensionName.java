@@ -10,29 +10,25 @@ public class DefaultInternalExtensionName implements CharSequence {
 
     private final CharSequence original;
 
-    public static String value(CharSequence original) {
-        return String.format("__huskit_%s__", original);
-    }
-
     @Override
     public int length() {
-        return value(original).length();
+        return toString().length();
     }
 
     @Override
     public char charAt(int index) {
-        return value(original).charAt(index);
+        return toString().charAt(index);
     }
 
     @NotNull
     @Override
     public CharSequence subSequence(int start, int end) {
-        return value(original).subSequence(start, end);
+        return toString().subSequence(start, end);
     }
 
     @Nonnull
     @Override
     public String toString() {
-        return super.toString();
+        return String.format("__huskit_%s__", original);
     }
 }
