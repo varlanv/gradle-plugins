@@ -95,7 +95,7 @@ jobs:
             - gradle-wrapper-{{ checksum "gradle/wrapper/gradle-wrapper.properties" }}
             - gradle-cache-{{ checksum "build.gradle" }}-{{ checksum "settings.gradle" }}
       - run:
-          name: "Run functional tests with Testcontainers"
+          name: "Run functional tests in unix"
           command: "./gradlew functionalTest --no-configuration-cache --no-build-cache --no-configure-on-demand"
       - run:
           name: "Save test results unix"
