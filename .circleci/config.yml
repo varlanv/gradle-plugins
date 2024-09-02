@@ -35,7 +35,7 @@ jobs:
             - gradle-wrapper-{{ checksum "gradle/wrapper/gradle-wrapper.properties" }}
             - gradle-cache-{{ checksum "build.gradle" }}-{{ checksum "settings.gradle" }}
       - run:
-          name: "gradle build test unix"
+          name: "Testing of the internal-convention-plugin"
           command: "./gradlew :internal-convention-plugin:test --no-configuration-cache --no-build-cache --no-configure-on-demand"
       - run:
           name: "Save test results unix"
@@ -55,7 +55,7 @@ jobs:
             - gradle-wrapper-{{ checksum "gradle/wrapper/gradle-wrapper.properties" }}
             - gradle-cache-{{ checksum "build.gradle" }}-{{ checksum "settings.gradle" }}
       - run:
-          name: "gradle unit test unix"
+          name: "Run unit tests in unix"
           command: "./gradlew test --no-configuration-cache --no-build-cache --no-configure-on-demand"
       - run:
           name: "Save test results unix"
@@ -75,8 +75,28 @@ jobs:
             - gradle-wrapper-{{ checksum "gradle/wrapper/gradle-wrapper.properties" }}
             - gradle-cache-{{ checksum "build.gradle" }}-{{ checksum "settings.gradle" }}
       - run:
-          name: "gradle integration test unix"
+          name: "Run integration tests in unix"
           command: "./gradlew integrationTest --no-configuration-cache --no-build-cache --no-configure-on-demand"
+      - run:
+          name: "Save test results unix"
+          command: |
+            mkdir -p ~/test-results/junit/
+            find . -type f -regex ".*/build/test-results/.*xml" -exec cp {} ~/test-results/junit/ \;
+          when: always
+      - store_test_results:
+          path: ~/test-results
+  gradle-functional-test-unix:
+    docker:
+      - image: cimg/openjdk:11.0
+    steps:
+      - checkout
+      - restore_cache:
+          keys:
+            - gradle-wrapper-{{ checksum "gradle/wrapper/gradle-wrapper.properties" }}
+            - gradle-cache-{{ checksum "build.gradle" }}-{{ checksum "settings.gradle" }}
+      - run:
+          name: "Run functional tests in unix"
+          command: "./gradlew functionalTest --no-configuration-cache --no-build-cache --no-configure-on-demand"
       - run:
           name: "Save test results unix"
           command: |
