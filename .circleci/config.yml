@@ -200,6 +200,7 @@ workflows:
       - gradle-build-test-unix
       - gradle-unit-test-unix
       - gradle-integration-test-unix
+      - gradle-functional-test-unix
 #  gradle-build-windows-workflow:
 #    when: false
 #    jobs:
