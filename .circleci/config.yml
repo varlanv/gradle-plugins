@@ -95,11 +95,8 @@ jobs:
             - gradle-wrapper-{{ checksum "gradle/wrapper/gradle-wrapper.properties" }}
             - gradle-cache-{{ checksum "build.gradle" }}-{{ checksum "settings.gradle" }}
       - run:
-          name: "Run Docker container for functional tests"
-          command: |
-            docker run --rm -d --name test-container your-docker-image:tag
-            ./gradlew functionalTest --no-configuration-cache --no-build-cache --no-configure-on-demand
-            docker stop test-container
+          name: "Run functional tests with Testcontainers"
+          command: "./gradlew functionalTest --no-configuration-cache --no-build-cache --no-configure-on-demand"
       - run:
           name: "Save test results unix"
           command: |
