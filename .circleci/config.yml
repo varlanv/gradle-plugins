@@ -1,8 +1,5 @@
 version: 2.1
 
-#orbs:
-#  win: circleci/windows@5.0
-
 jobs:
   #       ------------------ UNIX ------------------
   gradle-build-unix:
@@ -88,7 +85,11 @@ jobs:
   gradle-functional-test-unix:
     docker:
       - image: cimg/openjdk:11.0
+    executor: docker
     steps:
+      - setup_remote_docker:
+          version: 20.10.7
+          docker_layer_caching: true
       - checkout
       - restore_cache:
           keys:
@@ -105,92 +106,6 @@ jobs:
           when: always
       - store_test_results:
           path: ~/test-results
-
-#        ------------------ WINDOWS ------------------
-#  gradle-build-windows:
-#    executor:
-#      name: win/default
-#    steps:
-#      - checkout
-#      - restore_cache:
-#          keys:
-#            - gradle-wrapper-{{ checksum "gradle/wrapper/gradle-wrapper.properties" }}
-#            - gradle-cache-{{ checksum "build.gradle" }}-{{ checksum "settings.gradle" }}
-#      - run:
-#          name: "gradle assemble windows"
-#          command: ".\\gradlew assemble --no-configuration-cache"
-#      - save_cache:
-#          paths:
-#            - "%USERPROFILE%\\.gradle\\wrapper\\"
-#          key: gradle-wrapper-{{ checksum "gradle/wrapper/gradle-wrapper.properties" }}
-#      - save_cache:
-#          paths:
-#            - "%USERPROFILE%\\.gradle\\caches\\"
-#          key: gradle-cache-{{ checksum "build.gradle" }}-{{ checksum "settings.gradle" }}
-#  gradle-build-test-windows:
-#    executor:
-#      name: win/default
-#    steps:
-#      - checkout
-#      - restore_cache:
-#          keys:
-#            - gradle-wrapper-{{ checksum "gradle/wrapper/gradle-wrapper.properties" }}
-#            - gradle-cache-{{ checksum "build.gradle" }}-{{ checksum "settings.gradle" }}
-#      - run:
-#          name: "gradle build test windows"
-#          command: ".\\gradlew :internal-convention-plugin:test --no-configuration-cache"
-#      - run:
-#          name: "Save test results windows"
-#          command: |
-#            New-Item -Path .\test-results\junit\ -ItemType Directory -Force
-#            Get-ChildItem -Path .\ -Recurse -Include *.xml | Where-Object { $_.FullName -match '\\build\\test-results\\' } | Copy-Item -Destination .\test-results\junit\
-#          shell: powershell
-#          when: always
-#      - store_test_results:
-#          path: ~/test-results
-#  gradle-integration-test-windows:
-#    executor:
-#      name: win/default
-#    steps:
-#      - checkout
-#      - restore_cache:
-#          keys:
-#            - gradle-wrapper-{{ checksum "gradle/wrapper/gradle-wrapper.properties" }}
-#            - gradle-cache-{{ checksum "build.gradle" }}-{{ checksum "settings.gradle" }}
-#      - run:
-#          name: "gradle integration test windows"
-#          command: ".\\gradlew integrationTest --no-configuration-cache"
-#      - run:
-#          name: "Save test results windows"
-#          command: |
-#            New-Item -Path .\test-results\junit\ -ItemType Directory -Force
-#            Get-ChildItem -Path .\ -Recurse -Include *.xml | Where-Object { $_.FullName -match '\\build\\test-results\\' } | Copy-Item -Destination .\test-results\junit\
-#          shell: powershell
-#          when: always
-#      - store_test_results:
-#          path: ~/test-results
-#  gradle-unit-test-windows:
-#    executor:
-#      name: win/default
-#    steps:
-#      - checkout
-#      - restore_cache:
-#          keys:
-#            - gradle-wrapper-{{ checksum "gradle/wrapper/gradle-wrapper.properties" }}
-#            - gradle-cache-{{ checksum "build.gradle" }}-{{ checksum "settings.gradle" }}
-#      - run:
-#          name: "gradle unit test windows"
-#          command: ".\\gradlew unitTest --no-configuration-cache"
-#      - run:
-#          name: "Save test results windows"
-#          command: |
-#            New-Item -Path .\test-results\junit\ -ItemType Directory -Force
-#            Get-ChildItem -Path .\ -Recurse -Include *.xml | Where-Object { $_.FullName -match '\\build\\test-results\\' } | Copy-Item -Destination .\test-results\junit\
-#          shell: powershell
-#          when: always
-#      - store_test_results:
-#          path: ~/test-results
-
 workflows:
   gradle-build-unix-workflow:
     jobs:
@@ -201,13 +116,3 @@ workflows:
       - gradle-unit-test-unix
       - gradle-integration-test-unix
       - gradle-functional-test-unix
-#  gradle-build-windows-workflow:
-#    when: false
-#    jobs:
-#      - gradle-build-windows
-#  gradle-verify-windows-workflow:
-#    when: false
-#    jobs:
-#      - gradle-build-test-windows
-#      - gradle-unit-test-windows
-#      - gradle-integration-test-windows
