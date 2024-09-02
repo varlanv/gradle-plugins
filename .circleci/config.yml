@@ -106,6 +106,7 @@ jobs:
           when: always
       - store_test_results:
           path: ~/test-results
+
 workflows:
   gradle-build-unix-workflow:
     jobs:
