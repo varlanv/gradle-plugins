@@ -2,6 +2,7 @@ package io.huskit.gradle.common.plugin.model.props;
 
 import io.huskit.gradle.common.plugin.model.NewOrExistingExtension;
 import lombok.RequiredArgsConstructor;
+import lombok.experimental.NonFinal;
 import org.gradle.api.plugins.ExtraPropertiesExtension;
 import org.gradle.api.provider.ProviderFactory;
 
@@ -10,9 +11,10 @@ import java.util.List;
 @RequiredArgsConstructor
 public class ReplaceableProps implements Props {
 
-    private final ProviderFactory providers;
-    private final ExtraPropertiesExtension extraPropertiesExtension;
-    private final NewOrExistingExtension newOrExistingExtension;
+    ProviderFactory providers;
+    ExtraPropertiesExtension extraPropertiesExtension;
+    NewOrExistingExtension newOrExistingExtension;
+    @NonFinal
     private Props delegate;
 
     @Override

@@ -6,8 +6,8 @@ import lombok.RequiredArgsConstructor;
 public class InternalEnvironment {
 
     public static final String EXTENSION_NAME = "__huskit_internal_environment__";
-    private final boolean isCi;
-    private final boolean isTest;
+    boolean isCi;
+    boolean isTest;
 
     public boolean isCi() {
         return isCi;

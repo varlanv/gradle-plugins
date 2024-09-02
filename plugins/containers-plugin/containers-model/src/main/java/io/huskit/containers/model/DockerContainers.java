@@ -15,10 +15,9 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class DockerContainers implements Containers {
 
-    private final Log log;
-    private final String source;
-    private final StartedContainersInternal startedContainersInternal;
-    private final RequestedContainers requestedContainers;
+    Log log;
+    StartedContainersInternal startedContainersInternal;
+    RequestedContainers requestedContainers;
 
     @Override
     public StartedContainers start() {
@@ -30,22 +29,24 @@ public class DockerContainers implements Containers {
                 return List.of();
             } else if (requestedContainerList.size() == 1) {
                 log.info("Requested container list has only one container, so it will be started synchronously in the current thread");
-                return List.of(startedContainersInternal.startOrCreateAndStart(source, requestedContainerList.get(0)));
+                return List.of(startedContainersInternal.startOrCreateAndStart(requestedContainerList.get(0)));
             } else {
                 log.info("Requested container list has [{}] containers, so they will be started asynchronously in separate threads", requestedContainerList.size());
                 var executorService = Executors.newFixedThreadPool(requestedContainerList.size());
                 var startedContainerFutureList = new ArrayList<Future<StartedContainer>>(requestedContainerList.size());
                 for (var requestedContainer : requestedContainerList) {
                     startedContainerFutureList.add(executorService.submit(() ->
-                            startedContainersInternal.startOrCreateAndStart(source, requestedContainer)));
+                            startedContainersInternal.startOrCreateAndStart(requestedContainer)));
                 }
-                return startedContainerFutureList.stream().map(future -> {
-                    try {
-                        return future.get(30, TimeUnit.SECONDS);
-                    } catch (InterruptedException | ExecutionException | TimeoutException e) {
-                        throw new RuntimeException(e);
-                    }
-                }).collect(Collectors.toList());
+                return startedContainerFutureList.stream()
+                        .map(future -> {
+                            try {
+                                return future.get(30, TimeUnit.SECONDS);
+                            } catch (InterruptedException | ExecutionException | TimeoutException e) {
+                                throw new RuntimeException(e);
+                            }
+                        })
+                        .collect(Collectors.toList());
             }
         };
     }

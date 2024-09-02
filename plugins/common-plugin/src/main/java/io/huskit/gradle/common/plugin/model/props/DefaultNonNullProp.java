@@ -7,7 +7,7 @@ import org.jetbrains.annotations.Nullable;
 @RequiredArgsConstructor
 public class DefaultNonNullProp implements NonNullProp {
 
-    private final NullableProp nullableProp;
+    NullableProp nullableProp;
 
     @Override
     public String name() {

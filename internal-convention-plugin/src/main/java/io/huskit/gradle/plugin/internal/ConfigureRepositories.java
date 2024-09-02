@@ -6,8 +6,8 @@ import org.gradle.api.artifacts.dsl.RepositoryHandler;
 @RequiredArgsConstructor
 public class ConfigureRepositories {
 
-    private final RepositoryHandler repositories;
-    private final InternalEnvironment environment;
+    RepositoryHandler repositories;
+    InternalEnvironment environment;
 
     public void configure() {
         if (environment.isLocal()) {

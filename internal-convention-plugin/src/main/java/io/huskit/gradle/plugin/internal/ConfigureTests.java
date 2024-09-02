@@ -12,11 +12,11 @@ import org.gradle.testing.base.TestingExtension;
 @RequiredArgsConstructor
 public class ConfigureTests {
 
-    private final ExtensionContainer extensions;
-    private final HuskitInternalConventionExtension huskitConventionExtension;
-    private final ConfigurationContainer configurations;
-    private final PluginManager pluginManager;
-    private final TaskContainer tasks;
+    ExtensionContainer extensions;
+    HuskitInternalConventionExtension huskitConventionExtension;
+    ConfigurationContainer configurations;
+    PluginManager pluginManager;
+    TaskContainer tasks;
 
     public void configure() {
         pluginManager.withPlugin("groovy", plugin -> {

@@ -10,7 +10,7 @@ import java.util.Date;
 @RequiredArgsConstructor
 public class GradleLog implements Log {
 
-    private final Logger log;
+    Logger log;
 
     public GradleLog(Class<?> type) {
         this.log = Logging.getLogger(type);

@@ -11,8 +11,8 @@ import java.util.Objects;
 @RequiredArgsConstructor
 public class RegisterContainersBuildService {
 
-    private final Log log;
-    private final BuildServiceRegistry sharedServices;
+    Log log;
+    BuildServiceRegistry sharedServices;
 
     public Provider<ContainersBuildService> register() {
         var containersServiceName = ContainersBuildService.name();

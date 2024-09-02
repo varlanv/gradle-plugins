@@ -4,6 +4,7 @@ import io.huskit.containers.model.started.StartedContainer;
 import io.huskit.gradle.containers.plugin.ProjectDescription;
 import io.huskit.gradle.containers.plugin.api.ContainerRequestedByUser;
 import io.huskit.gradle.containers.plugin.internal.buildservice.ContainersBuildService;
+import io.huskit.gradle.containers.plugin.internal.buildservice.ContainersRequest;
 import io.huskit.log.GradleProjectLog;
 import org.gradle.api.DefaultTask;
 import org.gradle.api.provider.ListProperty;
@@ -39,12 +40,15 @@ public abstract class ContainersTask extends DefaultTask {
         );
         var requestedContainers = new RequestedContainersFromGradleUser(
                 log,
+                projectDescription.rootProjectName(),
                 getRequestedContainers().get()
         );
         var list = getContainers().get().containers(
-                projectDescription,
-                requestedContainers,
-                log
+                new ContainersRequest(
+                        projectDescription,
+                        requestedContainers,
+                        log
+                )
         ).start().list();
         if (list.isEmpty()) {
             log.info("No containers were started");

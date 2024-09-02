@@ -16,11 +16,11 @@ import java.util.concurrent.CopyOnWriteArrayList;
 @RequiredArgsConstructor
 public class DockerStartedContainersInternal implements StartedContainersInternal {
 
-    private final Log log;
-    private final ConcurrentMap<String, StartedContainerInternal> startedContainersById = new ConcurrentHashMap<>();
-    private final ConcurrentMap<String, StartedContainerInternal> startedContainersBySourceAndId = new ConcurrentHashMap<>();
-    private final List<StartedContainerInternal> allStartedContainers = new CopyOnWriteArrayList<>();
-    private final KnownDockerContainers knownDockerContainers;
+    Log log;
+    ConcurrentMap<String, StartedContainerInternal> startedContainersById = new ConcurrentHashMap<>();
+    ConcurrentMap<String, StartedContainerInternal> startedContainersBySourceAndId = new ConcurrentHashMap<>();
+    List<StartedContainerInternal> allStartedContainers = new CopyOnWriteArrayList<>();
+    KnownDockerContainers knownDockerContainers;
 
     @Override
     public List<StartedContainer> list() {
@@ -28,8 +28,8 @@ public class DockerStartedContainersInternal implements StartedContainersInterna
     }
 
     @Override
-    public StartedContainer startOrCreateAndStart(String source, RequestedContainer requestedContainer) {
-        var key = requestedContainer.id().value();
+    public StartedContainer startOrCreateAndStart(RequestedContainer requestedContainer) {
+        var key = requestedContainer.id().json();
         log.info("Starting container with key [{}]", key);
         var startedContainer = startedContainersById.get(key);
         if (requestedContainer.containerReuse().allowed()) {
@@ -47,7 +47,7 @@ public class DockerStartedContainersInternal implements StartedContainersInterna
                 }
             }
         } else {
-            var nonReusableKey = source + key;
+            var nonReusableKey = requestedContainer.source().value() + key;
             log.info("Container with key [{}] is not reusable", nonReusableKey);
             startedContainer = startedContainersBySourceAndId.get(nonReusableKey);
             if (startedContainer == null) {

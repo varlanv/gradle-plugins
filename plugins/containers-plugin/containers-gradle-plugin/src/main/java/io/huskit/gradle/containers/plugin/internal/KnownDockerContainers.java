@@ -14,8 +14,8 @@ import java.util.function.Function;
 @RequiredArgsConstructor
 public class KnownDockerContainers {
 
-    private final Log log;
-    private final Map<ContainerType, Function<RequestedContainer, StartedContainerInternal>> knownContainers;
+    Log log;
+    Map<ContainerType, Function<RequestedContainer, StartedContainerInternal>> knownContainers;
 
     public StartedContainerInternal start(RequestedContainer requestedContainer) {
         var containerType = requestedContainer.containerType();

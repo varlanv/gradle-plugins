@@ -12,7 +12,7 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class FakeLog implements Log {
 
-    private final List<FakeLoggedMessage> loggedMessages;
+    List<FakeLoggedMessage> loggedMessages;
 
     public FakeLog() {
         this(new CopyOnWriteArrayList<>());

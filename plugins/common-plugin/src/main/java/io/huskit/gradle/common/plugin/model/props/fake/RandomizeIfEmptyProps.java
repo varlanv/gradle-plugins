@@ -10,7 +10,7 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class RandomizeIfEmptyProps implements Props {
 
-    private final Props delegate;
+    Props delegate;
 
     @Override
     public boolean hasProp(CharSequence name) {

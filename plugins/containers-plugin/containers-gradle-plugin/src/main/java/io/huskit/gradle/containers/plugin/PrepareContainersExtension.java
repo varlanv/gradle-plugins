@@ -9,9 +9,9 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class PrepareContainersExtension {
 
-    private final Log log;
-    private final ProjectDescription projectDescription;
-    private final NewOrExistingExtension newOrExistingExtension;
+    Log log;
+    ProjectDescription projectDescription;
+    NewOrExistingExtension newOrExistingExtension;
 
     public DockerContainersExtension prepare() {
         log.info("Adding containers extension: [{}]", ContainersExtension.name());
@@ -20,6 +20,7 @@ public class PrepareContainersExtension {
                 DockerContainersExtension.class,
                 ContainersExtension.name()
         );
+        extension.getRootProjectName().set(projectDescription.rootProjectName());
         extension.getProjectName().set(projectDescription.name());
         extension.getProjectPath().set(projectDescription.path());
         return extension;

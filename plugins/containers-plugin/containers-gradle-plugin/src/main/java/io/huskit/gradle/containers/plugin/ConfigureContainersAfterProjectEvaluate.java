@@ -18,11 +18,11 @@ import java.util.Optional;
 @RequiredArgsConstructor
 public class ConfigureContainersAfterProjectEvaluate implements Action<Project> {
 
-    private final Log log;
-    private final ProjectDescription projectDescription;
-    private final DockerContainersExtension dockerContainersExtension;
-    private final TaskContainer tasks;
-    private final Provider<ContainersBuildService> containersBuildServiceProvider;
+    Log log;
+    ProjectDescription projectDescription;
+    DockerContainersExtension dockerContainersExtension;
+    TaskContainer tasks;
+    Provider<ContainersBuildService> containersBuildServiceProvider;
 
     @Override
     public void execute(Project ignored) {

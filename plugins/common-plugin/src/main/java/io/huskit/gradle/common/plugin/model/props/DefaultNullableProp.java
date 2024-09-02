@@ -7,8 +7,8 @@ import org.jetbrains.annotations.Nullable;
 @RequiredArgsConstructor
 public class DefaultNullableProp implements NullableProp {
 
-    private final String name;
-    private final Provider<String> provider;
+    String name;
+    Provider<String> provider;
 
     @Override
     public String name() {

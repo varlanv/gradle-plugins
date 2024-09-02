@@ -7,7 +7,6 @@ import lombok.RequiredArgsConstructor;
 import org.gradle.api.Plugin;
 import org.gradle.api.Project;
 import org.gradle.api.artifacts.VersionCatalogsExtension;
-import org.gradle.api.plugins.ExtraPropertiesExtension;
 import org.gradle.api.provider.ProviderFactory;
 
 import javax.inject.Inject;
@@ -15,7 +14,7 @@ import javax.inject.Inject;
 @RequiredArgsConstructor(onConstructor = @__(@Inject))
 public class InternalConventionPlugin implements Plugin<Project> {
 
-    private final ProviderFactory providers;
+    ProviderFactory providers;
 
     @Override
     public void apply(Project project) {

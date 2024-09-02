@@ -2,12 +2,9 @@ package io.huskit.gradle.containers.plugin.api;
 
 import io.huskit.containers.model.ContainerType;
 import io.huskit.containers.model.id.ContainerId;
-import io.huskit.containers.model.id.DefaultContainerId;
+import io.huskit.gradle.containers.plugin.internal.MongoContainerId;
 import org.gradle.api.Action;
 import org.gradle.api.provider.Property;
-
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 public interface MongoContainerRequestedByUser extends ContainerRequestedByUserForTask {
 
@@ -17,14 +14,12 @@ public interface MongoContainerRequestedByUser extends ContainerRequestedByUserF
 
     default ContainerId id() {
         var reuse = getReuse().get();
-        return new DefaultContainerId(
-                Stream.of("image:" + getImage().get(),
-                                "reuseBetweenBuilds:" + reuse.getReuseBetweenBuilds().get(),
-                                "newDatabaseForEachTask:" + reuse.getNewDatabaseForEachTask().get(),
-                                "databaseName:" + getDatabaseName().get()
-                        )
-                        .map(String::valueOf)
-                        .collect(Collectors.joining(","))
+        return new MongoContainerId(
+                getRootProjectName().get(),
+                getImage().get(),
+                getDatabaseName().get(),
+                reuse.getReuseBetweenBuilds().get(),
+                reuse.getNewDatabaseForEachTask().get()
         );
     }
 

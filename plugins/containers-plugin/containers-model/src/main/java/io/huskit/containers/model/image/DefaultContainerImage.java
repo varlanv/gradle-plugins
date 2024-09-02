@@ -5,7 +5,7 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class DefaultContainerImage implements ContainerImage {
 
-    private final CharSequence charSequence;
+    CharSequence charSequence;
 
     @Override
     public String value() {

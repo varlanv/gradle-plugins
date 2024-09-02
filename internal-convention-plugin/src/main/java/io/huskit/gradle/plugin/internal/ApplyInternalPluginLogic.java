@@ -16,20 +16,20 @@ import org.gradle.api.tasks.TaskContainer;
 @RequiredArgsConstructor
 public class ApplyInternalPluginLogic {
 
-    private final String projectPath;
-    private final ProviderFactory providers;
-    private final PluginManager pluginManager;
-    private final RepositoryHandler repositories;
-    private final DependencyHandler dependencies;
-    private final ExtensionContainer extensions;
-    private final HuskitInternalConventionExtension huskitConventionExtension;
-    private final SoftwareComponentContainer components;
-    private final TaskContainer tasks;
-    private final ConfigurationContainer configurations;
-    private final Provider<Project> commonTestProject;
-    private final InternalEnvironment environment;
-    private final InternalProperties properties;
-    private final Project project;
+    String projectPath;
+    ProviderFactory providers;
+    PluginManager pluginManager;
+    RepositoryHandler repositories;
+    DependencyHandler dependencies;
+    ExtensionContainer extensions;
+    HuskitInternalConventionExtension huskitConventionExtension;
+    SoftwareComponentContainer components;
+    TaskContainer tasks;
+    ConfigurationContainer configurations;
+    Provider<Project> commonTestProject;
+    InternalEnvironment environment;
+    InternalProperties properties;
+    Project project;
 
     public void apply() {
         var isGradlePlugin = projectPath.startsWith(":plugins") && projectPath.endsWith("-plugin");

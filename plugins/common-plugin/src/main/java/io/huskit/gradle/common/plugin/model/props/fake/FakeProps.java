@@ -11,8 +11,8 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class FakeProps implements Props {
 
-    private final Map<String, Object> props = new HashMap<>();
-    private final Map<String, Object> envProps = new HashMap<>();
+    Map<String, Object> props = new HashMap<>();
+    Map<String, Object> envProps = new HashMap<>();
 
     @Override
     public boolean hasProp(CharSequence name) {

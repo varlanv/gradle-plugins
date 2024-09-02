@@ -16,6 +16,9 @@ public abstract class DockerContainersExtension implements ContainersExtension {
     public abstract Property<ShouldStartBeforeSpec> getShouldStartBeforeSpec();
 
     @Internal
+    public abstract Property<String> getRootProjectName();
+
+    @Internal
     public abstract Property<String> getProjectName();
 
     @Internal
@@ -33,6 +36,7 @@ public abstract class DockerContainersExtension implements ContainersExtension {
         reuse.getReuseBetweenBuilds().convention(false);
         requested.getDatabaseName().convention("gradleContainerCollection");
         requested.getReuse().convention(reuse);
+        requested.getRootProjectName().convention(getRootProjectName());
         requested.getProjectPath().convention(getProjectPath());
         requested.getProjectName().convention(getProjectName());
         action.execute(requested);

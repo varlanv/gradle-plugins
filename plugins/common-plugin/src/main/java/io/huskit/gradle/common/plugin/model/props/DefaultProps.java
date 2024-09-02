@@ -7,8 +7,8 @@ import org.gradle.api.provider.ProviderFactory;
 @RequiredArgsConstructor
 public class DefaultProps implements Props {
 
-    private final ProviderFactory providers;
-    private final ExtraPropertiesExtension extraPropertiesExtension;
+    ProviderFactory providers;
+    ExtraPropertiesExtension extraPropertiesExtension;
 
     @Override
     public boolean hasProp(CharSequence name) {

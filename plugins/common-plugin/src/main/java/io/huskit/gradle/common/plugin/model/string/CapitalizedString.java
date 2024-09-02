@@ -8,7 +8,7 @@ import org.jetbrains.annotations.NotNull;
 public class CapitalizedString implements CharSequence {
 
     @NonNull
-    private final String original;
+    String original;
 
     public static String capitalize(String original) {
         char upperCase = Character.toUpperCase(original.charAt(0));

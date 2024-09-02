@@ -6,7 +6,7 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class DefaultEnv implements Env {
 
-    private final Props props;
+    Props props;
 
     @Override
     public boolean isCi() {

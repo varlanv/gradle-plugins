@@ -5,9 +5,9 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class AddCommonDependencies {
 
-    private final AddLombokDependencies addLombokDependencies;
-    private final AddSpockDependencies addSpockDependencies;
-    private final AddTestDependencies addTestDependencies;
+    AddLombokDependencies addLombokDependencies;
+    AddSpockDependencies addSpockDependencies;
+    AddTestDependencies addTestDependencies;
 
     public void add() {
         addLombokDependencies.add();

@@ -13,8 +13,11 @@ dependencies {
     implementation(projects.plugins.propertiesPlugin)
     implementation(projects.plugins.commonPlugin)
     implementation(projects.plugins.containersPlugin.containersGradlePlugin)
+    implementation(projects.plugins.containersPlugin.containersModel)
     implementation(libs.groovy.all)
     implementation(libs.spock.core)
     implementation(libs.apache.commons)
+    implementation(libs.testcontainers.core)
+    implementation(libs.testcontainers.mongodb)
     testImplementation(gradleTestKit())
 }

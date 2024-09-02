@@ -2,26 +2,23 @@ package io.huskit.containers.model;
 
 import io.huskit.containers.model.request.RequestedContainer;
 import io.huskit.containers.model.request.RequestedContainers;
+import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
 import java.util.Collection;
 import java.util.List;
 
+@Getter
 @RequiredArgsConstructor
 public class DefaultRequestedContainers implements RequestedContainers {
 
-    private final List<RequestedContainer> requestedContainers;
+    List<RequestedContainer> list;
 
     public DefaultRequestedContainers(Collection<RequestedContainer> requestedContainers) {
-        this.requestedContainers = List.copyOf(requestedContainers);
+        this.list = List.copyOf(requestedContainers);
     }
 
     public DefaultRequestedContainers(RequestedContainer requestedContainer) {
-        this.requestedContainers = List.of(requestedContainer);
-    }
-
-    @Override
-    public List<RequestedContainer> list() {
-        return requestedContainers;
+        this.list = List.of(requestedContainer);
     }
 }

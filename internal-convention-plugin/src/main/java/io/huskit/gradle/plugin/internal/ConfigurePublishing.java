@@ -12,9 +12,9 @@ import org.gradle.api.publish.maven.MavenPublication;
 @RequiredArgsConstructor
 public class ConfigurePublishing {
 
-    private final PluginManager pluginManager;
-    private final ExtensionContainer extensions;
-    private final SoftwareComponentContainer components;
+    PluginManager pluginManager;
+    ExtensionContainer extensions;
+    SoftwareComponentContainer components;
 
     public void configure() {
         pluginManager.withPlugin("maven-publish", plugin -> {

@@ -14,13 +14,13 @@ import java.util.function.Consumer;
 @RequiredArgsConstructor
 public class ConfigureContainersPlugin {
 
-    private final Log log;
-    private final ProjectDescription projectDescription;
-    private final ObjectFactory objects;
-    private final NewOrExistingExtension extensions;
-    private final BuildServiceRegistry sharedServices;
-    private final TaskContainer tasks;
-    private final Consumer<Action<Project>> afterEvaluateSupplier;
+    Log log;
+    ProjectDescription projectDescription;
+    ObjectFactory objects;
+    NewOrExistingExtension extensions;
+    BuildServiceRegistry sharedServices;
+    TaskContainer tasks;
+    Consumer<Action<Project>> afterEvaluateSupplier;
 
     public void configure() {
         var dockerContainersExtension = new PrepareContainersExtension(

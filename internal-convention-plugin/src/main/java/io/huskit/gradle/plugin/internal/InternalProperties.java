@@ -8,7 +8,7 @@ import org.gradle.api.provider.Provider;
 public class InternalProperties {
 
     public static final String EXTENSION_NAME = "__huskit_internal_properties__";
-    private final VersionCatalog versionCatalog;
+    VersionCatalog versionCatalog;
 
     public String getLib(String name) {
         return versionCatalog.findLibrary(name)

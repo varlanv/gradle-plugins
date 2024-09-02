@@ -8,7 +8,7 @@ import javax.annotation.Nonnull;
 @RequiredArgsConstructor
 public class DefaultInternalExtensionName implements CharSequence {
 
-    private final CharSequence original;
+    CharSequence original;
 
     @Override
     public int length() {

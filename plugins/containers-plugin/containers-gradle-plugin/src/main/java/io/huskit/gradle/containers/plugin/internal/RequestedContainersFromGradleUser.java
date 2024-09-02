@@ -22,15 +22,16 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class RequestedContainersFromGradleUser implements RequestedContainers {
 
-    private final Log log;
-    private final Collection<ContainerRequestedByUser> containersRequestedByUser;
+    Log log;
+    String rootProjectName;
+    Collection<ContainerRequestedByUser> containersRequestedByUser;
 
     @Override
     public List<RequestedContainer> list() {
         return containersRequestedByUser.stream()
                 .map(requested -> (ContainerRequestedByUserForTask) requested)
                 .map(requested -> {
-                    ContainerType containerType = requested.containerType();
+                    var containerType = requested.containerType();
                     log.info("Preparing container request with type [{}], id [{}]", containerType, requested.id());
                     if (containerType == ContainerType.MONGO) {
                         var mongoRequested = (MongoContainerRequestedByUser) requested;
@@ -40,8 +41,8 @@ public class RequestedContainersFromGradleUser implements RequestedContainers {
                                         () -> requested.getProjectPath().get(),
                                         new DefaultContainerImage(requested.getImage().get()),
                                         requested.id(),
-                                        containerType,
                                         Optional.ofNullable(requested.getFixedPort().getOrNull()).map(FixedContainerPort::new).orElse(null),
+                                        containerType,
                                         new DefaultMongoContainerReuse(
                                                 containerReuseSpec != null && Boolean.TRUE.equals(containerReuseSpec.getAllowed().getOrNull()),
                                                 containerReuseSpec != null && Boolean.TRUE.equals(containerReuseSpec.getNewDatabaseForEachTask().getOrNull()),

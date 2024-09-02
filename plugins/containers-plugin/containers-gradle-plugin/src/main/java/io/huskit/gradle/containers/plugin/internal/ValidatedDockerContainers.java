@@ -11,14 +11,14 @@ import java.util.HashSet;
 @RequiredArgsConstructor
 public class ValidatedDockerContainers implements Containers {
 
-    private final Containers delegate;
-    private final RequestedContainers requestedContainers;
+    Containers delegate;
+    RequestedContainers requestedContainers;
 
     @Override
     public StartedContainers start() {
         var containersIds = new HashSet<>();
         requestedContainers.list().forEach(requestedContainer -> {
-            String containerId = requestedContainer.id().value();
+            var containerId = requestedContainer.id().json();
             if (!containersIds.add(containerId)) {
                 throw new NonUniqueContainerException(containerId, requestedContainer.containerType());
             }

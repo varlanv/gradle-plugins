@@ -7,9 +7,9 @@ import org.gradle.api.plugins.PluginManager;
 @RequiredArgsConstructor
 public class AddLombokDependencies {
 
-    private final PluginManager pluginManager;
-    private final InternalProperties internalProperties;
-    private final DependencyHandler dependencies;
+    PluginManager pluginManager;
+    InternalProperties internalProperties;
+    DependencyHandler dependencies;
 
     public void add() {
         pluginManager.withPlugin("java", plugin -> {

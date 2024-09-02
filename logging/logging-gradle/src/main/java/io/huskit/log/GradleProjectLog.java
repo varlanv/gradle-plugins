@@ -8,9 +8,9 @@ import java.util.Date;
 
 public class GradleProjectLog implements Log {
 
-    private final Logger log;
-    private final String path;
-    private final String name;
+    Logger log;
+    String path;
+    String name;
 
     public GradleProjectLog(Class<?> type, String path, String name) {
         this.log = Logging.getLogger(type);

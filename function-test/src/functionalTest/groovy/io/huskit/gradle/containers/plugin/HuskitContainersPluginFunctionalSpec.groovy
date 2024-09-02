@@ -1,11 +1,10 @@
 package io.huskit.gradle.containers.plugin
 
+import io.huskit.gradle.BaseDockerFunctionalSpec
 import io.huskit.gradle.GradleRunResult
-import io.huskit.gradle.commontest.BaseDockerFunctionalSpec
 import io.huskit.gradle.commontest.DataTable
 import io.huskit.gradle.commontest.DataTables
 import io.huskit.gradle.containers.plugin.api.ContainersExtension
-import io.huskit.gradle.containers.plugin.api.MongoContainerRequestedByUser
 import org.apache.commons.lang3.StringUtils
 import spock.lang.Subject
 
@@ -21,7 +20,6 @@ class HuskitContainersPluginFunctionalSpec extends BaseDockerFunctionalSpec {
             id "io.huskit.gradle.containers-plugin"
         }
 """
-
         when:
         def buildResult = build(runner)
 
@@ -33,8 +31,11 @@ class HuskitContainersPluginFunctionalSpec extends BaseDockerFunctionalSpec {
     }
 
     def "apply-plugin-to-multiple-java-projects-all-not-reusable should work correctly"() {
+        given:
+        def useCaseName = "apply-plugin-to-multiple-java-projects-all-not-reusable-gradle8"
+
         when:
-        def result = runUseCase("apply-plugin-to-multiple-java-projects-all-not-reusable-gradle8", dataTable)
+        def result = runUseCase(useCaseName, dataTable)
 
         then: "Output should contain all expected messages"
         def messages = result.findMarkedMessages("MONGO_CONNECTION_STRING").values()
@@ -43,13 +44,20 @@ class HuskitContainersPluginFunctionalSpec extends BaseDockerFunctionalSpec {
         messages.size() == 6
         messages.toSet().size() == 6
 
+        and: "Mongo containers for use-case are not available"
+        def containers = findHuskitContainersForUseCase(useCaseName)
+        containers.size() == 0
+
         where:
         dataTable << DataTables.default.get()
     }
 
     def "apply-plugin-to-single-java-project should work correctly"() {
+        given:
+        def useCaseName = "apply-plugin-to-single-java-project-gradle8"
+
         when:
-        def result = runUseCase("apply-plugin-to-single-java-project-gradle8", dataTable)
+        def result = runUseCase(useCaseName, dataTable)
 
         then: "Output should contain all expected messages"
         def messages = result.findMarkedMessages("MONGO_CONNECTION_STRING").values()
@@ -58,13 +66,20 @@ class HuskitContainersPluginFunctionalSpec extends BaseDockerFunctionalSpec {
         messages.size() == 2
         messages.toSet().size() == 2
 
+        and: "Mongo containers for use-case are not available"
+        def containers = findHuskitContainersForUseCase(useCaseName)
+        containers.size() == 0
+
         where:
         dataTable << DataTables.default.get()
     }
 
     def "apply-plugin-to-multiple-java-projects should work correctly"() {
+        given:
+        def useCaseName = "apply-plugin-to-multiple-java-projects-gradle8"
+
         when:
-        def result = runUseCase("apply-plugin-to-multiple-java-projects-gradle8", dataTable)
+        def result = runUseCase(useCaseName, dataTable)
 
         then: "Output should contain all expected messages"
         def messages = result.findMarkedMessages("MONGO_CONNECTION_STRING").values()
@@ -74,21 +89,32 @@ class HuskitContainersPluginFunctionalSpec extends BaseDockerFunctionalSpec {
         def mongoHosts = messages.collect({ StringUtils.substringBefore(StringUtils.substringAfter(it, "mongodb://"), "/") })
         mongoHosts.toSet().size() == 1
 
+        and: "Mongo container is still available"
+        def containers = findHuskitContainersForUseCase(useCaseName)
+        containers.size() == 1
+
         where:
         dataTable << DataTables.default.get()
     }
 
     def "apply-plugin-to-multiple-java-projects-with-and-without-reuse should work correctly"() {
+        given:
+        def useCaseName = "apply-plugin-to-multiple-java-projects-with-and-without-reuse-gradle8"
+
         when:
-        def result = runUseCase("apply-plugin-to-multiple-java-projects-with-and-without-reuse-gradle8", dataTable)
+        def result = runUseCase(useCaseName, dataTable)
 
         then: "Output should contain all expected messages"
         def messages = result.findMarkedMessages("MONGO_CONNECTION_STRING").values()
 
-        and: "Mongo containers were requested 6 times while only 3 unique connection string is used"
+        and: "Mongo containers were requested 6 times while only 3 unique connection strings are used"
         messages.size() == 6
         def mongoHosts = messages.collect({ StringUtils.substringBefore(StringUtils.substringAfter(it, "mongodb://"), "/") })
         mongoHosts.toSet().size() == 3
+
+        and: "Mongo container is still available"
+        def containers = findHuskitContainersForUseCase(useCaseName)
+        containers.size() == 1
 
         where:
         dataTable << DataTables.default.get()

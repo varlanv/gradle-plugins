@@ -10,8 +10,8 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class DefaultMongoRequestedContainer implements MongoRequestedContainer {
 
-    private final RequestedContainer requestedContainer;
-    private final String databaseName;
+    RequestedContainer requestedContainer;
+    String databaseName;
 
     @Override
     public ContainerRequestSource source() {

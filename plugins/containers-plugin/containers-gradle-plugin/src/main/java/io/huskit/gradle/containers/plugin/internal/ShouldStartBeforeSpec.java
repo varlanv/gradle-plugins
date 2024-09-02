@@ -1,13 +1,15 @@
 package io.huskit.gradle.containers.plugin.internal;
 
 import io.huskit.gradle.containers.plugin.api.ShouldStartBefore;
+import lombok.experimental.NonFinal;
 import org.gradle.api.Task;
 import org.gradle.api.provider.Property;
 import org.gradle.api.tasks.TaskProvider;
 
 public abstract class ShouldStartBeforeSpec implements ShouldStartBefore {
 
-    private boolean isSet = false;
+    @NonFinal
+    boolean isSet = false;
 
     public abstract Property<TaskProvider<Task>> getShouldRunBeforeTaskProvider();
 

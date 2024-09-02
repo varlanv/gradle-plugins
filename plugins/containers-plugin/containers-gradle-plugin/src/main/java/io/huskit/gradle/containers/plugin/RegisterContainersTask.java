@@ -13,12 +13,12 @@ import org.gradle.api.tasks.TaskProvider;
 @RequiredArgsConstructor
 public class RegisterContainersTask {
 
-    private final Log log;
-    private final ProjectDescription projectDescription;
-    private final TaskContainer tasks;
-    private final DockerContainersExtension dockerContainersExtension;
-    private final Provider<ContainersBuildService> containersBuildServiceProvider;
-    private final String dependentTaskName;
+    Log log;
+    ProjectDescription projectDescription;
+    TaskContainer tasks;
+    DockerContainersExtension dockerContainersExtension;
+    Provider<ContainersBuildService> containersBuildServiceProvider;
+    String dependentTaskName;
 
     public TaskProvider<ContainersTask> register() {
         var taskName = ContainersTask.NAME + "For" + new CapitalizedString(dependentTaskName);

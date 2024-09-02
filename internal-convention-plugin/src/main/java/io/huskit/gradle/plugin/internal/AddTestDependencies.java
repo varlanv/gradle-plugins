@@ -10,12 +10,12 @@ import org.gradle.api.provider.Provider;
 @RequiredArgsConstructor
 public class AddTestDependencies {
 
-    private final PluginManager pluginManager;
-    private final String projectPath;
-    private final InternalEnvironment environment;
-    private final DependencyHandler dependencies;
-    private final Provider<Project> commonTestProject;
-    private final InternalProperties properties;
+    PluginManager pluginManager;
+    String projectPath;
+    InternalEnvironment environment;
+    DependencyHandler dependencies;
+    Provider<Project> commonTestProject;
+    InternalProperties properties;
 
     public void add() {
         if (!environment.isTest() && !projectPath.equals(":common-test")) {
@@ -23,8 +23,12 @@ public class AddTestDependencies {
                 dependencies.add("testImplementation", commonTestProject);
             });
         }
+        if (projectPath.equals(":common-test")) {
+            dependencies.add(JavaPlugin.IMPLEMENTATION_CONFIGURATION_NAME, properties.getLib("jackson-core-databind"));
+        }
         pluginManager.withPlugin("java", plugin -> {
             dependencies.add(JavaPlugin.TEST_IMPLEMENTATION_CONFIGURATION_NAME, properties.getLib("junit-jupiter-api"));
+            dependencies.add(JavaPlugin.TEST_IMPLEMENTATION_CONFIGURATION_NAME, properties.getLib("jackson-core-databind"));
             dependencies.add(JavaPlugin.TEST_RUNTIME_ONLY_CONFIGURATION_NAME, properties.getLib("junit-platform-launcher"));
         });
     }

@@ -10,8 +10,8 @@ import java.util.function.Supplier;
 @RequiredArgsConstructor
 public class NewOrExistingExtension {
 
-    private final Log log;
-    private final ExtensionContainer extensions;
+    Log log;
+    ExtensionContainer extensions;
 
     @SuppressWarnings("unchecked")
     public <T, V extends T> V getOrCreate(Class<T> publicType,

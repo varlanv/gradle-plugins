@@ -15,6 +15,7 @@ public class HuskitContainersPlugin implements Plugin<Project> {
         var projectPath = project.getPath();
         var projectName = project.getName();
         var projectDescription = new GradleProjectDescription(
+                project.getRootProject().getName(),
                 projectPath,
                 projectName
         );

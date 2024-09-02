@@ -11,11 +11,11 @@ import org.gradle.api.provider.Provider;
 @RequiredArgsConstructor
 public class MaybeAddContainersEnvironment {
 
-    private final Log log;
-    private final ProjectDescription projectDescription;
-    private final Task dependentTask;
-    private final Provider<ContainersBuildService> containersBuildServiceProvider;
-    private final DockerContainersExtension dockerContainersExtension;
+    Log log;
+    ProjectDescription projectDescription;
+    Task dependentTask;
+    Provider<ContainersBuildService> containersBuildServiceProvider;
+    DockerContainersExtension dockerContainersExtension;
 
     public void maybeAdd() {
         log.info("Adding containers environment to task: [{}]", dependentTask.getName());

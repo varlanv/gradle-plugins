@@ -11,6 +11,9 @@ public interface ContainerRequestedByUserForTask extends ContainerRequestedByUse
     ContainerId id();
 
     @Internal
+    Property<String> getRootProjectName();
+
+    @Internal
     Property<String> getProjectPath();
 
     @Internal
@@ -18,6 +21,7 @@ public interface ContainerRequestedByUserForTask extends ContainerRequestedByUse
 
     default ProjectDescription projectDescription() {
         return new GradleProjectDescription(
+                getRootProjectName().get(),
                 getProjectPath().get(),
                 getProjectName().get()
         );
