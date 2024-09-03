@@ -1,12 +1,11 @@
 plugins {
-    groovy
+    java
     id("io.huskit.gradle.internal-gradle-convention-plugin")
 }
 
 dependencies {
     implementation(libs.testcontainers.core)
-    implementation(libs.groovy.all)
-    implementation(libs.spock.core)
+    implementation(libs.junit.jupiter.api)
     implementation(gradleApi())
     implementation(gradleTestKit())
 }

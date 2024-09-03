@@ -1,5 +1,4 @@
 plugins {
-    id("groovy")
     id("java-gradle-plugin")
     id("io.huskit.gradle.internal-gradle-convention-plugin")
 }
@@ -14,8 +13,6 @@ dependencies {
     implementation(projects.plugins.commonPlugin)
     implementation(projects.plugins.containersPlugin.containersGradlePlugin)
     implementation(projects.plugins.containersPlugin.containersModel)
-    implementation(libs.groovy.all)
-    implementation(libs.spock.core)
     implementation(libs.apache.commons)
     implementation(libs.testcontainers.core)
     implementation(libs.testcontainers.mongodb)

@@ -27,7 +27,7 @@ public class ConfigureTests {
     TaskContainer tasks;
 
     public void configure() {
-        pluginManager.withPlugin("groovy", plugin -> {
+        pluginManager.withPlugin("java", plugin -> {
             var testing = (TestingExtension) extensions.getByName("testing");
             var suites = testing.getSuites();
             var integrationTestTaskName = huskitConventionExtension.getIntegrationTestName().get();
@@ -46,7 +46,7 @@ public class ConfigureTests {
                     });
                     jvmTestSuite.getTargets().all(target -> {
                         target.getTestTask().configure(test -> {
-//                            test.getOutputs().upToDateWhen(task -> false);
+                            test.getOutputs().upToDateWhen(task -> false);
                             test.testLogging(logging -> {
                                 logging.setShowStandardStreams(true);
                             });
