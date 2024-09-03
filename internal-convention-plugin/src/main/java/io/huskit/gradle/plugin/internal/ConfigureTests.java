@@ -8,7 +8,6 @@ import org.gradle.api.plugins.ExtensionContainer;
 import org.gradle.api.plugins.PluginManager;
 import org.gradle.api.plugins.jvm.JvmTestSuite;
 import org.gradle.api.tasks.TaskContainer;
-import org.gradle.api.tasks.compile.GroovyCompile;
 import org.gradle.testing.base.TestingExtension;
 
 import java.util.Arrays;
