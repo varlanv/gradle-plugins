@@ -1,8 +1,5 @@
 version: 2.1
 
-#orbs:
-#  win: circleci/windows@5.0
-
 jobs:
   #       ------------------ UNIX ------------------
   gradle-build-unix:
@@ -35,7 +32,7 @@ jobs:
             - gradle-wrapper-{{ checksum "gradle/wrapper/gradle-wrapper.properties" }}
             - gradle-cache-{{ checksum "build.gradle" }}-{{ checksum "settings.gradle" }}
       - run:
-          name: "gradle build test unix"
+          name: "Testing of the internal-convention-plugin"
           command: "./gradlew :internal-convention-plugin:test --no-configuration-cache --no-build-cache --no-configure-on-demand"
       - run:
           name: "Save test results unix"
@@ -55,7 +52,7 @@ jobs:
             - gradle-wrapper-{{ checksum "gradle/wrapper/gradle-wrapper.properties" }}
             - gradle-cache-{{ checksum "build.gradle" }}-{{ checksum "settings.gradle" }}
       - run:
-          name: "gradle unit test unix"
+          name: "Run unit tests in unix"
           command: "./gradlew test --no-configuration-cache --no-build-cache --no-configure-on-demand"
       - run:
           name: "Save test results unix"
@@ -75,7 +72,7 @@ jobs:
             - gradle-wrapper-{{ checksum "gradle/wrapper/gradle-wrapper.properties" }}
             - gradle-cache-{{ checksum "build.gradle" }}-{{ checksum "settings.gradle" }}
       - run:
-          name: "gradle integration test unix"
+          name: "Run integration tests in unix"
           command: "./gradlew integrationTest --no-configuration-cache --no-build-cache --no-configure-on-demand"
       - run:
           name: "Save test results unix"
@@ -85,91 +82,29 @@ jobs:
           when: always
       - store_test_results:
           path: ~/test-results
-
-#        ------------------ WINDOWS ------------------
-#  gradle-build-windows:
-#    executor:
-#      name: win/default
-#    steps:
-#      - checkout
-#      - restore_cache:
-#          keys:
-#            - gradle-wrapper-{{ checksum "gradle/wrapper/gradle-wrapper.properties" }}
-#            - gradle-cache-{{ checksum "build.gradle" }}-{{ checksum "settings.gradle" }}
-#      - run:
-#          name: "gradle assemble windows"
-#          command: ".\\gradlew assemble --no-configuration-cache"
-#      - save_cache:
-#          paths:
-#            - "%USERPROFILE%\\.gradle\\wrapper\\"
-#          key: gradle-wrapper-{{ checksum "gradle/wrapper/gradle-wrapper.properties" }}
-#      - save_cache:
-#          paths:
-#            - "%USERPROFILE%\\.gradle\\caches\\"
-#          key: gradle-cache-{{ checksum "build.gradle" }}-{{ checksum "settings.gradle" }}
-#  gradle-build-test-windows:
-#    executor:
-#      name: win/default
-#    steps:
-#      - checkout
-#      - restore_cache:
-#          keys:
-#            - gradle-wrapper-{{ checksum "gradle/wrapper/gradle-wrapper.properties" }}
-#            - gradle-cache-{{ checksum "build.gradle" }}-{{ checksum "settings.gradle" }}
-#      - run:
-#          name: "gradle build test windows"
-#          command: ".\\gradlew :internal-convention-plugin:test --no-configuration-cache"
-#      - run:
-#          name: "Save test results windows"
-#          command: |
-#            New-Item -Path .\test-results\junit\ -ItemType Directory -Force
-#            Get-ChildItem -Path .\ -Recurse -Include *.xml | Where-Object { $_.FullName -match '\\build\\test-results\\' } | Copy-Item -Destination .\test-results\junit\
-#          shell: powershell
-#          when: always
-#      - store_test_results:
-#          path: ~/test-results
-#  gradle-integration-test-windows:
-#    executor:
-#      name: win/default
-#    steps:
-#      - checkout
-#      - restore_cache:
-#          keys:
-#            - gradle-wrapper-{{ checksum "gradle/wrapper/gradle-wrapper.properties" }}
-#            - gradle-cache-{{ checksum "build.gradle" }}-{{ checksum "settings.gradle" }}
-#      - run:
-#          name: "gradle integration test windows"
-#          command: ".\\gradlew integrationTest --no-configuration-cache"
-#      - run:
-#          name: "Save test results windows"
-#          command: |
-#            New-Item -Path .\test-results\junit\ -ItemType Directory -Force
-#            Get-ChildItem -Path .\ -Recurse -Include *.xml | Where-Object { $_.FullName -match '\\build\\test-results\\' } | Copy-Item -Destination .\test-results\junit\
-#          shell: powershell
-#          when: always
-#      - store_test_results:
-#          path: ~/test-results
-#  gradle-unit-test-windows:
-#    executor:
-#      name: win/default
-#    steps:
-#      - checkout
-#      - restore_cache:
-#          keys:
-#            - gradle-wrapper-{{ checksum "gradle/wrapper/gradle-wrapper.properties" }}
-#            - gradle-cache-{{ checksum "build.gradle" }}-{{ checksum "settings.gradle" }}
-#      - run:
-#          name: "gradle unit test windows"
-#          command: ".\\gradlew unitTest --no-configuration-cache"
-#      - run:
-#          name: "Save test results windows"
-#          command: |
-#            New-Item -Path .\test-results\junit\ -ItemType Directory -Force
-#            Get-ChildItem -Path .\ -Recurse -Include *.xml | Where-Object { $_.FullName -match '\\build\\test-results\\' } | Copy-Item -Destination .\test-results\junit\
-#          shell: powershell
-#          when: always
-#      - store_test_results:
-#          path: ~/test-results
+  gradle-functional-test-unix:
+    docker:
+      - image: cimg/openjdk:11.0
+    steps:
+      - setup_remote_docker:
+          version: 20.10.7
+          docker_layer_caching: true
+      - checkout
+      - restore_cache:
+          keys:
+            - gradle-wrapper-{{ checksum "gradle/wrapper/gradle-wrapper.properties" }}
+            - gradle-cache-{{ checksum "build.gradle" }}-{{ checksum "settings.gradle" }}
+      - run:
+          name: "Run functional tests in unix"
+          command: "./gradlew functionalTest --no-configuration-cache --no-build-cache --no-configure-on-demand"
+      - run:
+          name: "Save test results unix"
+          command: |
+            mkdir -p ~/test-results/junit/
+            find . -type f -regex ".*/build/test-results/.*xml" -exec cp {} ~/test-results/junit/ \;
+          when: always
+      - store_test_results:
+          path: ~/test-results
 
 workflows:
   gradle-build-unix-workflow:
@@ -180,13 +115,4 @@ workflows:
       - gradle-build-test-unix
       - gradle-unit-test-unix
       - gradle-integration-test-unix
-#  gradle-build-windows-workflow:
-#    when: false
-#    jobs:
-#      - gradle-build-windows
-#  gradle-verify-windows-workflow:
-#    when: false
-#    jobs:
-#      - gradle-build-test-windows
-#      - gradle-unit-test-windows
-#      - gradle-integration-test-windows
+      - gradle-functional-test-unix

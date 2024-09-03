@@ -2,6 +2,7 @@ package io.huskit.gradle.plugin.internal;
 
 import io.huskit.gradle.plugin.HuskitInternalConventionExtension;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.gradle.api.artifacts.ConfigurationContainer;
 import org.gradle.api.plugins.ExtensionContainer;
 import org.gradle.api.plugins.PluginManager;
@@ -9,6 +10,13 @@ import org.gradle.api.plugins.jvm.JvmTestSuite;
 import org.gradle.api.tasks.TaskContainer;
 import org.gradle.testing.base.TestingExtension;
 
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Objects;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
+@Slf4j
 @RequiredArgsConstructor
 public class ConfigureTests {
 
@@ -27,11 +35,6 @@ public class ConfigureTests {
                     integrationTestTaskName,
                     JvmTestSuite.class,
                     suite -> {
-//                        suite.getTargets().all(target -> {
-//                            target.getTestTask().configure(test -> {
-//                                test.getOutputs().upToDateWhen(task -> false);
-//                            });
-//                        });
                     });
             suites.configureEach(suite -> {
                 if (suite instanceof JvmTestSuite) {
@@ -43,7 +46,25 @@ public class ConfigureTests {
                     });
                     jvmTestSuite.getTargets().all(target -> {
                         target.getTestTask().configure(test -> {
-                            test.getOutputs().upToDateWhen(task -> false);
+//                            test.getOutputs().upToDateWhen(task -> false);
+                            test.testLogging(logging -> {
+                                logging.setShowStandardStreams(true);
+                            });
+                            test.setJvmArgs(
+                                    Stream.of(
+                                                    test.getJvmArgs(),
+                                                    Arrays.asList(
+//                                                            "-XX:TieredStopAtLevel=1",
+                                                            "-noverify",
+//                                                            "-Xmx2048m",
+                                                            "-XX:+UseParallelGC",
+                                                            "-XX:ParallelGCThreads=2"
+                                                    )
+                                            )
+                                            .filter(Objects::nonNull)
+                                            .flatMap(Collection::stream)
+                                            .collect(Collectors.toList())
+                            );
                         });
                     });
                 }

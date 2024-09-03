@@ -5,17 +5,18 @@ import lombok.RequiredArgsConstructor;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
-import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.stream.Collectors;
 
 @RequiredArgsConstructor
 public class FakeLog implements Log {
 
-    List<FakeLoggedMessage> loggedMessages;
+    Collection<FakeLoggedMessage> loggedMessages;
 
     public FakeLog() {
-        this(new CopyOnWriteArrayList<>());
+        this(new ConcurrentLinkedQueue<>());
     }
 
     @Override
@@ -58,7 +59,7 @@ public class FakeLog implements Log {
     }
 
     private List<String> toStringList(Object[] args) {
-        return Arrays.asList(args).stream()
+        return Arrays.stream(args)
                 .map(String::valueOf)
                 .collect(Collectors.toList());
     }
