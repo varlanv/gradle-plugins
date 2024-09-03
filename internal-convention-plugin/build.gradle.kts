@@ -1,5 +1,5 @@
 plugins {
-    groovy
+//    groovy
     `java-gradle-plugin`
 }
 
@@ -22,8 +22,8 @@ repositories {
 dependencies {
     compileOnly(libs.lombok)
     annotationProcessor(libs.lombok)
-    testImplementation(libs.groovy.all)
-    testImplementation(libs.spock.core)
+//    testImplementation(libs.groovy.all)
+//    testImplementation(libs.spock.core)
 }
 
 gradlePlugin {
