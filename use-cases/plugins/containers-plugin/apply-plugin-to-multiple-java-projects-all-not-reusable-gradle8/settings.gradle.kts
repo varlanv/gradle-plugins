@@ -12,7 +12,7 @@ fun pathToRoot(dir: File, parts: MutableList<String> = mutableListOf()): String 
 }
 
 val useCasesDir = when {
-    providers.environmentVariable("FUNCTIONAL_SPEC_RUN").isPresent -> "../common-containers-plugin-use-case-logic"
+    providers.provider({ System.getenv("FUNCTIONAL_SPEC_RUN") }).isPresent -> "../common-containers-plugin-use-case-logic"
     else -> pathToRoot(rootProject.projectDir) + "/use-cases/common-use-cases-logic/common-containers-plugin-use-case-logic"
 }
 
@@ -25,9 +25,9 @@ includeBuild(useCasesDir) {
 include(
         "project1",
         "project2",
-        "project3",
+        "project3"
 )
 
-if (!providers.environmentVariable("FUNCTIONAL_SPEC_RUN").isPresent) {
+if (!providers.provider({ System.getenv("FUNCTIONAL_SPEC_RUN") }).isPresent) {
     includeBuild(pathToRoot(rootProject.projectDir))
 }

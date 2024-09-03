@@ -11,12 +11,13 @@ public class AddSpockDependencies {
     InternalProperties internalProperties;
     DependencyHandler dependencies;
 
+    // spock was removed from the project for now
     public void add() {
-        pluginManager.withPlugin("groovy", plugin -> {
-            var spockVersion = internalProperties.getLib("spock-core");
-            var groovyVersion = internalProperties.getLib("groovy-all");
-            dependencies.add("testImplementation", spockVersion);
-            dependencies.add("testImplementation", groovyVersion);
-        });
+//        pluginManager.withPlugin("groovy", plugin -> {
+//            var spockVersion = internalProperties.getLib("spock-core");
+//            var groovyVersion = internalProperties.getLib("groovy-all");
+//            dependencies.add("testImplementation", spockVersion);
+//            dependencies.add("testImplementation", groovyVersion);
+//        });
     }
 }
