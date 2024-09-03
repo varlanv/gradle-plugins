@@ -24,9 +24,9 @@ class NewOrExistingExtensionIntegrationSpec extends BaseIntegrationSpec {
         def loggedMessages = log.loggedMessages()
         loggedMessages.size() == 1
         def loggedMessage = loggedMessages[0]
-        loggedMessage.args.size() == 1
-        loggedMessage.args[0] == Props.EXTENSION_NAME
-        loggedMessage.message.contains("not found, creating new instance")
+        loggedMessage.args().size() == 1
+        loggedMessage.args()[0] == Props.EXTENSION_NAME
+        loggedMessage.message().contains("not found, creating new instance")
 
     }
 
@@ -48,8 +48,8 @@ class NewOrExistingExtensionIntegrationSpec extends BaseIntegrationSpec {
         def loggedMessages = log.loggedMessages()
         loggedMessages.size() == 1
         def loggedMessage = loggedMessages[0]
-        loggedMessage.args.size() == 1
-        loggedMessage.args[0] == Props.EXTENSION_NAME
-        loggedMessage.message.contains("found, using existing instance")
+        loggedMessage.args().size() == 1
+        loggedMessage.args()[0] == Props.EXTENSION_NAME
+        loggedMessage.message().contains("found, using existing instance")
     }
 }

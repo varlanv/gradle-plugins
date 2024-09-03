@@ -1,5 +1,6 @@
 package io.huskit.gradle.commontest
 
+import groovy.transform.CompileStatic
 import org.gradle.api.Project
 import org.gradle.api.internal.project.ProjectInternal
 import org.gradle.api.model.ObjectFactory
@@ -20,11 +21,13 @@ abstract class BaseIntegrationSpec extends BaseSpec {
     ObjectFactory objects
     ProviderFactory providers
 
+    @CompileStatic
     protected Project setupProject(Consumer<File> projectDirClosure, @DelegatesTo(ProjectBuilder) Closure<Project> projectBuilderClosure = null) {
         projectDirClosure(projectDir)
         return setupProject(projectBuilderClosure)
     }
 
+    @CompileStatic
     protected Project setupProject(@DelegatesTo(ProjectBuilder) Closure<Project> projectBuilderClosure = null) {
         ProjectBuilder projectBuilder = ProjectBuilder.builder()
                 .withProjectDir(projectDir)
@@ -43,6 +46,7 @@ abstract class BaseIntegrationSpec extends BaseSpec {
         return project
     }
 
+    @CompileStatic
     protected ProjectWithParentFixture setupFixtureWithParentProject() {
         def parentProjectDirectory = Files.createTempDirectory("gradle_test").toFile()
         def projectDirectory = Files.createTempDirectory(parentProjectDirectory.toPath(), "gradle_test").toFile()
@@ -58,10 +62,12 @@ abstract class BaseIntegrationSpec extends BaseSpec {
         )
     }
 
+    @CompileStatic
     protected void evaluateProject() {
         evaluateProject(project)
     }
 
+    @CompileStatic
     protected void evaluateProject(Project project) {
         (project as ProjectInternal).evaluate()
     }
