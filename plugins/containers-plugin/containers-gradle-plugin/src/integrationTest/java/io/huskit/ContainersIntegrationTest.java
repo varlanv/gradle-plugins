@@ -12,11 +12,10 @@ import io.huskit.log.fake.FakeLog;
 import lombok.RequiredArgsConstructor;
 
 import java.util.List;
-import java.util.function.Consumer;
 
 public interface ContainersIntegrationTest extends DockerIntegrationTest {
 
-    default void test(Consumer<Fixture> fixtureConsumer) {
+    default void runFixture(ThrowingConsumer<Fixture> fixtureConsumer) {
         try (var application = ContainersApplication.application()) {
             fixtureConsumer.accept(
                     new Fixture(
@@ -55,7 +54,6 @@ public interface ContainersIntegrationTest extends DockerIntegrationTest {
     class Fixture {
 
         public final FakeLog log = new FakeLog();
-        public final String id = "someContainerId";
         public final DynamicContainerPort port = new DynamicContainerPort();
         public final ContainersApplication application;
     }

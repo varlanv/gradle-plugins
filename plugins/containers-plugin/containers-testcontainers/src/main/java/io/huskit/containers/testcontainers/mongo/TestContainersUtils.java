@@ -16,7 +16,7 @@ import java.util.stream.Collectors;
 
 public class TestContainersUtils {
 
-    private static final AtomicBoolean initialized = new AtomicBoolean();
+    AtomicBoolean initialized = new AtomicBoolean();
 
     /**
      * Enables reuse of TestContainers containers.
@@ -24,9 +24,9 @@ public class TestContainersUtils {
      * {@code ~/.testcontainers.properties} file.
      */
     @SneakyThrows
-    public static void setReuse() {
+    public void setReuse() {
         if (!initialized.get()) {
-            synchronized (TestContainersUtils.class) {
+            synchronized (this) {
                 if (!initialized.get()) {
                     var userHomePath = System.getProperty("user.home");
                     var properties = getTestcontainerPropertiesFile(userHomePath);
@@ -53,7 +53,7 @@ public class TestContainersUtils {
     }
 
 
-    private static File getTestcontainerPropertiesFile(String userHomePath) throws IOException {
+    private File getTestcontainerPropertiesFile(String userHomePath) throws IOException {
         var userHome = new File(userHomePath);
         var properties = new File(userHome, ".testcontainers.properties");
         if (!properties.exists()) {

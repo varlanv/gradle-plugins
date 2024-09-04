@@ -3,8 +3,12 @@ package io.huskit.gradle.containers.plugin.internal;
 import io.huskit.containers.model.*;
 import io.huskit.containers.model.request.ContainersRequest;
 import io.huskit.containers.model.request.MongoRequestedContainer;
-import io.huskit.containers.model.started.*;
+import io.huskit.containers.model.started.ContainerLauncher;
+import io.huskit.containers.model.started.StartedContainer;
+import io.huskit.containers.model.started.StartedContainerInternal;
+import io.huskit.containers.model.started.StartedContainersInternal;
 import io.huskit.containers.testcontainers.mongo.MongoContainer;
+import io.huskit.containers.testcontainers.mongo.TestContainersUtils;
 import io.huskit.gradle.containers.plugin.internal.buildservice.ContainersBuildService;
 import io.huskit.log.GradleLog;
 import io.huskit.log.Log;
@@ -21,7 +25,6 @@ import java.util.stream.Collectors;
 public class ContainersApplication implements AutoCloseable {
 
     Log log;
-    DefaultStartedContainerRegistry startedContainerRegistry;
     StartedContainersInternal startedContainersInternal;
 
     public Containers containers(ContainersRequest request) {
@@ -45,10 +48,9 @@ public class ContainersApplication implements AutoCloseable {
 
     public static ContainersApplication application() {
         var commonLog = new GradleLog(ContainersBuildService.class);
-        var startedContainerRegistry = new DefaultStartedContainerRegistry();
+        var testContainersUtils = new TestContainersUtils();
         return new ContainersApplication(
                 commonLog,
-                startedContainerRegistry,
                 new DockerStartedContainersInternal(
                         commonLog,
                         new KnownDockerContainers(
@@ -57,7 +59,7 @@ public class ContainersApplication implements AutoCloseable {
                                         ContainerType.MONGO, requestedContainer -> new MongoContainer(
                                                 commonLog,
                                                 (MongoRequestedContainer) requestedContainer,
-                                                startedContainerRegistry
+                                                testContainersUtils
                                         )
                                 )
                         )

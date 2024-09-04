@@ -15,33 +15,33 @@ import java.util.function.Function;
 
 public interface GradleIntegrationTest extends IntegrationTest {
 
-    default void useProjectFixture(ThrowingConsumer<SingleProjectFixture> fixtureConsumer) {
-        useProjectFixture(
+    default void runProjectFixture(ThrowingConsumer<SingleProjectFixture> fixtureConsumer) {
+        runProjectFixture(
                 ProjectBuilder::build,
                 fixtureConsumer
         );
     }
 
     @SneakyThrows
-    default void useProjectFixture(ThrowingConsumer<File> projectDirConsumer,
+    default void runProjectFixture(ThrowingConsumer<File> projectDirConsumer,
                                    ThrowingConsumer<SingleProjectFixture> fixtureConsumer) {
-        useProjectFixture(
+        runProjectFixture(
                 projectDirConsumer,
                 ProjectBuilder::build, fixtureConsumer
         );
     }
 
     @SneakyThrows
-    default void useProjectFixture(Function<ProjectBuilder, Project> projectBuilderFn,
+    default void runProjectFixture(Function<ProjectBuilder, Project> projectBuilderFn,
                                    ThrowingConsumer<SingleProjectFixture> fixtureConsumer) {
-        useProjectFixture(
+        runProjectFixture(
                 pb -> {
                 },
                 projectBuilderFn,
                 fixtureConsumer);
     }
 
-    default void useProjectFixture(ThrowingConsumer<File> projectDirConsumer,
+    default void runProjectFixture(ThrowingConsumer<File> projectDirConsumer,
                                    Function<ProjectBuilder, Project> projectBuilderFn,
                                    ThrowingConsumer<SingleProjectFixture> fixtureConsumer) {
         var projectDir = newTempDir();
@@ -76,6 +76,10 @@ public interface GradleIntegrationTest extends IntegrationTest {
         });
     }
 
+    default void evaluateProject(Project project) {
+        ((ProjectInternal) project).evaluate();
+    }
+
     @Getter
     @RequiredArgsConstructor
     class SingleProjectFixture {
@@ -100,10 +104,6 @@ public interface GradleIntegrationTest extends IntegrationTest {
         File parentProjectDir;
         ObjectFactory objects;
         ProviderFactory providers;
-    }
 
-
-    default void evaluateProject(Project project) {
-        ((ProjectInternal) project).evaluate();
     }
 }

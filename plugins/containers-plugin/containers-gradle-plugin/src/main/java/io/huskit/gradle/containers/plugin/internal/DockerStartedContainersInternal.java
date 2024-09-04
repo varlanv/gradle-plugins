@@ -36,28 +36,26 @@ public class DockerStartedContainersInternal implements StartedContainersInterna
     @Override
     public StartedContainerInternal startOrCreateAndStart(RequestedContainer requestedContainer) {
         var key = requestedContainer.id().json();
-        log.info("Starting container with key [{}]", key);
         if (requestedContainer.containerReuse().allowed()) {
-            log.info("Container with key [{}] is reusable", key);
+            log.info("Container is reusable, key=[{}]", key);
             return getStartedContainerInternal(startedContainersById, key, requestedContainer);
         } else {
-            var nonReusableKey = requestedContainer.source().value() + key;
-            log.info("Container with key [{}] is not reusable", nonReusableKey);
-            return getStartedContainerInternal(startedContainersBySourceAndId, nonReusableKey, requestedContainer);
+            log.info("Container is not reusable, key=[{}] ", key);
+            return getStartedContainerInternal(startedContainersBySourceAndId, key, requestedContainer);
         }
     }
 
-    private StartedContainerInternal getStartedContainerInternal(ConcurrentMap<String, Value<StartedContainerInternal>> startedContainersBySourceAndId,
+    private StartedContainerInternal getStartedContainerInternal(ConcurrentMap<String, Value<StartedContainerInternal>> startedContainersByKey,
                                                                  String key,
                                                                  RequestedContainer requestedContainer) {
-        var startedContainerValue = startedContainersBySourceAndId.computeIfAbsent(key, k -> new Value<>());
+        var startedContainerValue = startedContainersByKey.computeIfAbsent(key, k -> new Value<>());
         var result = startedContainerValue.ref;
         if (result == null) {
             try {
                 startedContainerValue.lock.lock();
                 result = startedContainerValue.ref;
                 if (result == null) {
-                    log.info("Container with key [{}] is not started yet. Sync block is entered", key);
+                    log.info("Container is not started yet, sync block is entered, key=[{}]", key);
                     result = knownDockerContainers.prepareForStart(requestedContainer);
                     result.start();
                     allStartedContainers.add(result);

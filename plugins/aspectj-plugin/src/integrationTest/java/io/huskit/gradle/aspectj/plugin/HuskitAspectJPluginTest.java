@@ -11,7 +11,7 @@ public class HuskitAspectJPluginTest implements GradleIntegrationTest {
     @Test
     @DisplayName("plugin should be applied")
     void test_0() {
-        useProjectFixture(fixture -> {
+        runProjectFixture(fixture -> {
             var project = fixture.project();
 
             project.getPlugins().apply(HuskitAspectJPlugin.class);

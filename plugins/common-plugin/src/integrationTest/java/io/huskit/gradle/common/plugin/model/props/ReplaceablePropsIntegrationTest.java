@@ -16,7 +16,7 @@ public class ReplaceablePropsIntegrationTest implements GradleIntegrationTest {
     @Test
     @DisplayName("'hasProp' should return true if existing extension has property")
     void test_0() {
-        useProjectFixture(fixture -> {
+        runProjectFixture(fixture -> {
             var log = new FakeLog();
             var subject = prepareSubjectAndExtension(fixture, log);
 
@@ -33,7 +33,7 @@ public class ReplaceablePropsIntegrationTest implements GradleIntegrationTest {
     @Test
     @DisplayName("'hasProp' should return false if existing extension has no property")
     void test_1() {
-        useProjectFixture(fixture -> {
+        runProjectFixture(fixture -> {
             var log = new FakeLog();
             var subject = prepareSubject(fixture, log);
 

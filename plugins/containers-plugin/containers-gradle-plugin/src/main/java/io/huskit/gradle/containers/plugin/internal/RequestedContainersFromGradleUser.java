@@ -44,7 +44,7 @@ public class RequestedContainersFromGradleUser implements RequestedContainers {
                                         Optional.ofNullable(requested.getFixedPort().getOrNull()).map(FixedContainerPort::new).orElse(null),
                                         containerType,
                                         new DefaultMongoContainerReuse(
-                                                containerReuseSpec != null && Boolean.TRUE.equals(containerReuseSpec.getAllowed().getOrNull()),
+                                                containerReuseSpec != null && Boolean.TRUE.equals(containerReuseSpec.getEnabled().getOrNull()),
                                                 containerReuseSpec != null && Boolean.TRUE.equals(containerReuseSpec.getNewDatabaseForEachTask().getOrNull()),
                                                 containerReuseSpec != null && Boolean.TRUE.equals(containerReuseSpec.getReuseBetweenBuilds().getOrNull())
                                         )

@@ -22,10 +22,10 @@ public class DefaultRequestedContainer implements RequestedContainer {
 
     public DefaultRequestedContainer(String source,
                                      String image,
-                                     String id,
+                                     ContainerId id,
                                      ContainerPort port,
                                      ContainerType containerType,
                                      ContainerReuse containerReuse) {
-        this(() -> source, () -> image, () -> id, port, containerType, containerReuse);
+        this(() -> source, () -> image, id, port, containerType, containerReuse);
     }
 }

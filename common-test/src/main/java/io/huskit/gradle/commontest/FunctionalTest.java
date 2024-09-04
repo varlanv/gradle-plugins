@@ -22,14 +22,12 @@ import java.util.stream.Stream;
 public interface FunctionalTest extends BaseTest {
 
     default File huskitProjectRoot() {
-        return TestUtils.huskitProjectRoot.get();
+        return TestUtils.huskitProjectRoot();
     }
 
     @BeforeAll
     default void setupFunctionalSpec() {
-        if (TestUtils.huskitProjectRoot.get() == null) {
-            TestUtils.huskitProjectRoot.set(findDirContaining(file -> file.getName().equals("internal-convention-plugin")));
-        }
+        TestUtils.setHuskitProjectRoot(() -> findDirContaining(file -> file.getName().equals("internal-convention-plugin")));
     }
 
     @SneakyThrows
@@ -41,9 +39,6 @@ public interface FunctionalTest extends BaseTest {
             var settingsFile = new File(subjectProjectDir, "settings.gradle");
             var rootBuildFile = new File(subjectProjectDir, "build.gradle");
             var propertiesFile = new File(subjectProjectDir, "gradle.properties");
-            FileUtils.write(propertiesFile, getPropertiesFileContent(), StandardCharsets.UTF_8);
-            FileUtils.write(settingsFile, getSettingsFileContent(), StandardCharsets.UTF_8);
-            FileUtils.write(rootBuildFile, getRootBuildFileContent(), StandardCharsets.UTF_8);
             fixtureConsumer.accept(
                     new FunctionalFixture(
                             rootTestProjectDir,
@@ -54,18 +49,6 @@ public interface FunctionalTest extends BaseTest {
                     )
             );
         });
-    }
-
-    default String getPropertiesFileContent() {
-        return "";
-    }
-
-    default String getSettingsFileContent() {
-        return "";
-    }
-
-    default String getRootBuildFileContent() {
-        return "";
     }
 
     default void runGradleRunnerFixture(DataTable params, String taskName, ThrowingConsumer<RunnerFunctionalFixture> fixtureConsumer) {

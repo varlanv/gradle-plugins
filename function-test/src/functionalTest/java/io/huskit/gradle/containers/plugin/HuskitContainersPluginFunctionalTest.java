@@ -100,16 +100,18 @@ public class HuskitContainersPluginFunctionalTest implements DockerFunctionalTes
                 result -> {
                     var messages = result.findMarkedMessages(MongoContainer.CONNECTION_STRING_ENV).values();
 
-                    // Mongo containers were requested 6 times while only 3 unique connection strings are used
+                    // mongo containers were requested 6 times
                     assertThat(messages).hasSize(6);
                     var mongoHosts = messages.stream()
                             .map(it -> StringUtils.substringBefore(StringUtils.substringAfter(it, "mongodb://"), "/"))
                             .collect(Collectors.toList());
+
+                    // 3 unique connection strings are used - one reusable and two non-reusable(one for each request)
                     assertThat(Set.copyOf(mongoHosts)).hasSize(3);
 
-                    // Mongo container is still available
+                    // reusable mongo container is still available
                     var containers = findHuskitContainersForUseCase(useCaseName);
-                    assertThat(containers).hasSize(1);
+                    assertThat(containers).hasSize(2);
                 });
     }
 

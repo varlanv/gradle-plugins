@@ -4,5 +4,5 @@ import org.gradle.api.provider.Property;
 
 public interface MongoContainerReuseRequestedByUser extends ContainerReuseSpec {
 
-    Property<Boolean> getAllowed();
+    Property<Boolean> getNewDatabaseForEachTask();
 }

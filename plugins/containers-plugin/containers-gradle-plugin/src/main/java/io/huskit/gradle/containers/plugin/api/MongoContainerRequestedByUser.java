@@ -16,22 +16,24 @@ public interface MongoContainerRequestedByUser extends ContainerRequestedByUserF
         var reuse = getReuse().get();
         return new MongoContainerId(
                 getRootProjectName().get(),
+                getProjectName().get(),
                 getImage().get(),
                 getDatabaseName().get(),
                 reuse.getReuseBetweenBuilds().get(),
-                reuse.getNewDatabaseForEachTask().get()
+                reuse.getNewDatabaseForEachTask().get(),
+                reuse.getEnabled().get()
         );
     }
 
     default void reuse(Action<MongoContainerReuseRequestedByUser> action) {
         var reuse = getReuse().get();
-        reuse.getAllowed().set(true);
+        reuse.getEnabled().set(true);
         action.execute(reuse);
     }
 
     default void reuse() {
         var reuse = getReuse().get();
-        reuse.getAllowed().set(true);
+        reuse.getEnabled().set(true);
     }
 
     @Override

@@ -19,7 +19,7 @@ public class DefaultNullablePropIntegrationTest implements GradleIntegrationTest
     @Test
     @DisplayName("'name' should return prop name")
     void test_0() {
-        useProjectFixture(fixture -> {
+        runProjectFixture(fixture -> {
             var project = fixture.project();
             var subject = new DefaultNullableProp(propName, project.getProviders().provider(() -> propVal));
 
@@ -30,7 +30,7 @@ public class DefaultNullablePropIntegrationTest implements GradleIntegrationTest
     @Test
     @DisplayName("'value' should return prop value")
     void test_1() {
-        useProjectFixture(fixture -> {
+        runProjectFixture(fixture -> {
             var project = fixture.project();
             var subject = new DefaultNullableProp(propName, project.getProviders().provider(() -> propVal));
 
@@ -41,7 +41,7 @@ public class DefaultNullablePropIntegrationTest implements GradleIntegrationTest
     @Test
     @DisplayName("'stringValue' should return prop value")
     void test_2() {
-        useProjectFixture(fixture -> {
+        runProjectFixture(fixture -> {
             var project = fixture.project();
             var subject = new DefaultNullableProp(propName, project.getProviders().provider(() -> propVal));
 
@@ -53,7 +53,7 @@ public class DefaultNullablePropIntegrationTest implements GradleIntegrationTest
     @ParameterizedTest
     @DisplayName("'holdsTrue' should return true if prop value is true")
     void test_3(String truth, boolean expected) {
-        useProjectFixture(fixture -> {
+        runProjectFixture(fixture -> {
             var project = fixture.project();
             var subject = new DefaultNullableProp(propName, project.getProviders().provider(() -> truth));
 
@@ -76,7 +76,7 @@ public class DefaultNullablePropIntegrationTest implements GradleIntegrationTest
     @ParameterizedTest
     @DisplayName("'holdsFalse' should return true if prop value is false")
     void test_4(String truth, boolean expected) {
-        useProjectFixture(fixture -> {
+        runProjectFixture(fixture -> {
             var project = fixture.project();
             var subject = new DefaultNullableProp(propName, project.getProviders().provider(() -> truth));
 

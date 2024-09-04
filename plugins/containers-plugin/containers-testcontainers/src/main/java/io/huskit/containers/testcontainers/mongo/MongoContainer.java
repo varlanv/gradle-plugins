@@ -5,7 +5,6 @@ import io.huskit.containers.model.id.ContainerId;
 import io.huskit.containers.model.port.ContainerPort;
 import io.huskit.containers.model.port.FixedContainerPort;
 import io.huskit.containers.model.request.MongoRequestedContainer;
-import io.huskit.containers.model.started.StartedContainerRegistry;
 import io.huskit.gradle.common.function.MemoizedSupplier;
 import io.huskit.log.Log;
 import lombok.RequiredArgsConstructor;
@@ -25,9 +24,10 @@ public class MongoContainer implements MongoStartedContainer {
 
     Log log;
     MongoRequestedContainer mongoRequestedContainer;
-    StartedContainerRegistry startedContainerRegistry;
+    TestContainersUtils testContainersUtils;
     AtomicInteger counter = new AtomicInteger();
     MemoizedSupplier<MongoDBContainer> mongoDBContainer = new MemoizedSupplier<>(this::getMongoDBContainer);
+    MemoizedSupplier<ContainerPort> port = new MemoizedSupplier<>(this::_port);
 
     @Override
     public ContainerId id() {
@@ -36,6 +36,10 @@ public class MongoContainer implements MongoStartedContainer {
 
     @Override
     public ContainerPort port() {
+        return port.get();
+    }
+
+    private ContainerPort _port() {
         return new FixedContainerPort(mongoDBContainer.get().getFirstMappedPort());
     }
 
@@ -52,11 +56,11 @@ public class MongoContainer implements MongoStartedContainer {
                     // if container is reused - drop all databases except the default ones, instead of stopping the container
                     var dropCommand = "mongo --eval 'db.adminCommand(\"listDatabases\").databases.forEach(d => {if(![\"admin\", \"config\", \"local\"].includes(d.name)) { db.getSiblingDB(d.name).dropDatabase();} });'";
                     mongoDBContainer.get().execInContainer("/bin/sh", "-c", dropCommand);
+                    log.info("Dropped all databases except the default ones in mongo container [{}]", mongoRequestedContainer.id().json());
                 } else {
-                    log.info("Stopping mongo container [{}]", mongoRequestedContainer.id().json());
                     var before = System.currentTimeMillis();
                     mongoDBContainer.get().stop();
-                    log.info("Stopped mongo container [{}] in [{}] ms", mongoRequestedContainer.id().json(), System.currentTimeMillis() - before);
+                    log.info("Stopped mongo container in [{}] ms, key=[{}]", mongoRequestedContainer.id().json(), System.currentTimeMillis() - before);
                 }
                 mongoDBContainer.reset();
             }
@@ -111,7 +115,7 @@ public class MongoContainer implements MongoStartedContainer {
     }
 
     private MongoDBContainer getMongoDBContainer() {
-        TestContainersUtils.setReuse();
+        testContainersUtils.setReuse();
         var mongoDBContainer = new MongoDBContainer(
                 DockerImageName.parse(
                         mongoRequestedContainer.image().value()

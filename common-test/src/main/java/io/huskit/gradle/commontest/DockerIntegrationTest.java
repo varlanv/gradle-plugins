@@ -18,7 +18,7 @@ public interface DockerIntegrationTest extends IntegrationTest {
         }
     }
 
-    @BeforeEach
+    @BeforeAll
     default void setupDocker() {
         DockerUtil.verifyDockerAvailable();
     }

@@ -29,7 +29,7 @@ public class HuskitContainersPluginIntegrationTest implements GradleIntegrationT
     @Test
     @DisplayName("should create build service")
     void test_0() {
-        useProjectFixture(fixture -> {
+        runProjectFixture(fixture -> {
             var project = fixture.project();
             project.getPlugins().apply(HuskitContainersPlugin.class);
 
@@ -42,7 +42,7 @@ public class HuskitContainersPluginIntegrationTest implements GradleIntegrationT
     @Test
     @DisplayName("if build service already added, then no error thrown")
     void test_1() {
-        useProjectFixture(fixture -> {
+        runProjectFixture(fixture -> {
             var project = fixture.project();
 
             project.getGradle().getSharedServices().registerIfAbsent(
@@ -98,7 +98,7 @@ public class HuskitContainersPluginIntegrationTest implements GradleIntegrationT
     @Test
     @DisplayName("when build service evaluated, no exception thrown")
     void test_4() {
-        useProjectFixture(fixture -> {
+        runProjectFixture(fixture -> {
             var project = fixture.project();
 
             project.getPlugins().apply(HuskitContainersPlugin.class);
@@ -112,7 +112,7 @@ public class HuskitContainersPluginIntegrationTest implements GradleIntegrationT
     @Test
     @DisplayName("if there is one project with plugin, then max parallel uses should be 1")
     void test_5() {
-        useProjectFixture(fixture -> {
+        runProjectFixture(fixture -> {
             var project = fixture.project();
 
             project.getPlugins().apply(HuskitContainersPlugin.class);
@@ -134,7 +134,7 @@ public class HuskitContainersPluginIntegrationTest implements GradleIntegrationT
     @Test
     @DisplayName("containers extension should be added")
     void test_7() {
-        useProjectFixture(fixture -> {
+        runProjectFixture(fixture -> {
             var project = fixture.project();
 
             project.getPlugins().apply(HuskitContainersPlugin.class);
@@ -148,7 +148,7 @@ public class HuskitContainersPluginIntegrationTest implements GradleIntegrationT
     @Test
     @DisplayName("adding mongo container with database name should set it")
     void test_8() {
-        useProjectFixture(fixture -> {
+        runProjectFixture(fixture -> {
             var project = fixture.project();
             var dbName = "someDbName";
 
@@ -166,7 +166,7 @@ public class HuskitContainersPluginIntegrationTest implements GradleIntegrationT
     @Test
     @DisplayName("adding mongo container with image should set it")
     void test_9() {
-        useProjectFixture(fixture -> {
+        runProjectFixture(fixture -> {
             var project = fixture.project();
             var img = "someImage";
 
@@ -184,7 +184,7 @@ public class HuskitContainersPluginIntegrationTest implements GradleIntegrationT
     @Test
     @DisplayName("adding mongo container with fixed port should set it")
     void test_10() {
-        useProjectFixture(fixture -> {
+        runProjectFixture(fixture -> {
             var project = fixture.project();
             var port = 42;
 
@@ -202,7 +202,7 @@ public class HuskitContainersPluginIntegrationTest implements GradleIntegrationT
     @Test
     @DisplayName("if no containers added, then extension-requested container list is empty")
     void test_11() {
-        useProjectFixture(fixture -> {
+        runProjectFixture(fixture -> {
             var project = fixture.project();
 
 
@@ -217,7 +217,7 @@ public class HuskitContainersPluginIntegrationTest implements GradleIntegrationT
     @Test
     @DisplayName("When same reusable mongo container is requested twice - only one container is started")
     void test_12() {
-        useProjectFixture(fixture -> {
+        runProjectFixture(fixture -> {
             var project = fixture.project();
             project.getPlugins().apply(JavaPlugin.class);
             project.getPlugins().apply(HuskitContainersPlugin.class);
