@@ -1,6 +1,6 @@
 package io.huskit.gradle.common.function;
 
-import io.huskit.gradle.commontest.StatelessUnitTest;
+import io.huskit.gradle.commontest.UnitTest;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
@@ -11,7 +11,7 @@ import java.util.concurrent.atomic.AtomicReference;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-class MemoizedSupplierTest implements StatelessUnitTest {
+class MemoizedSupplierTest implements UnitTest {
 
     @Test
     @DisplayName("calling get() multiple times should return the same value")

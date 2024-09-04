@@ -8,17 +8,14 @@ import org.gradle.api.internal.project.ProjectInternal;
 import org.gradle.api.model.ObjectFactory;
 import org.gradle.api.provider.ProviderFactory;
 import org.gradle.testfixtures.ProjectBuilder;
-import org.testcontainers.shaded.org.apache.commons.io.FileDeleteStrategy;
 
 import java.io.File;
-import java.nio.file.Files;
-import java.util.Objects;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
 public interface GradleIntegrationTest extends IntegrationTest {
 
-    default void useProjectFixture(ThrowableConsumer<SingleProjectFixture> fixtureConsumer) {
+    default void useProjectFixture(ThrowingConsumer<SingleProjectFixture> fixtureConsumer) {
         useProjectFixture(
                 ProjectBuilder::build,
                 fixtureConsumer
@@ -26,8 +23,8 @@ public interface GradleIntegrationTest extends IntegrationTest {
     }
 
     @SneakyThrows
-    default void useProjectFixture(ThrowableConsumer<File> projectDirConsumer,
-                                   ThrowableConsumer<SingleProjectFixture> fixtureConsumer) {
+    default void useProjectFixture(ThrowingConsumer<File> projectDirConsumer,
+                                   ThrowingConsumer<SingleProjectFixture> fixtureConsumer) {
         useProjectFixture(
                 projectDirConsumer,
                 ProjectBuilder::build, fixtureConsumer
@@ -36,7 +33,7 @@ public interface GradleIntegrationTest extends IntegrationTest {
 
     @SneakyThrows
     default void useProjectFixture(Function<ProjectBuilder, Project> projectBuilderFn,
-                                   ThrowableConsumer<SingleProjectFixture> fixtureConsumer) {
+                                   ThrowingConsumer<SingleProjectFixture> fixtureConsumer) {
         useProjectFixture(
                 pb -> {
                 },
@@ -44,37 +41,24 @@ public interface GradleIntegrationTest extends IntegrationTest {
                 fixtureConsumer);
     }
 
-    @SneakyThrows
-    default void useProjectFixture(ThrowableConsumer<File> projectDirConsumer,
+    default void useProjectFixture(ThrowingConsumer<File> projectDirConsumer,
                                    Function<ProjectBuilder, Project> projectBuilderFn,
-                                   ThrowableConsumer<SingleProjectFixture> fixtureConsumer) {
+                                   ThrowingConsumer<SingleProjectFixture> fixtureConsumer) {
         var projectDir = newTempDir();
-        RuntimeException originalException = null;
-        try {
+        runAndDeleteFile(projectDir, () -> {
             projectDirConsumer.accept(projectDir);
             var projectBuilder = ProjectBuilder.builder()
                     .withProjectDir(projectDir)
                     .withGradleUserHomeDir(projectDir);
             var project = projectBuilderFn.apply(projectBuilder);
             fixtureConsumer.accept(new SingleProjectFixture(projectDir, project));
-        } catch (RuntimeException e) {
-            originalException = e;
-        } finally {
-            try {
-//                FileDeleteStrategy.FORCE.delete(projectDir);
-                boolean delete = projectDir.delete();
-                System.out.println();
-            } catch (RuntimeException e) {
-                throw new RuntimeException(Objects.requireNonNullElse(originalException, e));
-            }
-        }
+        });
     }
 
     @SneakyThrows
     default void useProjectWithParent(Consumer<ProjectWithParentFixture> fixtureConsumer) {
         var parentProjectDirectory = newTempDir();
-        RuntimeException originalException = null;
-        try {
+        runAndDeleteFile(parentProjectDirectory, () -> {
             var projectDirectory = new File(parentProjectDirectory, "gradle_test");
             projectDirectory.mkdir();
             var parentProject = ProjectBuilder.builder().withProjectDir(parentProjectDirectory).build();
@@ -89,22 +73,7 @@ public interface GradleIntegrationTest extends IntegrationTest {
                             project.getProviders()
                     )
             );
-        } catch (RuntimeException e) {
-            originalException = e;
-        } finally {
-            try {
-                parentProjectDirectory.delete();
-            } catch (RuntimeException e) {
-                throw new RuntimeException(Objects.requireNonNullElse(originalException, e));
-            }
-        }
-    }
-
-    @SneakyThrows
-    private File newTempDir() {
-        var dir = Files.createTempDirectory("pepega-").toFile();
-//        dir.deleteOnExit();
-        return dir;
+        });
     }
 
     @Getter

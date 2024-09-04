@@ -1,6 +1,6 @@
 package io.huskit.gradle.common.plugin.model.string;
 
-import io.huskit.gradle.commontest.StatelessUnitTest;
+import io.huskit.gradle.commontest.UnitTest;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -12,7 +12,7 @@ import java.util.stream.Stream;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-class CapitalizedStringTest implements StatelessUnitTest {
+class CapitalizedStringTest implements UnitTest {
 
     @MethodSource
     @ParameterizedTest

@@ -1,17 +1,16 @@
 package io.huskit.gradle.commontest;
 
+import lombok.Getter;
+import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
-import lombok.experimental.NonFinal;
+import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.filefilter.TrueFileFilter;
 import org.gradle.testkit.runner.BuildResult;
 import org.gradle.testkit.runner.GradleRunner;
 import org.gradle.util.GradleVersion;
 import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Tag;
-import org.junit.jupiter.api.io.TempDir;
 import org.junit.jupiter.params.provider.Arguments;
-import org.testcontainers.shaded.org.apache.commons.io.FileUtils;
-import org.testcontainers.shaded.org.apache.commons.io.filefilter.TrueFileFilter;
 
 import java.io.File;
 import java.nio.charset.StandardCharsets;
@@ -20,73 +19,88 @@ import java.util.function.Predicate;
 import java.util.stream.Stream;
 
 @Tag("functional-test")
-public abstract class FunctionalTest implements BaseTest {
+public interface FunctionalTest extends BaseTest {
 
-    @TempDir
-    protected @NonFinal File rootTestProjectDir;
-    protected @NonFinal File subjectProjectDir;
-    protected @NonFinal File settingsFile;
-    protected @NonFinal File rootBuildFile;
-    protected @NonFinal File propertiesFile;
-    protected static File huskitProjectRoot;
-
-    @BeforeAll
-    static void setupSpecParent() {
-        huskitProjectRoot = findDirContaining(file -> file.getName().equals("internal-convention-plugin"));
+    default File huskitProjectRoot() {
+        return TestUtils.huskitProjectRoot.get();
     }
 
-    @BeforeEach
-    void setupParent() {
-        subjectProjectDir = new File(rootTestProjectDir, "test-subject-project");
-        if (!subjectProjectDir.exists()) {
-            subjectProjectDir.mkdirs();
+    @BeforeAll
+    default void setupFunctionalSpec() {
+        if (TestUtils.huskitProjectRoot.get() == null) {
+            TestUtils.huskitProjectRoot.set(findDirContaining(file -> file.getName().equals("internal-convention-plugin")));
         }
     }
 
     @SneakyThrows
-    protected void setupFixture() {
-        settingsFile = new File(subjectProjectDir, "settings.gradle");
-        rootBuildFile = new File(subjectProjectDir, "build.gradle");
-        propertiesFile = new File(subjectProjectDir, "gradle.properties");
-        FileUtils.write(propertiesFile, getPropertiesFileContent(), StandardCharsets.UTF_8);
-        FileUtils.write(settingsFile, getSettingsFileContent(), StandardCharsets.UTF_8);
-        FileUtils.write(rootBuildFile, getRootBuildFileContent(), StandardCharsets.UTF_8);
+    default void runFunctionalFixture(ThrowingConsumer<FunctionalFixture> fixtureConsumer) {
+        var rootTestProjectDir = newTempDir();
+        runAndDeleteFile(rootTestProjectDir, () -> {
+            var subjectProjectDir = new File(rootTestProjectDir, "test-subject-project");
+            subjectProjectDir.mkdir();
+            var settingsFile = new File(subjectProjectDir, "settings.gradle");
+            var rootBuildFile = new File(subjectProjectDir, "build.gradle");
+            var propertiesFile = new File(subjectProjectDir, "gradle.properties");
+            FileUtils.write(propertiesFile, getPropertiesFileContent(), StandardCharsets.UTF_8);
+            FileUtils.write(settingsFile, getSettingsFileContent(), StandardCharsets.UTF_8);
+            FileUtils.write(rootBuildFile, getRootBuildFileContent(), StandardCharsets.UTF_8);
+            fixtureConsumer.accept(
+                    new FunctionalFixture(
+                            rootTestProjectDir,
+                            subjectProjectDir,
+                            settingsFile,
+                            rootBuildFile,
+                            propertiesFile
+                    )
+            );
+        });
     }
 
-    protected String getPropertiesFileContent() {
+    default String getPropertiesFileContent() {
         return "";
     }
 
-    protected String getSettingsFileContent() {
+    default String getSettingsFileContent() {
         return "";
     }
 
-    protected String getRootBuildFileContent() {
+    default String getRootBuildFileContent() {
         return "";
     }
 
-    protected GradleRunner prepareGradleRunner(String taskName, DataTable params) {
-        return prepareGradleRunner(params, taskName);
+    default void runGradleRunnerFixture(DataTable params, String taskName, ThrowingConsumer<RunnerFunctionalFixture> fixtureConsumer) {
+        runGradleRunnerFixture(params, List.of(taskName), fixtureConsumer);
     }
 
-    protected GradleRunner prepareGradleRunner(DataTable params, String... arguments) {
-        List<String> argumentsList = new ArrayList<>(Arrays.asList(arguments));
-        if (params.configurationCache()) {
-            argumentsList.add("--configuration-cache");
-        }
-        if (params.buildCache()) {
-            argumentsList.add("--build-cache");
-        }
-        return GradleRunner.create()
-                .withPluginClasspath()
-                .withProjectDir(subjectProjectDir)
-                .withEnvironment(params.isCi() ? Map.of("CI", "true") : Map.of("CI", "false"))
-                .withArguments(argumentsList)
-                .forwardOutput()
-                .withGradleVersion(params.gradleVersion());
+    default void runGradleRunnerFixture(DataTable params, List<String> arguments, ThrowingConsumer<RunnerFunctionalFixture> fixtureConsumer) {
+        runFunctionalFixture(parentFixture -> {
+            var args = new ArrayList<>(arguments);
+            if (params.configurationCache()) {
+                args.add("--configuration-cache");
+            }
+            if (params.buildCache()) {
+                args.add("--build-cache");
+            }
+            fixtureConsumer.accept(
+                    new RunnerFunctionalFixture(
+                            GradleRunner.create()
+                                    .withPluginClasspath()
+                                    .withProjectDir(parentFixture.subjectProjectDir())
+                                    .withEnvironment(params.isCi() ? Map.of("CI", "true") : Map.of("CI", "false"))
+                                    .withArguments(args)
+                                    .forwardOutput()
+                                    .withGradleVersion(params.gradleVersion()),
+                            parentFixture.rootTestProjectDir(),
+                            parentFixture.subjectProjectDir(),
+                            parentFixture.settingsFile(),
+                            parentFixture.rootBuildFile(),
+                            parentFixture.propertiesFile()
+                    )
+            );
+        });
     }
 
-    protected BuildResult build(GradleRunner runner) {
+    default BuildResult build(GradleRunner runner) {
         var lineStart = "*".repeat(215);
         var lineEnd = "*".repeat(161);
         var mark = "*".repeat(40);
@@ -111,7 +125,7 @@ public abstract class FunctionalTest implements BaseTest {
         }
     }
 
-    protected void verifyConfigurationCacheNotStored(BuildResult buildResult, String gradleVersion) {
+    default void verifyConfigurationCacheNotStored(BuildResult buildResult, String gradleVersion) {
         if (GradleVersion.version(gradleVersion).compareTo(GradleVersion.version("8.0")) >= 0) {
             assert buildResult.getOutput().contains("Configuration cache entry discarded because incompatible task was found:");
         } else {
@@ -120,7 +134,7 @@ public abstract class FunctionalTest implements BaseTest {
     }
 
     @SneakyThrows
-    protected String getRelativePath(File base, File file) {
+    default String getRelativePath(File base, File file) {
         var basePath = base.getCanonicalPath();
         var filePath = file.getCanonicalPath();
 
@@ -132,15 +146,15 @@ public abstract class FunctionalTest implements BaseTest {
     }
 
     @SneakyThrows
-    protected void copyFile(File source, File dest) {
+    default void copyFile(File source, File dest) {
         FileUtils.copyFile(source, dest);
     }
 
-    protected void copyFolderContents(String srcDirPath, String destDirPath) {
+    default void copyFolderContents(String srcDirPath, String destDirPath) {
         copyFolderContents(new File(srcDirPath), new File(destDirPath));
     }
 
-    protected void copyFolderContents(File srcDir, File destDir) {
+    default void copyFolderContents(File srcDir, File destDir) {
         if (!srcDir.exists()) {
             throw new IllegalArgumentException(String.format("Cannot copy from non-existing directory '%s'!", srcDir.getAbsolutePath()));
         }
@@ -151,19 +165,6 @@ public abstract class FunctionalTest implements BaseTest {
         if (!destDir.exists()) {
             destDir.mkdirs();
         }
-        /*
-        *   srcDir.eachFileRecurse { file ->
-            def relativePath = getRelativePath(srcDir, file)
-            def destFile = new File(destDir, relativePath)
-            if (file.isDirectory()) {
-                destFile.mkdirs()
-            } else {
-                copyFile(file, destFile)
-            }
-        }
-
-        * */
-
         FileUtils.listFilesAndDirs(srcDir, TrueFileFilter.INSTANCE, TrueFileFilter.INSTANCE)
                 .forEach(file -> {
                     if (!file.getAbsolutePath().equals(srcDir.getAbsolutePath())) {
@@ -178,24 +179,24 @@ public abstract class FunctionalTest implements BaseTest {
                 });
     }
 
-    protected static File useCasesDir() {
+    default File useCasesDir() {
         return findDirContaining(file -> file.getName().equals("use-cases"));
     }
 
-    protected static File findDir(String dirName) {
+    default File findDir(String dirName) {
         return findDir(file -> file.getName().equals(dirName));
     }
 
-    protected static File findDirContaining(Predicate<File> predicate) {
+    default File findDirContaining(Predicate<File> predicate) {
         return findDir(file -> Arrays.stream(Objects.requireNonNull(file.listFiles())).anyMatch(predicate));
     }
 
     @SneakyThrows
-    protected static File findDir(Predicate<File> predicate) {
+    default File findDir(Predicate<File> predicate) {
         return findDir(predicate, new File("").getCanonicalFile());
     }
 
-    protected static File findDir(Predicate<File> predicate, File current) {
+    default File findDir(Predicate<File> predicate, File current) {
         if (predicate.test(current)) {
             return current;
         } else {
@@ -208,12 +209,35 @@ public abstract class FunctionalTest implements BaseTest {
     }
 
     @SneakyThrows
-    protected static void setFileText(File file, String text) {
+    default void setFileText(File file, String text) {
         FileUtils.write(file, text, StandardCharsets.UTF_8);
     }
 
-    public static Stream<Arguments> defaultDataTables() {
+    default Stream<Arguments> defaultDataTables() {
         return DataTables.getDefault().list().stream()
                 .map(Arguments::of);
+    }
+
+    @Getter
+    @RequiredArgsConstructor
+    class FunctionalFixture {
+
+        File rootTestProjectDir;
+        File subjectProjectDir;
+        File settingsFile;
+        File rootBuildFile;
+        File propertiesFile;
+    }
+
+    @Getter
+    @RequiredArgsConstructor
+    class RunnerFunctionalFixture {
+
+        GradleRunner runner;
+        File rootTestProjectDir;
+        File subjectProjectDir;
+        File settingsFile;
+        File rootBuildFile;
+        File propertiesFile;
     }
 }

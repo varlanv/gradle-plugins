@@ -238,7 +238,7 @@ public class HuskitContainersPluginIntegrationTest implements GradleIntegrationT
         });
     }
 
-    private void useFixture(ThrowableConsumer<FixtureDockerWithParentProject> fixtureConsumer) {
+    private void useFixture(ThrowingConsumer<FixtureDockerWithParentProject> fixtureConsumer) {
         useProjectWithParent(delegateFixture -> {
             delegateFixture.project().getPlugins().apply(HuskitContainersPlugin.class);
             delegateFixture.parentProject().getPlugins().apply(HuskitContainersPlugin.class);

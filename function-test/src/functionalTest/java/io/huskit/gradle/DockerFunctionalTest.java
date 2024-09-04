@@ -2,8 +2,8 @@ package io.huskit.gradle;
 
 import com.github.dockerjava.api.model.Container;
 import io.huskit.containers.model.id.MongoContainerId;
-import io.huskit.gradle.commontest.FunctionalTest;
 import io.huskit.gradle.commontest.DockerUtil;
+import io.huskit.gradle.commontest.FunctionalTest;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.testcontainers.DockerClientFactory;
@@ -12,23 +12,23 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-public abstract class DockerFunctionalTest extends FunctionalTest {
+public interface DockerFunctionalTest extends FunctionalTest {
 
     @BeforeEach
-    void setupDocker() {
+    default void setupDocker() {
         DockerUtil.verifyDockerAvailable();
     }
 
     @AfterEach
-    void cleanupDocker() {
+    default void cleanupDocker() {
         DockerUtil.cleanupDocker();
     }
 
-    protected List<Container> findHuskitContainers() {
+    default List<Container> findHuskitContainers() {
         return DockerUtil.findHuskitContainers();
     }
 
-    protected List<Container> findHuskitContainersForUseCase(String useCase) {
+    default List<Container> findHuskitContainersForUseCase(String useCase) {
         var client = DockerClientFactory.instance().client();
         var listContainersCmd = client.listContainersCmd().withLabelFilter(Map.of("huskit_container", "true"));
         return listContainersCmd.exec().stream()

@@ -1,11 +1,19 @@
 package io.huskit.gradle.commontest;
 
+import lombok.NonNull;
 import lombok.SneakyThrows;
+import org.apache.commons.io.FileDeleteStrategy;
+import org.junit.jupiter.api.TestInstance;
 
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.util.Objects;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
+@TestInstance(TestInstance.Lifecycle.PER_CLASS)
 public interface BaseTest {
 
     int DEFAULT_REPEAT_COUNT = 10;
@@ -17,7 +25,6 @@ public interface BaseTest {
     default <T> T getJsonField(String json, String field, Class<T> type) {
         return JsonUtil.getJsonField(json, field, type);
     }
-
 
     @SneakyThrows
     default void parallel(int nThreads, ThrowingRunnable runnable) {
@@ -50,11 +57,36 @@ public interface BaseTest {
         parallel(DEFAULT_REPEAT_COUNT, runnable);
     }
 
+    @SneakyThrows
+    default File newTempDir() {
+        var dir = Files.createTempDirectory("huskitjunit-").toFile();
+        dir.deleteOnExit();
+        return dir;
+    }
+
+    default void runAndDeleteFile(@NonNull File file, ThrowingRunnable runnable) {
+        Exception originalException = null;
+        try {
+            runnable.run();
+        } catch (Exception e) {
+            originalException = e;
+        } finally {
+            try {
+                FileDeleteStrategy.FORCE.delete(file);
+                if (originalException != null) {
+                    throw new RuntimeException(originalException);
+                }
+            } catch (IOException e) {
+                throw new RuntimeException(Objects.requireNonNullElse(originalException, e));
+            }
+        }
+    }
+
     interface ThrowingRunnable {
         void run() throws Exception;
     }
 
-    interface ThrowableConsumer<T> {
+    interface ThrowingConsumer<T> {
         void accept(T t) throws Exception;
     }
 }

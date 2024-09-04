@@ -11,26 +11,25 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
 
 import java.io.File;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-public class HuskitContainersPluginFunctionalTest extends DockerFunctionalTest {
+public class HuskitContainersPluginFunctionalTest implements DockerFunctionalTest {
 
     @ParameterizedTest
     @MethodSource("defaultDataTables")
     @DisplayName("should add 'serviceContainers' extension")
     void test_0(DataTable dataTable) {
-        setupFixture();
-        var runner = prepareGradleRunner(dataTable, "help", "--info");
-        setFileText(rootBuildFile, "plugins { id 'io.huskit.gradle.containers-plugin' }");
-        var buildResult = build(runner);
-
-        assertThat(buildResult.getOutput()).contains(ContainersExtension.name());
+        runGradleRunnerFixture(
+                dataTable,
+                List.of("help", "--info"),
+                fixture -> {
+                    setFileText(fixture.rootBuildFile(), "plugins { id 'io.huskit.gradle.containers-plugin' }");
+                    var buildResult = build(fixture.runner());
+                    assertThat(buildResult.getOutput()).contains(ContainersExtension.name());
+                });
     }
 
     @ParameterizedTest
@@ -38,13 +37,15 @@ public class HuskitContainersPluginFunctionalTest extends DockerFunctionalTest {
     @DisplayName("apply-plugin-to-single-java-project should work correctly")
     void test_1(DataTable dataTable) {
         var useCaseName = "apply-plugin-to-single-java-project-gradle8";
-
-        var result = runUseCase(useCaseName, dataTable);
-
-        var messages = result.findMarkedMessages(MongoContainer.CONNECTION_STRING_ENV).values();
-        assertThat(messages.size()).isEqualTo(2);
-        assertThat(Set.copyOf(messages).size()).isEqualTo(2);
-        assertThat(findHuskitContainersForUseCase(useCaseName).size()).isEqualTo(0);
+        runUseCaseFixture(
+                useCaseName,
+                dataTable,
+                result -> {
+                    var messages = result.findMarkedMessages(MongoContainer.CONNECTION_STRING_ENV).values();
+                    assertThat(messages.size()).isEqualTo(2);
+                    assertThat(Set.copyOf(messages).size()).isEqualTo(2);
+                    assertThat(findHuskitContainersForUseCase(useCaseName).size()).isEqualTo(0);
+                });
     }
 
     @ParameterizedTest
@@ -52,13 +53,15 @@ public class HuskitContainersPluginFunctionalTest extends DockerFunctionalTest {
     @DisplayName("apply-plugin-to-multiple-java-projects-all-not-reusable should work correctly")
     void test_2(DataTable dataTable) {
         var useCaseName = "apply-plugin-to-multiple-java-projects-all-not-reusable-gradle8";
-
-        var result = runUseCase(useCaseName, dataTable);
-
-        var messages = result.findMarkedMessages(MongoContainer.CONNECTION_STRING_ENV).values();
-        assertThat(messages.size()).isEqualTo(6);
-        assertThat(Set.copyOf(messages).size()).isEqualTo(6);
-        assertThat(findHuskitContainersForUseCase(useCaseName).size()).isEqualTo(0);
+        runUseCaseFixture(
+                useCaseName,
+                dataTable,
+                result -> {
+                    var messages = result.findMarkedMessages(MongoContainer.CONNECTION_STRING_ENV).values();
+                    assertThat(messages.size()).isEqualTo(6);
+                    assertThat(Set.copyOf(messages).size()).isEqualTo(6);
+                    assertThat(findHuskitContainersForUseCase(useCaseName).size()).isEqualTo(0);
+                });
     }
 
     @ParameterizedTest
@@ -66,21 +69,24 @@ public class HuskitContainersPluginFunctionalTest extends DockerFunctionalTest {
     @DisplayName("apply-plugin-to-multiple-java-projects all reusable should work correctly")
     void test_3(DataTable dataTable) {
         var useCaseName = "apply-plugin-to-multiple-java-projects-gradle8";
+        runUseCaseFixture(
+                useCaseName,
+                dataTable,
+                result -> {
+                    var messages = result.findMarkedMessages(MongoContainer.CONNECTION_STRING_ENV).values();
 
-        var result = runUseCase(useCaseName, dataTable);
+                    // Mongo containers were requested 6 times while only 1 unique connection string is used
+                    assertThat(messages.size()).isEqualTo(6);
+                    var mongoHosts = messages.stream()
+                            .map(it -> StringUtils.substringBefore(StringUtils.substringAfter(it, "mongodb://"), "/"))
+                            .collect(Collectors.toList());
+                    assertThat(Set.copyOf(mongoHosts)).hasSize(1);
 
-        var messages = result.findMarkedMessages(MongoContainer.CONNECTION_STRING_ENV).values();
-
-        // Mongo containers were requested 6 times while only 1 unique connection string is used
-        assertThat(messages.size()).isEqualTo(6);
-        var mongoHosts = messages.stream()
-                .map(it -> StringUtils.substringBefore(StringUtils.substringAfter(it, "mongodb://"), "/"))
-                .collect(Collectors.toList());
-        assertThat(Set.copyOf(mongoHosts)).hasSize(1);
-
-        // Mongo container is still available
-        var containers = findHuskitContainersForUseCase(useCaseName);
-        assertThat(containers).hasSize(1);
+                    // Mongo container is still available
+                    var containers = findHuskitContainersForUseCase(useCaseName);
+                    assertThat(containers).hasSize(1);
+                }
+        );
     }
 
     @ParameterizedTest
@@ -88,43 +94,53 @@ public class HuskitContainersPluginFunctionalTest extends DockerFunctionalTest {
     @DisplayName("apply-plugin-to-multiple-java-projects-with-and-without-reuse should work correctly")
     void test_4(DataTable dataTable) {
         var useCaseName = "apply-plugin-to-multiple-java-projects-with-and-without-reuse-gradle8";
+        runUseCaseFixture(
+                useCaseName,
+                dataTable,
+                result -> {
+                    var messages = result.findMarkedMessages(MongoContainer.CONNECTION_STRING_ENV).values();
 
-        var result = runUseCase(useCaseName, dataTable);
+                    // Mongo containers were requested 6 times while only 3 unique connection strings are used
+                    assertThat(messages).hasSize(6);
+                    var mongoHosts = messages.stream()
+                            .map(it -> StringUtils.substringBefore(StringUtils.substringAfter(it, "mongodb://"), "/"))
+                            .collect(Collectors.toList());
+                    assertThat(Set.copyOf(mongoHosts)).hasSize(3);
 
-        var messages = result.findMarkedMessages(MongoContainer.CONNECTION_STRING_ENV).values();
-
-        // Mongo containers were requested 6 times while only 3 unique connection strings are used
-        assertThat(messages).hasSize(6);
-        var mongoHosts = messages.stream()
-                .map(it -> StringUtils.substringBefore(StringUtils.substringAfter(it, "mongodb://"), "/"))
-                .collect(Collectors.toList());
-        assertThat(Set.copyOf(mongoHosts)).hasSize(3);
-
-        // Mongo container is still available
-        var containers = findHuskitContainersForUseCase(useCaseName);
-        assertThat(containers).hasSize(1);
+                    // Mongo container is still available
+                    var containers = findHuskitContainersForUseCase(useCaseName);
+                    assertThat(containers).hasSize(1);
+                });
     }
 
-    private GradleRunResult runUseCase(String useCaseName, DataTable dataTable) {
-        var useCaseDir = useCaseDir(useCaseName);
-        assertThat(useCaseDir).isNotNull();
-        assertThat(useCaseDir.exists()).isTrue();
-        assertThat(useCaseDir.isDirectory()).isTrue();
-        copyFolderContents(useCaseDir, subjectProjectDir);
-        copyFolderContents(useCasesCommonLogicDir(), rootTestProjectDir);
-        var runner = prepareGradleRunner(dataTable, "clean", "check")
-                .withEnvironment(Map.of("FUNCTIONAL_SPEC_RUN", "true"));
-
-        var build1result = build(runner);
-        var build2result = build(runner);
-        return new GradleRunResult(new ArrayList<>(List.of(build1result, build2result)));
+    private void runUseCaseFixture(String useCaseName, DataTable dataTable, ThrowingConsumer<GradleRunResult> fixtureConsumer) {
+        runGradleRunnerFixture(
+                dataTable,
+                List.of("clean", "check"),
+                fixture -> {
+                    var useCaseDir = useCaseDir(useCaseName);
+                    assertThat(useCaseDir).isNotNull();
+                    assertThat(useCaseDir.exists()).isTrue();
+                    assertThat(useCaseDir.isDirectory()).isTrue();
+                    copyFolderContents(useCaseDir, fixture.subjectProjectDir());
+                    copyFolderContents(useCasesCommonLogicDir(), fixture.rootTestProjectDir());
+                    var env = new HashMap<>(Map.of("FUNCTIONAL_SPEC_RUN", "true"));
+                    if (fixture.runner().getEnvironment() != null) {
+                        env.putAll(fixture.runner().getEnvironment());
+                    }
+                    var runner = fixture.runner().withEnvironment(env);
+                    var build1result = build(runner);
+                    var build2result = build(runner);
+                    fixtureConsumer.accept(new GradleRunResult(new ArrayList<>(List.of(build1result, build2result))));
+                }
+        );
     }
 
     private File useCaseDir(String useCaseDirName) {
-        return new File(huskitProjectRoot.getAbsolutePath() + File.separator + "use-cases" + File.separator + "plugins" + File.separator + "containers-plugin" + File.separator + useCaseDirName);
+        return new File(huskitProjectRoot().getAbsolutePath() + File.separator + "use-cases" + File.separator + "plugins" + File.separator + "containers-plugin" + File.separator + useCaseDirName);
     }
 
     private File useCasesCommonLogicDir() {
-        return new File(huskitProjectRoot.getAbsolutePath() + File.separator + "use-cases" + File.separator + "common-use-cases-logic");
+        return new File(huskitProjectRoot().getAbsolutePath() + File.separator + "use-cases" + File.separator + "common-use-cases-logic");
     }
 }
