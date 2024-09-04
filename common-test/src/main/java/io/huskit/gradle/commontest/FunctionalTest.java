@@ -20,7 +20,7 @@ import java.util.function.Predicate;
 import java.util.stream.Stream;
 
 @Tag("functional-test")
-public abstract class BaseFunctionalTest extends BaseTest {
+public abstract class FunctionalTest implements BaseTest {
 
     @TempDir
     protected @NonFinal File rootTestProjectDir;

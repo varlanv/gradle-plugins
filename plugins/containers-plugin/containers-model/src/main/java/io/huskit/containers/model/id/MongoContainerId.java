@@ -22,7 +22,7 @@ public class MongoContainerId implements ContainerId {
     String databaseName;
     boolean reuseBetweenBuilds;
     boolean newDatabaseForEachTask;
-    volatile @NonFinal String json;
+    volatile transient @NonFinal String json;
 
     @Override
     public String json() {

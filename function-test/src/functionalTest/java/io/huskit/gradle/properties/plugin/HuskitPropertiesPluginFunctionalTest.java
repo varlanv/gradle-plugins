@@ -1,7 +1,7 @@
 package io.huskit.gradle.properties.plugin;
 
 import io.huskit.gradle.common.plugin.model.props.Props;
-import io.huskit.gradle.commontest.BaseFunctionalTest;
+import io.huskit.gradle.commontest.FunctionalTest;
 import io.huskit.gradle.commontest.DataTable;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -9,7 +9,7 @@ import org.junit.jupiter.params.provider.MethodSource;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-public class HuskitPropertiesPluginFunctionalTest extends BaseFunctionalTest {
+public class HuskitPropertiesPluginFunctionalTest extends FunctionalTest {
 
     @ParameterizedTest
     @MethodSource("defaultDataTables")

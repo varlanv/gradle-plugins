@@ -2,7 +2,7 @@ package io.huskit.gradle;
 
 import com.github.dockerjava.api.model.Container;
 import io.huskit.containers.model.id.MongoContainerId;
-import io.huskit.gradle.commontest.BaseFunctionalTest;
+import io.huskit.gradle.commontest.FunctionalTest;
 import io.huskit.gradle.commontest.DockerUtil;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -12,7 +12,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-public abstract class BaseDockerFunctionalTest extends BaseFunctionalTest {
+public abstract class DockerFunctionalTest extends FunctionalTest {
 
     @BeforeEach
     void setupDocker() {

@@ -1,12 +1,12 @@
 package io.huskit.gradle.common.plugin.model.props.fake;
 
-import io.huskit.gradle.commontest.BaseStatelessUnitTest;
+import io.huskit.gradle.commontest.StatelessUnitTest;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-public class RandomizeIfEmptyPropsTest extends BaseStatelessUnitTest {
+public class RandomizeIfEmptyPropsTest implements StatelessUnitTest {
 
     String nonExistentPropName = "nonexistent";
     String existingPropName = "existing";

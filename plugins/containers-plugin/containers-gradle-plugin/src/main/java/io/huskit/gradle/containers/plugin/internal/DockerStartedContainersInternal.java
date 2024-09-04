@@ -8,7 +8,6 @@ import io.huskit.containers.model.started.StartedContainersInternal;
 import io.huskit.log.Log;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.NonFinal;
-import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -40,19 +39,18 @@ public class DockerStartedContainersInternal implements StartedContainersInterna
         log.info("Starting container with key [{}]", key);
         if (requestedContainer.containerReuse().allowed()) {
             log.info("Container with key [{}] is reusable", key);
-            return getStartedContainerInternal(startedContainersById, key, key, requestedContainer);
+            return getStartedContainerInternal(startedContainersById, key, requestedContainer);
         } else {
             var nonReusableKey = requestedContainer.source().value() + key;
             log.info("Container with key [{}] is not reusable", nonReusableKey);
-            return getStartedContainerInternal(startedContainersBySourceAndId, nonReusableKey, key, requestedContainer);
+            return getStartedContainerInternal(startedContainersBySourceAndId, nonReusableKey, requestedContainer);
         }
     }
 
-    private @NotNull StartedContainerInternal getStartedContainerInternal(ConcurrentMap<String, Value<StartedContainerInternal>> startedContainersBySourceAndId,
-                                                                          String nonReusableKey,
-                                                                          String key,
-                                                                          RequestedContainer requestedContainer) {
-        var startedContainerValue = startedContainersBySourceAndId.computeIfAbsent(nonReusableKey, k -> new Value<>());
+    private StartedContainerInternal getStartedContainerInternal(ConcurrentMap<String, Value<StartedContainerInternal>> startedContainersBySourceAndId,
+                                                                 String key,
+                                                                 RequestedContainer requestedContainer) {
+        var startedContainerValue = startedContainersBySourceAndId.computeIfAbsent(key, k -> new Value<>());
         var result = startedContainerValue.ref;
         if (result == null) {
             try {

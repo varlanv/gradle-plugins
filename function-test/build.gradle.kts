@@ -14,7 +14,7 @@ dependencies {
     implementation(projects.plugins.containersPlugin.containersGradlePlugin)
     implementation(projects.plugins.containersPlugin.containersModel)
     implementation(projects.plugins.containersPlugin.containersTestcontainers)
-    testImplementation(libs.apache.commons)
+    testImplementation(libs.apache.commons.lang)
     testImplementation(libs.bundles.testcontainers)
     testImplementation(gradleTestKit())
 }

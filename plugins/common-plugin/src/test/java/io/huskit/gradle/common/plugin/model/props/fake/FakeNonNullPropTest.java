@@ -1,14 +1,14 @@
 package io.huskit.gradle.common.plugin.model.props.fake;
 
 import io.huskit.gradle.common.plugin.model.props.exception.NonNullPropertyException;
-import io.huskit.gradle.commontest.BaseStatelessUnitTest;
+import io.huskit.gradle.commontest.StatelessUnitTest;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy;
 
-public class FakeNonNullPropTest extends BaseStatelessUnitTest {
+public class FakeNonNullPropTest implements StatelessUnitTest {
 
     String propName = "propName";
     String propValue = "propVal";

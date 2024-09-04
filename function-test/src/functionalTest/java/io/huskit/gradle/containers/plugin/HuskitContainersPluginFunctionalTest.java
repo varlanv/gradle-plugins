@@ -1,7 +1,7 @@
 package io.huskit.gradle.containers.plugin;
 
 import io.huskit.containers.testcontainers.mongo.MongoContainer;
-import io.huskit.gradle.BaseDockerFunctionalTest;
+import io.huskit.gradle.DockerFunctionalTest;
 import io.huskit.gradle.GradleRunResult;
 import io.huskit.gradle.commontest.DataTable;
 import io.huskit.gradle.containers.plugin.api.ContainersExtension;
@@ -19,7 +19,7 @@ import java.util.stream.Collectors;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-public class HuskitContainersPluginFunctionalTest extends BaseDockerFunctionalTest {
+public class HuskitContainersPluginFunctionalTest extends DockerFunctionalTest {
 
     @ParameterizedTest
     @MethodSource("defaultDataTables")

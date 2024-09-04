@@ -6,25 +6,21 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
-public abstract class BaseTest {
+public interface BaseTest {
 
-    protected static final int DEFAULT_REPEAT_COUNT = 10;
+    int DEFAULT_REPEAT_COUNT = 10;
 
-    protected <T> T parseJson(String json, Class<T> type) {
+    default <T> T parseJson(String json, Class<T> type) {
         return (T) null;
     }
 
-    protected <T> T getJsonField(String json, String field, Class<T> type) {
+    default <T> T getJsonField(String json, String field, Class<T> type) {
         return JsonUtil.getJsonField(json, field, type);
     }
 
 
-    public interface ThrowingRunnable {
-        void run() throws Exception;
-    }
-
     @SneakyThrows
-    protected void parallel(int nThreads, ThrowingRunnable runnable) {
+    default void parallel(int nThreads, ThrowingRunnable runnable) {
         var executorService = Executors.newFixedThreadPool(nThreads);
         var readyToStartLock = new CountDownLatch(nThreads);
         var startLock = new CountDownLatch(1);
@@ -50,7 +46,15 @@ public abstract class BaseTest {
         executorService.shutdownNow();
     }
 
-    protected void parallel(ThrowingRunnable runnable) {
+    default void parallel(ThrowingRunnable runnable) {
         parallel(DEFAULT_REPEAT_COUNT, runnable);
+    }
+
+    interface ThrowingRunnable {
+        void run() throws Exception;
+    }
+
+    interface ThrowableConsumer<T> {
+        void accept(T t) throws Exception;
     }
 }

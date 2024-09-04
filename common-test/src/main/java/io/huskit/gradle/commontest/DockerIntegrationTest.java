@@ -7,9 +7,9 @@ import org.junit.jupiter.api.BeforeEach;
 
 import java.util.concurrent.atomic.AtomicBoolean;
 
-public abstract class BaseDockerIntegrationTest extends BaseIntegrationTest {
+public interface DockerIntegrationTest extends IntegrationTest {
 
-    private static final AtomicBoolean IS_INITIALIZED = new AtomicBoolean(false);
+    AtomicBoolean IS_INITIALIZED = new AtomicBoolean(false);
 
     @BeforeAll
     static void cleanupDockerOnce() {
@@ -19,12 +19,12 @@ public abstract class BaseDockerIntegrationTest extends BaseIntegrationTest {
     }
 
     @BeforeEach
-    void setupDocker() {
+    default void setupDocker() {
         DockerUtil.verifyDockerAvailable();
     }
 
     @AfterEach
-    void cleanupDocker() {
+    default void cleanupDocker() {
         DockerUtil.cleanupDocker();
     }
 }

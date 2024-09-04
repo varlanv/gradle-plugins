@@ -3,6 +3,7 @@ package io.huskit.gradle.containers.plugin.internal;
 import io.huskit.containers.model.ProjectDescription;
 import io.huskit.containers.model.request.ContainersRequest;
 import io.huskit.containers.model.started.StartedContainer;
+import io.huskit.gradle.common.plugin.model.string.CapitalizedString;
 import io.huskit.gradle.containers.plugin.api.ContainerRequestedByUser;
 import io.huskit.gradle.containers.plugin.internal.buildservice.ContainersBuildService;
 import io.huskit.log.GradleProjectLog;
@@ -19,7 +20,11 @@ import java.util.stream.Collectors;
 @DisableCachingByDefault(because = "Caching of containers is not supported")
 public abstract class ContainersTask extends DefaultTask {
 
-    public static String NAME = "startContainers";
+    private static final String NAME = "startContainers";
+
+    public static String nameForTask(String taskName) {
+        return ContainersTask.NAME + "For" + CapitalizedString.capitalize(taskName);
+    }
 
     @Internal
     public abstract Property<ContainersBuildService> getContainersBuildService();
