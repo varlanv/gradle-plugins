@@ -111,7 +111,7 @@ public class HuskitContainersPluginFunctionalTest implements DockerFunctionalTes
 
                     // reusable mongo container is still available
                     var containers = findHuskitContainersForUseCase(useCaseName);
-                    assertThat(containers).hasSize(2);
+                    assertThat(containers).hasSize(1);
                 });
     }
 

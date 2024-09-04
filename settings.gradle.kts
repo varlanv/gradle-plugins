@@ -37,7 +37,7 @@ include(
         "logging:logging-gradle",
         "common",
         "common-test",
-        "function-test",
+        "functional-test",
         "plugins:aspectj-plugin",
         "plugins:spock-plugin",
         "plugins:properties-plugin",
