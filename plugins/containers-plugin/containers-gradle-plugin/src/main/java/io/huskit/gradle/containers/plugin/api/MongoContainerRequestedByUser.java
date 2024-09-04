@@ -2,7 +2,7 @@ package io.huskit.gradle.containers.plugin.api;
 
 import io.huskit.containers.model.ContainerType;
 import io.huskit.containers.model.id.ContainerId;
-import io.huskit.gradle.containers.plugin.internal.MongoContainerId;
+import io.huskit.containers.model.id.MongoContainerId;
 import org.gradle.api.Action;
 import org.gradle.api.provider.Property;
 

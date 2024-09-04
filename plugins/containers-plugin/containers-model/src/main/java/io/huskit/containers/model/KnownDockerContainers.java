@@ -1,6 +1,5 @@
-package io.huskit.gradle.containers.plugin.internal;
+package io.huskit.containers.model;
 
-import io.huskit.containers.model.ContainerType;
 import io.huskit.containers.model.exception.UnknownContainerTypeException;
 import io.huskit.containers.model.request.RequestedContainer;
 import io.huskit.containers.model.started.StartedContainerInternal;
@@ -17,7 +16,7 @@ public class KnownDockerContainers {
     Log log;
     Map<ContainerType, Function<RequestedContainer, StartedContainerInternal>> knownContainers;
 
-    public StartedContainerInternal start(RequestedContainer requestedContainer) {
+    public StartedContainerInternal prepareForStart(RequestedContainer requestedContainer) {
         var containerType = requestedContainer.containerType();
         return Optional.ofNullable(knownContainers.get(containerType))
                 .map(fn -> {

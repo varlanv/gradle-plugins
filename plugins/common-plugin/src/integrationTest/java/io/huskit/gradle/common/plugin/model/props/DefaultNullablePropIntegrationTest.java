@@ -1,6 +1,6 @@
 package io.huskit.gradle.common.plugin.model.props;
 
-import io.huskit.gradle.commontest.BaseIntegrationTest;
+import io.huskit.gradle.commontest.BaseGradleIntegrationTest;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -11,7 +11,7 @@ import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-public class DefaultNullablePropIntegrationTest extends BaseIntegrationTest {
+public class DefaultNullablePropIntegrationTest extends BaseGradleIntegrationTest {
 
     String propName = "anyPropName";
     String propVal = "anyPropVal";

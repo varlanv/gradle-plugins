@@ -4,5 +4,5 @@ import io.huskit.containers.model.request.RequestedContainer;
 
 public interface StartedContainersInternal extends StartedContainers {
 
-    StartedContainer startOrCreateAndStart(RequestedContainer requestedContainer);
+    StartedContainerInternal startOrCreateAndStart(RequestedContainer requestedContainer);
 }

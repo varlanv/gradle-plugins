@@ -1,4 +1,4 @@
-package io.huskit.gradle.containers.plugin;
+package io.huskit.containers.model;
 
 public interface ProjectDescription {
 

@@ -1,12 +1,12 @@
 package io.huskit.gradle.aspectj.plugin;
 
-import io.huskit.gradle.commontest.BaseIntegrationTest;
+import io.huskit.gradle.commontest.BaseGradleIntegrationTest;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-public class HuskitAspectJPluginTest extends BaseIntegrationTest {
+public class HuskitAspectJPluginTest extends BaseGradleIntegrationTest {
 
     @Test
     @DisplayName("plugin should be applied")

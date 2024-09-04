@@ -1,6 +1,5 @@
-package io.huskit.gradle.containers.plugin.internal;
+package io.huskit.containers.model;
 
-import io.huskit.containers.model.Containers;
 import io.huskit.containers.model.exception.NonUniqueContainerException;
 import io.huskit.containers.model.request.RequestedContainers;
 import io.huskit.containers.model.started.StartedContainers;

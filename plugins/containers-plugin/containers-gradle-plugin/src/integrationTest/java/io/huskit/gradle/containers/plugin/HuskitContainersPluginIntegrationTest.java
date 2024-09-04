@@ -1,6 +1,6 @@
 package io.huskit.gradle.containers.plugin;
 
-import io.huskit.gradle.commontest.BaseIntegrationTest;
+import io.huskit.gradle.commontest.BaseGradleIntegrationTest;
 import io.huskit.gradle.containers.plugin.api.ContainersExtension;
 import io.huskit.gradle.containers.plugin.api.MongoContainerRequestedByUser;
 import io.huskit.gradle.containers.plugin.internal.ContainersBuildServiceParams;
@@ -20,7 +20,7 @@ import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-public class HuskitContainersPluginIntegrationTest extends BaseIntegrationTest {
+public class HuskitContainersPluginIntegrationTest extends BaseGradleIntegrationTest {
 
     @Test
     @DisplayName("should create build service")

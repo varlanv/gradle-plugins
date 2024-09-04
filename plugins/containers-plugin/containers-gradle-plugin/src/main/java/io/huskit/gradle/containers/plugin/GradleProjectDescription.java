@@ -1,5 +1,6 @@
 package io.huskit.gradle.containers.plugin;
 
+import io.huskit.containers.model.ProjectDescription;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 

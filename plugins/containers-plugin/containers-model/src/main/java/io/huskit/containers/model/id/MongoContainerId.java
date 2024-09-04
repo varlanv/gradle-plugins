@@ -1,12 +1,9 @@
-package io.huskit.gradle.containers.plugin.internal;
+package io.huskit.containers.model.id;
 
-import io.huskit.containers.model.id.ContainerId;
-import io.huskit.gradle.common.function.MemoizedSupplier;
 import lombok.RequiredArgsConstructor;
 import lombok.Value;
 import lombok.experimental.FieldNameConstants;
-
-import java.util.function.Supplier;
+import lombok.experimental.NonFinal;
 
 @Value
 @FieldNameConstants
@@ -25,20 +22,21 @@ public class MongoContainerId implements ContainerId {
     String databaseName;
     boolean reuseBetweenBuilds;
     boolean newDatabaseForEachTask;
-    Supplier<String> json = new MemoizedSupplier<>(this::_json);
+    volatile @NonFinal String json;
 
     @Override
     public String json() {
-        return json.get();
+        var result = json;
+        if (result == null) {
+            result = String.format(JSON_TEMPLATE,
+                    rootProjectName, imageName, databaseName, reuseBetweenBuilds, newDatabaseForEachTask);
+            json = result;
+        }
+        return result;
     }
 
     @Override
     public String toString() {
         return json();
-    }
-
-    private String _json() {
-        return String.format(JSON_TEMPLATE,
-                rootProjectName, imageName, databaseName, reuseBetweenBuilds, newDatabaseForEachTask);
     }
 }

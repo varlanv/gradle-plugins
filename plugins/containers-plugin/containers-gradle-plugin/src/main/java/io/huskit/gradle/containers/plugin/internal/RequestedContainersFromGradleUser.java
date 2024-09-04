@@ -57,4 +57,9 @@ public class RequestedContainersFromGradleUser implements RequestedContainers {
                 })
                 .collect(Collectors.toList());
     }
+
+    @Override
+    public int size() {
+        return containersRequestedByUser.size();
+    }
 }

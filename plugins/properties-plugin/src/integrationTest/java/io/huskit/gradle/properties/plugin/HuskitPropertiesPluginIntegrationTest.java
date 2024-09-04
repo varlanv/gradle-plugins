@@ -2,13 +2,13 @@ package io.huskit.gradle.properties.plugin;
 
 import io.huskit.gradle.common.plugin.model.props.Props;
 import io.huskit.gradle.common.plugin.model.props.fake.FakeProps;
-import io.huskit.gradle.commontest.BaseIntegrationTest;
+import io.huskit.gradle.commontest.BaseGradleIntegrationTest;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-public class HuskitPropertiesPluginIntegrationTest extends BaseIntegrationTest {
+public class HuskitPropertiesPluginIntegrationTest extends BaseGradleIntegrationTest {
 
     @Test
     @DisplayName("plugin should be applied")

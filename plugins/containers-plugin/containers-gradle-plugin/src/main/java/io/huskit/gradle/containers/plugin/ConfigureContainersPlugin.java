@@ -1,5 +1,6 @@
 package io.huskit.gradle.containers.plugin;
 
+import io.huskit.containers.model.ProjectDescription;
 import io.huskit.gradle.common.plugin.model.NewOrExistingExtension;
 import io.huskit.log.Log;
 import lombok.RequiredArgsConstructor;
@@ -27,7 +28,7 @@ public class ConfigureContainersPlugin {
                 log,
                 projectDescription,
                 extensions
-        ).prepare();
+        ).get();
         var containersBuildServiceProvider = new RegisterContainersBuildService(
                 log,
                 sharedServices

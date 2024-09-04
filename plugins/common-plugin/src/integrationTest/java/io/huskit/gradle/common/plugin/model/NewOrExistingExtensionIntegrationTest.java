@@ -2,14 +2,14 @@ package io.huskit.gradle.common.plugin.model;
 
 import io.huskit.gradle.common.plugin.model.props.Props;
 import io.huskit.gradle.common.plugin.model.props.fake.FakeProps;
-import io.huskit.gradle.commontest.BaseIntegrationTest;
+import io.huskit.gradle.commontest.BaseGradleIntegrationTest;
 import io.huskit.log.fake.FakeLog;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-public class NewOrExistingExtensionIntegrationTest extends BaseIntegrationTest {
+public class NewOrExistingExtensionIntegrationTest extends BaseGradleIntegrationTest {
 
     @Test
     @DisplayName("if extension not exists, then should create")

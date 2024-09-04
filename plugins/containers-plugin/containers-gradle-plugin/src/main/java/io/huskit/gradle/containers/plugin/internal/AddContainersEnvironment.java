@@ -1,10 +1,10 @@
 package io.huskit.gradle.containers.plugin.internal;
 
 import io.huskit.containers.model.MongoStartedContainer;
-import io.huskit.gradle.containers.plugin.ProjectDescription;
+import io.huskit.containers.model.ProjectDescription;
 import io.huskit.gradle.containers.plugin.api.ContainerRequestedByUser;
 import io.huskit.gradle.containers.plugin.internal.buildservice.ContainersBuildService;
-import io.huskit.gradle.containers.plugin.internal.buildservice.ContainersRequest;
+import io.huskit.containers.model.request.ContainersRequest;
 import io.huskit.log.Log;
 import lombok.RequiredArgsConstructor;
 import org.gradle.api.Action;

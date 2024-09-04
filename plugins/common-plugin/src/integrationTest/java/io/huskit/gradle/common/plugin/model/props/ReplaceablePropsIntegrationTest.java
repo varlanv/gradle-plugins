@@ -3,7 +3,7 @@ package io.huskit.gradle.common.plugin.model.props;
 import io.huskit.gradle.common.plugin.model.NewOrExistingExtension;
 import io.huskit.gradle.common.plugin.model.props.fake.FakeProps;
 import io.huskit.gradle.common.plugin.model.props.fake.RandomizeIfEmptyProps;
-import io.huskit.gradle.commontest.BaseIntegrationTest;
+import io.huskit.gradle.commontest.BaseGradleIntegrationTest;
 import io.huskit.log.Log;
 import io.huskit.log.fake.FakeLog;
 import org.gradle.api.Project;
@@ -12,7 +12,7 @@ import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-public class ReplaceablePropsIntegrationTest extends BaseIntegrationTest {
+public class ReplaceablePropsIntegrationTest extends BaseGradleIntegrationTest {
 
     @Test
     @DisplayName("'hasProp' should return true if existing extension has property")

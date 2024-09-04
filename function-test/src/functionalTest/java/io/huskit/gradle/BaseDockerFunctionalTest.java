@@ -1,8 +1,9 @@
 package io.huskit.gradle;
 
 import com.github.dockerjava.api.model.Container;
+import io.huskit.containers.model.id.MongoContainerId;
 import io.huskit.gradle.commontest.BaseFunctionalTest;
-import io.huskit.gradle.containers.plugin.internal.MongoContainerId;
+import io.huskit.gradle.commontest.DockerUtil;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.testcontainers.DockerClientFactory;
@@ -15,29 +16,16 @@ public abstract class BaseDockerFunctionalTest extends BaseFunctionalTest {
 
     @BeforeEach
     void setupDocker() {
-        if (!DockerClientFactory.instance().isDockerAvailable()) {
-            throw new IllegalStateException("Docker is not available. Failing test execution preemptively.");
-        }
+        DockerUtil.verifyDockerAvailable();
     }
 
     @AfterEach
     void cleanupDocker() {
-        if (DockerClientFactory.instance().isDockerAvailable()) {
-            var client = DockerClientFactory.instance().client();
-            var listContainersCmd = client.listContainersCmd().withLabelFilter(Map.of("huskit_container", "true"));
-            var containers = listContainersCmd.exec();
-            for (var container : containers) {
-                var containerId = container.getId();
-                client.stopContainerCmd(containerId).exec();
-                client.removeContainerCmd(containerId).exec();
-            }
-        }
+        DockerUtil.cleanupDocker();
     }
 
     protected List<Container> findHuskitContainers() {
-        var client = DockerClientFactory.instance().client();
-        var listContainersCmd = client.listContainersCmd().withLabelFilter(Map.of("huskit_container", "true"));
-        return listContainersCmd.exec();
+        return DockerUtil.findHuskitContainers();
     }
 
     protected List<Container> findHuskitContainersForUseCase(String useCase) {

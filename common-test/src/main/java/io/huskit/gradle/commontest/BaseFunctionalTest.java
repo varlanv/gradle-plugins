@@ -213,7 +213,7 @@ public abstract class BaseFunctionalTest extends BaseTest {
     }
 
     public static Stream<Arguments> defaultDataTables() {
-        return DataTables.getDefault().get().stream()
+        return DataTables.getDefault().list().stream()
                 .map(Arguments::of);
     }
 }

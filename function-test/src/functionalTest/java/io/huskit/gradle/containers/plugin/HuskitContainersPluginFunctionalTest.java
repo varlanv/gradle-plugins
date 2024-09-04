@@ -1,5 +1,6 @@
 package io.huskit.gradle.containers.plugin;
 
+import io.huskit.containers.testcontainers.mongo.MongoContainer;
 import io.huskit.gradle.BaseDockerFunctionalTest;
 import io.huskit.gradle.GradleRunResult;
 import io.huskit.gradle.commontest.DataTable;
@@ -34,27 +35,13 @@ public class HuskitContainersPluginFunctionalTest extends BaseDockerFunctionalTe
 
     @ParameterizedTest
     @MethodSource("defaultDataTables")
-    @DisplayName("apply-plugin-to-multiple-java-projects-all-not-reusable should work correctly")
-    void test_1(DataTable dataTable) {
-        var useCaseName = "apply-plugin-to-multiple-java-projects-all-not-reusable-gradle8";
-
-        var result = runUseCase(useCaseName, dataTable);
-
-        var messages = result.findMarkedMessages("MONGO_CONNECTION_STRING").values();
-        assertThat(messages.size()).isEqualTo(6);
-        assertThat(Set.copyOf(messages).size()).isEqualTo(6);
-        assertThat(findHuskitContainersForUseCase(useCaseName).size()).isEqualTo(0);
-    }
-
-    @ParameterizedTest
-    @MethodSource("defaultDataTables")
     @DisplayName("apply-plugin-to-single-java-project should work correctly")
-    void test_2(DataTable dataTable) {
+    void test_1(DataTable dataTable) {
         var useCaseName = "apply-plugin-to-single-java-project-gradle8";
 
         var result = runUseCase(useCaseName, dataTable);
 
-        var messages = result.findMarkedMessages("MONGO_CONNECTION_STRING").values();
+        var messages = result.findMarkedMessages(MongoContainer.CONNECTION_STRING_ENV).values();
         assertThat(messages.size()).isEqualTo(2);
         assertThat(Set.copyOf(messages).size()).isEqualTo(2);
         assertThat(findHuskitContainersForUseCase(useCaseName).size()).isEqualTo(0);
@@ -62,13 +49,27 @@ public class HuskitContainersPluginFunctionalTest extends BaseDockerFunctionalTe
 
     @ParameterizedTest
     @MethodSource("defaultDataTables")
-    @DisplayName("apply-plugin-to-multiple-java-projects should work correctly")
+    @DisplayName("apply-plugin-to-multiple-java-projects-all-not-reusable should work correctly")
+    void test_2(DataTable dataTable) {
+        var useCaseName = "apply-plugin-to-multiple-java-projects-all-not-reusable-gradle8";
+
+        var result = runUseCase(useCaseName, dataTable);
+
+        var messages = result.findMarkedMessages(MongoContainer.CONNECTION_STRING_ENV).values();
+        assertThat(messages.size()).isEqualTo(6);
+        assertThat(Set.copyOf(messages).size()).isEqualTo(6);
+        assertThat(findHuskitContainersForUseCase(useCaseName).size()).isEqualTo(0);
+    }
+
+    @ParameterizedTest
+    @MethodSource("defaultDataTables")
+    @DisplayName("apply-plugin-to-multiple-java-projects all reusable should work correctly")
     void test_3(DataTable dataTable) {
         var useCaseName = "apply-plugin-to-multiple-java-projects-gradle8";
 
         var result = runUseCase(useCaseName, dataTable);
 
-        var messages = result.findMarkedMessages("MONGO_CONNECTION_STRING").values();
+        var messages = result.findMarkedMessages(MongoContainer.CONNECTION_STRING_ENV).values();
 
         // Mongo containers were requested 6 times while only 1 unique connection string is used
         assertThat(messages.size()).isEqualTo(6);
@@ -90,7 +91,7 @@ public class HuskitContainersPluginFunctionalTest extends BaseDockerFunctionalTe
 
         var result = runUseCase(useCaseName, dataTable);
 
-        var messages = result.findMarkedMessages("MONGO_CONNECTION_STRING").values();
+        var messages = result.findMarkedMessages(MongoContainer.CONNECTION_STRING_ENV).values();
 
         // Mongo containers were requested 6 times while only 3 unique connection strings are used
         assertThat(messages).hasSize(6);
