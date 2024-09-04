@@ -19,4 +19,13 @@ public class DefaultRequestedContainer implements RequestedContainer {
     ContainerPort port;
     ContainerType containerType;
     ContainerReuse containerReuse;
+
+    public DefaultRequestedContainer(String source,
+                                     String image,
+                                     ContainerId id,
+                                     ContainerPort port,
+                                     ContainerType containerType,
+                                     ContainerReuse containerReuse) {
+        this(() -> source, () -> image, id, port, containerType, containerReuse);
+    }
 }

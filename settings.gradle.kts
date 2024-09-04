@@ -35,13 +35,14 @@ includeBuild("internal-convention-plugin")
 include(
         "logging:logging-api",
         "logging:logging-gradle",
+        "common",
         "common-test",
-        "function-test",
+        "functional-test",
         "plugins:aspectj-plugin",
         "plugins:spock-plugin",
         "plugins:properties-plugin",
         "plugins:common-plugin",
         "plugins:containers-plugin:containers-gradle-plugin",
         "plugins:containers-plugin:containers-model",
-        "plugins:containers-plugin:containers-testcontainers",
+        "plugins:containers-plugin:containers-testcontainers"
 )

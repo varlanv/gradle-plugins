@@ -1,5 +1,6 @@
 package io.huskit.gradle.containers.plugin;
 
+import io.huskit.containers.model.ProjectDescription;
 import io.huskit.gradle.containers.plugin.internal.ContainersTask;
 import io.huskit.gradle.containers.plugin.internal.DockerContainersExtension;
 import io.huskit.gradle.containers.plugin.internal.ShouldStartBeforeSpec;
@@ -27,37 +28,43 @@ public class ConfigureContainersAfterProjectEvaluate implements Action<Project> 
     @Override
     public void execute(Project ignored) {
         Optional.ofNullable(dockerContainersExtension.getShouldStartBeforeSpec().getOrNull())
-                .ifPresentOrElse(shouldStartBeforeSpec -> {
-                    if (shouldStartBeforeSpec.isSet()) {
-                        getShouldRunBeforeTaskProvider(shouldStartBeforeSpec)
-                                .or(() -> getTaskTaskProviderFromTaskName(shouldStartBeforeSpec))
-                                .ifPresentOrElse(dependentTaskProvider -> {
-                                    var containersTaskProvider = new RegisterContainersTask(
-                                            log,
-                                            projectDescription,
-                                            tasks,
-                                            dockerContainersExtension,
-                                            containersBuildServiceProvider,
-                                            dependentTaskProvider.getName()
-                                    ).register();
-                                    dependentTaskProvider.configure(configureContainerDependentTaskAction(containersTaskProvider));
-                                }, () -> {
-                                    var dependentTask = shouldStartBeforeSpec.getShouldRunBeforeTask().get();
-                                    var containersTask = new RegisterContainersTask(
-                                            log,
-                                            projectDescription,
-                                            tasks,
-                                            dockerContainersExtension,
-                                            containersBuildServiceProvider,
-                                            dependentTask.getName()
-                                    ).register();
-                                    var configureContainerDependentTask = configureContainerDependentTaskAction(containersTask);
-                                    configureContainerDependentTask.configure(dependentTask);
-                                });
-                    } else {
-                        log.info("No containers will be started, because shouldStartBefore is set to false");
-                    }
-                }, () -> log.info("No containers will be started, because no task was specified to run before containers start"));
+                .ifPresentOrElse(this::handleShouldStartBeforeSpec, this::handleShouldStartBeforeSpecNotPresent);
+    }
+
+    private void handleShouldStartBeforeSpec(ShouldStartBeforeSpec shouldStartBeforeSpec) {
+        if (shouldStartBeforeSpec.isSet()) {
+            getShouldRunBeforeTaskProvider(shouldStartBeforeSpec)
+                    .or(() -> getTaskTaskProviderFromTaskName(shouldStartBeforeSpec))
+                    .ifPresentOrElse(dependentTaskProvider -> {
+                        var containersTaskProvider = new RegisterContainersTask(
+                                log,
+                                projectDescription,
+                                tasks,
+                                dockerContainersExtension,
+                                containersBuildServiceProvider,
+                                dependentTaskProvider.getName()
+                        ).register();
+                        dependentTaskProvider.configure(configureContainerDependentTaskAction(containersTaskProvider));
+                    }, () -> {
+                        var dependentTask = shouldStartBeforeSpec.getShouldRunBeforeTask().get();
+                        var containersTask = new RegisterContainersTask(
+                                log,
+                                projectDescription,
+                                tasks,
+                                dockerContainersExtension,
+                                containersBuildServiceProvider,
+                                dependentTask.getName()
+                        ).register();
+                        var configureContainerDependentTask = configureContainerDependentTaskAction(containersTask);
+                        configureContainerDependentTask.configure(dependentTask);
+                    });
+        } else {
+            log.info("No containers will be started, because shouldStartBefore is set to false");
+        }
+    }
+
+    private void handleShouldStartBeforeSpecNotPresent() {
+        log.info("No containers will be started, because no task was specified to run before containers start");
     }
 
     private Optional<TaskProvider<Task>> getTaskTaskProviderFromTaskName(ShouldStartBeforeSpec shouldStartBeforeSpec) {

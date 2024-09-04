@@ -18,5 +18,4 @@ public class ProjectWithParentFixture {
     File parentProjectDir;
     ObjectFactory objects;
     ProviderFactory providers;
-
 }

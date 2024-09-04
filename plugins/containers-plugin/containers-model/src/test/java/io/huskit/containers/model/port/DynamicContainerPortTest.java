@@ -1,12 +1,12 @@
 package io.huskit.containers.model.port;
 
-import io.huskit.gradle.commontest.BaseStatelessUnitTest;
+import io.huskit.gradle.commontest.UnitTest;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-public class DynamicContainerPortTest extends BaseStatelessUnitTest {
+public class DynamicContainerPortTest implements UnitTest {
 
     @Test
     @DisplayName("should allocate random port")

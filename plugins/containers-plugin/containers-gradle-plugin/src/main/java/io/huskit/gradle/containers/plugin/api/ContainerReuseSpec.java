@@ -4,7 +4,7 @@ import org.gradle.api.provider.Property;
 
 public interface ContainerReuseSpec {
 
-    Property<Boolean> getNewDatabaseForEachTask();
+    Property<Boolean> getEnabled();
 
     Property<Boolean> getReuseBetweenBuilds();
 }

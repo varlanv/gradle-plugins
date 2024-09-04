@@ -31,7 +31,7 @@ public abstract class DockerContainersExtension implements ContainersExtension {
     public void mongo(Action<MongoContainerRequestedByUser> action) {
         var requested = getObjects().newInstance(MongoContainerRequestedByUser.class);
         var reuse = getObjects().newInstance(MongoContainerReuseRequestedByUser.class);
-        reuse.getAllowed().convention(false);
+        reuse.getEnabled().convention(false);
         reuse.getNewDatabaseForEachTask().convention(false);
         reuse.getReuseBetweenBuilds().convention(false);
         requested.getDatabaseName().convention("gradleContainerCollection");

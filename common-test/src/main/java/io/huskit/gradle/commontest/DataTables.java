@@ -2,7 +2,6 @@ package io.huskit.gradle.commontest;
 
 import lombok.Builder;
 import lombok.RequiredArgsConstructor;
-import org.junit.jupiter.params.provider.Arguments;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -39,10 +38,6 @@ public class DataTables {
         }
     }
 
-    public static Stream<Arguments> defaultAsArgs() {
-        return getDefault().get().stream().map(Arguments::of);
-    }
-
     public DataTables isCiAlwaysFalse() {
         return toBuilder().isCiList(List.of(false)).build();
     }
@@ -67,7 +62,7 @@ public class DataTables {
         return toBuilder().buildCacheList(List.of(false)).build();
     }
 
-    List<DataTable> get() {
+    List<DataTable> list() {
         List<DataTable> result = new ArrayList<>();
         gradleVersions.forEach(gradleVersion ->
                 isCiList.forEach(isCi ->

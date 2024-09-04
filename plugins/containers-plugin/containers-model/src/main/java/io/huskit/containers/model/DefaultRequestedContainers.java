@@ -21,4 +21,9 @@ public class DefaultRequestedContainers implements RequestedContainers {
     public DefaultRequestedContainers(RequestedContainer requestedContainer) {
         this.list = List.of(requestedContainer);
     }
+
+    @Override
+    public int size() {
+        return list.size();
+    }
 }

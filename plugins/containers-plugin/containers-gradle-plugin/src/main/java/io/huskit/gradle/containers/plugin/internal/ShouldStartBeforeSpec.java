@@ -8,8 +8,7 @@ import org.gradle.api.tasks.TaskProvider;
 
 public abstract class ShouldStartBeforeSpec implements ShouldStartBefore {
 
-    @NonFinal
-    boolean isSet = false;
+    private @NonFinal boolean isSet = false;
 
     public abstract Property<TaskProvider<Task>> getShouldRunBeforeTaskProvider();
 
@@ -38,13 +37,13 @@ public abstract class ShouldStartBeforeSpec implements ShouldStartBefore {
         isSet = true;
     }
 
+    public boolean isSet() {
+        return isSet;
+    }
+
     private void checkNotAlreadySet() {
         if (isSet) {
             throw new IllegalStateException("shouldRunBefore has already been set");
         }
-    }
-
-    public boolean isSet() {
-        return isSet;
     }
 }

@@ -7,5 +7,6 @@ public class HuskitCommonPlugin implements Plugin<Project> {
 
     @Override
     public void apply(Project project) {
+        throw new IllegalStateException("Should never be applied directly");
     }
 }

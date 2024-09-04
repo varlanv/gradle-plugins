@@ -6,6 +6,8 @@ plugins {
 dependencies {
     implementation(libs.testcontainers.core)
     implementation(libs.junit.jupiter.api)
+    implementation(libs.apache.commons.lang)
+    implementation(libs.apache.commons.io)
     implementation(gradleApi())
     implementation(gradleTestKit())
 }
