@@ -7,30 +7,30 @@ jobs:
       - image: cimg/openjdk:11.0
     steps:
       - checkout
-      - restore_cache:
-          keys:
-            - gradle-wrapper-{{ checksum "gradle/wrapper/gradle-wrapper.properties" }}
-            - gradle-cache-{{ checksum "build.gradle.kts" }}-{{ checksum "settings.gradle.kts" }}
+#      - restore_cache:
+#          keys:
+#            - gradle-wrapper-{{ checksum "gradle/wrapper/gradle-wrapper.properties" }}
+#            - gradle-cache-{{ checksum "build.gradle.kts" }}-{{ checksum "settings.gradle.kts" }}
       - run:
           name: "gradle assemble unix"
           command: "./gradlew assemble --no-configuration-cache --no-build-cache --no-configure-on-demand"
-      - save_cache:
-          paths:
-            - ~/.gradle/wrapper/
-          key: gradle-wrapper-{{ checksum "gradle/wrapper/gradle-wrapper.properties" }}
-      - save_cache:
-          paths:
-            - ~/.gradle/caches/
-          key: gradle-cache-{{ checksum "build.gradle.kts" }}-{{ checksum "settings.gradle.kts" }}
+#      - save_cache:
+#          paths:
+#            - ~/.gradle/wrapper/
+#          key: gradle-wrapper-{{ checksum "gradle/wrapper/gradle-wrapper.properties" }}
+#      - save_cache:
+#          paths:
+#            - ~/.gradle/caches/
+#          key: gradle-cache-{{ checksum "build.gradle.kts" }}-{{ checksum "settings.gradle.kts" }}
   gradle-build-test-unix:
     docker:
       - image: cimg/openjdk:11.0
     steps:
       - checkout
-      - restore_cache:
-          keys:
-            - gradle-wrapper-{{ checksum "gradle/wrapper/gradle-wrapper.properties" }}
-            - gradle-cache-{{ checksum "build.gradle.kts" }}-{{ checksum "settings.gradle.kts" }}
+#      - restore_cache:
+#          keys:
+#            - gradle-wrapper-{{ checksum "gradle/wrapper/gradle-wrapper.properties" }}
+#            - gradle-cache-{{ checksum "build.gradle.kts" }}-{{ checksum "settings.gradle.kts" }}
       - run:
           name: "Testing of the internal-convention-plugin"
           command: "./gradlew :internal-convention-plugin:test --no-configuration-cache --no-build-cache --no-configure-on-demand"
@@ -47,10 +47,10 @@ jobs:
       - image: cimg/openjdk:11.0
     steps:
       - checkout
-      - restore_cache:
-          keys:
-            - gradle-wrapper-{{ checksum "gradle/wrapper/gradle-wrapper.properties" }}
-            - gradle-cache-{{ checksum "build.gradle.kts" }}-{{ checksum "settings.gradle.kts" }}
+#      - restore_cache:
+#          keys:
+#            - gradle-wrapper-{{ checksum "gradle/wrapper/gradle-wrapper.properties" }}
+#            - gradle-cache-{{ checksum "build.gradle.kts" }}-{{ checksum "settings.gradle.kts" }}
       - run:
           name: "Run unit tests in unix"
           command: "./gradlew test --no-configuration-cache --no-build-cache --no-configure-on-demand"
@@ -70,10 +70,10 @@ jobs:
           version: 20.10.23
           docker_layer_caching: true
       - checkout
-      - restore_cache:
-          keys:
-            - gradle-wrapper-{{ checksum "gradle/wrapper/gradle-wrapper.properties" }}
-            - gradle-cache-{{ checksum "build.gradle.kts" }}-{{ checksum "settings.gradle.kts" }}
+#      - restore_cache:
+#          keys:
+#            - gradle-wrapper-{{ checksum "gradle/wrapper/gradle-wrapper.properties" }}
+#            - gradle-cache-{{ checksum "build.gradle.kts" }}-{{ checksum "settings.gradle.kts" }}
       - run:
           name: "Run integration tests in unix"
           command: "./gradlew integrationTest --no-configuration-cache --no-build-cache --no-configure-on-demand"
@@ -93,10 +93,10 @@ jobs:
           version: 20.10.23
           docker_layer_caching: true
       - checkout
-      - restore_cache:
-          keys:
-            - gradle-wrapper-{{ checksum "gradle/wrapper/gradle-wrapper.properties" }}
-            - gradle-cache-{{ checksum "build.gradle.kts" }}-{{ checksum "settings.gradle.kts" }}
+#      - restore_cache:
+#          keys:
+#            - gradle-wrapper-{{ checksum "gradle/wrapper/gradle-wrapper.properties" }}
+#            - gradle-cache-{{ checksum "build.gradle.kts" }}-{{ checksum "settings.gradle.kts" }}
       - run:
           name: "Run functional tests in unix"
           command: "./gradlew functionalTest --no-configuration-cache --no-build-cache --no-configure-on-demand"
