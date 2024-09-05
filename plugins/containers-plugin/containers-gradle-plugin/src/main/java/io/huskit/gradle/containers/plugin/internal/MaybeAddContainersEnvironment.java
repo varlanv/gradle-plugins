@@ -17,7 +17,6 @@ public class MaybeAddContainersEnvironment {
     HuskitContainersExtension dockerContainersExtension;
 
     public void maybeAdd() {
-        log.info("Adding containers environment to task: [{}]", dependentTask.getName());
         dependentTask.doFirst(
                 new AddContainersEnvironment(
                         log,

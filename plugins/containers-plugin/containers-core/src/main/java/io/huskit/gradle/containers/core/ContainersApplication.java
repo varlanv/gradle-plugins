@@ -45,7 +45,8 @@ public class ContainersApplication implements AutoCloseable {
     }
 
     public static ContainersApplication application(Log commonLog) {
-        var testContainersUtils = new TestContainersUtils();
+        var testContainersUtils = new TestContainersUtils(commonLog);
+        testContainersUtils.setReuse();
         return new ContainersApplication(
                 commonLog,
                 new DockerStartedContainersInternal(
@@ -55,8 +56,7 @@ public class ContainersApplication implements AutoCloseable {
                                 Map.of(
                                         ContainerType.MONGO, requestedContainer -> new MongoContainer(
                                                 commonLog,
-                                                (MongoRequestedContainer) requestedContainer,
-                                                testContainersUtils
+                                                (MongoRequestedContainer) requestedContainer
                                         )
                                 )
                         )

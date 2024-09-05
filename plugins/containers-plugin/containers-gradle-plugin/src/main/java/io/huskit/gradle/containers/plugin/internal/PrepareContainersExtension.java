@@ -17,7 +17,6 @@ public class PrepareContainersExtension implements Supplier<HuskitContainersExte
 
     @Override
     public HuskitContainersExtension get() {
-        log.info("Adding containers extension: [{}]", ContainersExtension.name());
         var extension = newOrExistingExtension.getOrCreate(
                 ContainersExtension.class,
                 HuskitContainersExtension.class,

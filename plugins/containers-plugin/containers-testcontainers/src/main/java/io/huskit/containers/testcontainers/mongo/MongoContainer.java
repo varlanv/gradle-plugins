@@ -21,7 +21,6 @@ public final class MongoContainer implements MongoStartedContainer {
 
     Log log;
     MongoRequestedContainer request;
-    TestContainersUtils testContainersUtils;
     AtomicInteger databaseNameCounter = new AtomicInteger();
     MemoizedSupplier<MongoDBContainer> mongoDBContainerSupplier = new MemoizedSupplier<>(this::getMongoDBContainer);
     MemoizedSupplier<ContainerPort> portSupplier = new MemoizedSupplier<>(this::_port);
@@ -117,9 +116,6 @@ public final class MongoContainer implements MongoStartedContainer {
     }
 
     private MongoDBContainer getMongoDBContainer() {
-        if (request.reuseOptions().enabled()) {
-            testContainersUtils.setReuse();
-        }
         var mongoDBContainer = new MongoDBContainer(
                 DockerImageName.parse(
                         request.image().value()

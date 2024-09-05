@@ -9,7 +9,6 @@ import org.gradle.api.provider.Provider;
 import org.gradle.api.tasks.TaskContainer;
 import org.gradle.api.tasks.TaskProvider;
 
-import java.util.Map;
 import java.util.Optional;
 
 @RequiredArgsConstructor
@@ -69,7 +68,6 @@ public class ConfigureContainers implements Runnable {
             log.info("Using task name to find task provider for shouldRunBeforeTask: [{}]", taskName);
             return Optional.of(tasks.named(taskName));
         } else {
-            log.info("No task name found for shouldRunBeforeTask");
             return Optional.empty();
         }
     }
@@ -80,7 +78,6 @@ public class ConfigureContainers implements Runnable {
             log.info("Found task provider for shouldRunBeforeTask: [{}]", provider.getName());
             return Optional.of(provider);
         } else {
-            log.info("No task provider found for shouldRunBeforeTask");
             return Optional.empty();
         }
     }

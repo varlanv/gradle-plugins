@@ -11,9 +11,7 @@ import org.gradle.api.provider.Provider;
 import org.gradle.api.tasks.TaskContainer;
 import org.gradle.testing.base.TestingExtension;
 
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Objects;
+import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -54,6 +52,9 @@ public class ConfigureTests {
                             });
                             test.usesService(syncBuildService);
                             test.doFirst(new ConfigureOnBeforeTestStart(syncBuildService));
+                            var environment = new HashMap<>(test.getEnvironment());
+                            environment.put("TESTCONTAINERS_REUSE_ENABLE", "true");
+                            test.setEnvironment(environment);
                             test.setJvmArgs(
                                     Stream.of(
                                                     test.getJvmArgs(),

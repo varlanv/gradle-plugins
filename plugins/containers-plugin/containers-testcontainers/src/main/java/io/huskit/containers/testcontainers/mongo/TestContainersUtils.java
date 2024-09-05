@@ -1,6 +1,8 @@
 package io.huskit.containers.testcontainers.mongo;
 
 import com.github.dockerjava.api.model.Container;
+import io.huskit.log.Log;
+import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import org.testcontainers.DockerClientFactory;
 
@@ -14,9 +16,11 @@ import java.util.Properties;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
 
+@RequiredArgsConstructor
 public final class TestContainersUtils {
 
     AtomicBoolean initialized = new AtomicBoolean();
+    Log log;
 
     /**
      * Enables reuse of TestContainers containers.
@@ -29,16 +33,21 @@ public final class TestContainersUtils {
             synchronized (this) {
                 if (!initialized.get()) {
                     var userHomePath = System.getProperty("user.home");
-                    var properties = getTestcontainerPropertiesFile(userHomePath);
+                    var propertiesFile = getTestcontainerPropertiesFile(userHomePath);
                     var props = new Properties();
-                    try (var reader = new FileReader(properties)) {
+                    try (var reader = new FileReader(propertiesFile)) {
                         props.load(reader);
                     }
-                    props.put("testcontainers.reuse.enable", "true");
-                    try (var writer = new FileWriter(properties)) {
-                        props.store(writer, "Modified by huskit-containers plugin");
+                    var reuseKey = "testcontainers.reuse.enable";
+                    if (!"true".equals(props.getProperty(reuseKey))) {
+                        props.put(reuseKey, "true");
+                        try (var writer = new FileWriter(propertiesFile)) {
+                            props.store(writer, "Modified by huskit-containers plugin");
+                        }
+                        log.lifecycle("Enabled property [{}] in file [{}] for TestContainers containers reuse. See https://java.testcontainers.org/features/reuse/",
+                                reuseKey, propertiesFile);
+                        initialized.set(true);
                     }
-                    initialized.set(true);
                 }
             }
         }

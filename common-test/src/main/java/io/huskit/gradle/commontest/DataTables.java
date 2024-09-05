@@ -21,6 +21,10 @@ public class DataTables {
         this(isCiList, configurationCacheList, buildCacheList, TestGradleVersions.list());
     }
 
+    public static Stream<DataTable> streamDefault() {
+        return getDefault().list().stream();
+    }
+
     public static DataTables getDefault() {
         if (Objects.equals(System.getenv("CI"), "true")) {
             return new DataTables(
@@ -42,27 +46,27 @@ public class DataTables {
         return toBuilder().isCiList(List.of(false)).build();
     }
 
-    DataTables configurationCacheAlwaysFalse() {
+    public DataTables configurationCacheAlwaysFalse() {
         return toBuilder().configurationCacheList(List.of(false)).build();
     }
 
-    DataTables configurationCacheAlwaysTrue() {
+    public DataTables configurationCacheAlwaysTrue() {
         return toBuilder().configurationCacheList(List.of(true)).build();
     }
 
-    DataTables isCiAlwaysTrue() {
+    public DataTables isCiAlwaysTrue() {
         return toBuilder().isCiList(List.of(true)).build();
     }
 
-    DataTables buildCacheAlwaysTrue() {
+    public DataTables buildCacheAlwaysTrue() {
         return toBuilder().buildCacheList(List.of(true)).build();
     }
 
-    DataTables buildCacheAlwaysFalse() {
+    public DataTables buildCacheAlwaysFalse() {
         return toBuilder().buildCacheList(List.of(false)).build();
     }
 
-    List<DataTable> list() {
+    public List<DataTable> list() {
         List<DataTable> result = new ArrayList<>();
         gradleVersions.forEach(gradleVersion ->
                 isCiList.forEach(isCi ->

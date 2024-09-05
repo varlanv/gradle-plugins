@@ -21,7 +21,8 @@ public class InternalConventionPlugin implements Plugin<Project> {
         var extensions = project.getExtensions();
         var environment = (InternalEnvironment) extensions.findByName(InternalEnvironment.EXTENSION_NAME);
         if (environment == null) {
-            environment = new InternalEnvironment(providers.environmentVariable("CI").isPresent(), false);
+            boolean ci = providers.environmentVariable("CI").isPresent();
+            environment = new InternalEnvironment(ci, false);
         }
         var properties = (InternalProperties) extensions.findByName(InternalProperties.EXTENSION_NAME);
         if (properties == null) {
