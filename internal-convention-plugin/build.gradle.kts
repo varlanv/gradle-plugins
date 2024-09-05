@@ -2,14 +2,20 @@ plugins {
     `java-gradle-plugin`
 }
 
-java {
-    toolchain {
-        vendor.set(JvmVendorSpec.AZUL)
-        languageVersion.set(JavaLanguageVersion.of(11))
+val isCiBuild = providers.environmentVariable("CI").orNull != null
+
+if (isCiBuild) {
+    java {
+        version = JavaVersion.VERSION_11
+    }
+} else {
+    java {
+        toolchain {
+            vendor.set(JvmVendorSpec.AZUL)
+            languageVersion.set(JavaLanguageVersion.of(11))
+        }
     }
 }
-
-val isCiBuild = providers.environmentVariable("CI").orNull != null
 
 repositories {
     if (!isCiBuild) {
