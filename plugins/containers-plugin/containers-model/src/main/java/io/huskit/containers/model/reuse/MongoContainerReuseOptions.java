@@ -1,6 +1,6 @@
 package io.huskit.containers.model.reuse;
 
-public interface MongoContainerReuse extends ContainerReuse {
+public interface MongoContainerReuseOptions extends ContainerReuseOptions {
 
     boolean newDatabaseForEachRequest();
 }

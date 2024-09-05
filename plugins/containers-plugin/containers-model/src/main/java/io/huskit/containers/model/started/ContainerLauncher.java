@@ -14,7 +14,7 @@ import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 @RequiredArgsConstructor
-public class ContainerLauncher {
+public final class ContainerLauncher {
 
     private static final int TIMEOUT = 10;
     Log log;

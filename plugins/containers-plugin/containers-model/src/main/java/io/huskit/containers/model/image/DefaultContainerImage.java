@@ -3,7 +3,7 @@ package io.huskit.containers.model.image;
 import lombok.RequiredArgsConstructor;
 
 @RequiredArgsConstructor
-public class DefaultContainerImage implements ContainerImage {
+public final class DefaultContainerImage implements ContainerImage {
 
     CharSequence charSequence;
 

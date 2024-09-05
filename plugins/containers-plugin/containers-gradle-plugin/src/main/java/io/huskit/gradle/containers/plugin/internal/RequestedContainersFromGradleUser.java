@@ -7,7 +7,7 @@ import io.huskit.containers.model.port.FixedContainerPort;
 import io.huskit.containers.model.request.DefaultMongoRequestedContainer;
 import io.huskit.containers.model.request.RequestedContainer;
 import io.huskit.containers.model.request.RequestedContainers;
-import io.huskit.containers.model.reuse.DefaultMongoContainerReuse;
+import io.huskit.containers.model.reuse.DefaultMongoContainerReuseOptions;
 import io.huskit.gradle.containers.plugin.api.ContainerRequestedByUser;
 import io.huskit.gradle.containers.plugin.api.ContainerRequestedByUserForTask;
 import io.huskit.gradle.containers.plugin.api.MongoContainerRequestedByUser;
@@ -43,7 +43,7 @@ public class RequestedContainersFromGradleUser implements RequestedContainers {
                                         requested.id(),
                                         Optional.ofNullable(requested.getFixedPort().getOrNull()).map(FixedContainerPort::new).orElse(null),
                                         containerType,
-                                        new DefaultMongoContainerReuse(
+                                        new DefaultMongoContainerReuseOptions(
                                                 containerReuseSpec != null && Boolean.TRUE.equals(containerReuseSpec.getEnabled().getOrNull()),
                                                 containerReuseSpec != null && Boolean.TRUE.equals(containerReuseSpec.getNewDatabaseForEachTask().getOrNull()),
                                                 containerReuseSpec != null && Boolean.TRUE.equals(containerReuseSpec.getReuseBetweenBuilds().getOrNull())

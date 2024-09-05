@@ -14,7 +14,7 @@ import java.util.Properties;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
 
-public class TestContainersUtils {
+public final class TestContainersUtils {
 
     AtomicBoolean initialized = new AtomicBoolean();
 

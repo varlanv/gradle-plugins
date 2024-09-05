@@ -8,7 +8,7 @@ import lombok.RequiredArgsConstructor;
 import java.util.HashSet;
 
 @RequiredArgsConstructor
-public class ValidatedDockerContainers implements Containers {
+public final class ValidatedDockerContainers implements Containers {
 
     Containers delegate;
     RequestedContainers requestedContainers;

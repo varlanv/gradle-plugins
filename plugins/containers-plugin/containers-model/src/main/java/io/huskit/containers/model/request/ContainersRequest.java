@@ -7,7 +7,7 @@ import lombok.RequiredArgsConstructor;
 
 @Getter
 @RequiredArgsConstructor
-public class ContainersRequest {
+public final class ContainersRequest {
 
     ProjectDescription projectDescription;
     RequestedContainers requestedContainers;
