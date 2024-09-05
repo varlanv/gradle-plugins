@@ -18,10 +18,10 @@ jobs:
           paths:
             - ~/.gradle/wrapper/
           key: gradle-wrapper-{{ checksum "gradle/wrapper/gradle-wrapper.properties" }}
-#      - save_cache:
-#          paths:
-#            - ~/.gradle/caches/
-#          key: gradle-cache-{{ checksum "build.gradle.kts" }}-{{ checksum "settings.gradle.kts" }}
+      - save_cache:
+          paths:
+            - ~/.gradle/caches/
+          key: gradle-cache-{{ checksum "build.gradle.kts" }}-{{ checksum "settings.gradle.kts" }}
   gradle-build-test-unix:
     docker:
       - image: cimg/openjdk:11.0
