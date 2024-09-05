@@ -43,7 +43,8 @@ public class ApplyInternalPluginLogic {
         ).configure();
         new ConfigureJava(
                 pluginManager,
-                extensions
+                extensions,
+                environment
         ).configure();
         new AddCommonDependencies(
                 new AddLombokDependencies(
