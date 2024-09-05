@@ -27,7 +27,6 @@ public class RequestedContainersFromGradleUser implements RequestedContainers {
 
     @Override
     public List<RequestedContainer> list() {
-
         return containersRequestedByUser.stream()
                 .map(ContainerRequestForTaskSpec.class::cast)
                 .map(requested -> {
