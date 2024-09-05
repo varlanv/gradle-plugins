@@ -2,9 +2,9 @@ package io.huskit.gradle.containers.plugin.internal;
 
 import io.huskit.containers.model.MongoStartedContainer;
 import io.huskit.containers.model.ProjectDescription;
+import io.huskit.containers.model.request.ContainersRequest;
 import io.huskit.gradle.containers.plugin.api.ContainerRequestSpec;
 import io.huskit.gradle.containers.plugin.internal.buildservice.ContainersBuildService;
-import io.huskit.containers.model.request.ContainersRequest;
 import io.huskit.log.Log;
 import lombok.RequiredArgsConstructor;
 import org.gradle.api.Action;
@@ -40,6 +40,7 @@ public class AddContainersEnvironment implements Action<Task> {
                     )
             ).start().list();
             var startedContainer = (MongoStartedContainer) startedContainers.stream().findFirst().get();
+            log.info("Adding containers environment to task: [{}]", task.getName());
             test.setEnvironment(startedContainer.environment());
         } else {
             log.info("Task [{}] is not a test task, so environment variables will not be added", task.getName());

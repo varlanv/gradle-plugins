@@ -28,6 +28,7 @@ public class ConfigureContainersPlugin implements Runnable {
         ).get();
         var containersBuildServiceProvider = new RegisterContainersBuildService(
                 log,
+                projectDescription,
                 sharedServices
         ).register();
         afterEvaluateSupplier.accept(

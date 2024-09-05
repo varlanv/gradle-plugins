@@ -201,8 +201,7 @@ public interface FunctionalTest extends BaseTest {
     }
 
     default Stream<Arguments> defaultDataTables() {
-        return DataTables.getDefault().list().stream()
-                .map(Arguments::of);
+        return DataTables.streamDefault().map(Arguments::of);
     }
 
     @Getter

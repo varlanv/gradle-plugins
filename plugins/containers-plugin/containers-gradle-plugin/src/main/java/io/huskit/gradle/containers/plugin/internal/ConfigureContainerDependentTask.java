@@ -19,7 +19,7 @@ public class ConfigureContainerDependentTask implements Action<Task> {
     HuskitContainersExtension dockerContainersExtension;
 
     public void configure(Task dependentTask) {
-        log.info("Adding containers task as dependency to task: [{}]", dependentTask.getName());
+        log.info("Adding [{}] task as dependency to task: [{}]", containersTaskProvider.getName(), dependentTask.getName());
         dependentTask.dependsOn(containersTaskProvider);
         dependentTask.mustRunAfter(containersTaskProvider);
         dependentTask.usesService(containersBuildServiceProvider);
