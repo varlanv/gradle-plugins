@@ -47,5 +47,5 @@ include(
         "plugins:containers-plugin:containers-testcontainers"
 )
 
-// increment this when circleci cache needs to be invalidated
+// increment this to change checksum when circleci cache needs to be invalidated
 val cacheInvalidationKey = 1
