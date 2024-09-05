@@ -37,10 +37,8 @@ public class DockerStartedContainersInternal implements StartedContainersInterna
     public StartedContainerInternal startOrCreateAndStart(RequestedContainer requestedContainer) {
         var key = requestedContainer.id().json();
         if (requestedContainer.reuseOptions().enabled()) {
-            log.info("Container is reusable, key=[{}]", key);
             return getStartedContainerInternal(startedContainersById, key, requestedContainer);
         } else {
-            log.info("Container is not reusable, key=[{}] ", key);
             return getStartedContainerInternal(startedContainersBySourceAndId, key, requestedContainer);
         }
     }
