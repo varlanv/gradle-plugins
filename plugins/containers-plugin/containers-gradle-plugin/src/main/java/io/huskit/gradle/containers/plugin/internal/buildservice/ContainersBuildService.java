@@ -2,6 +2,7 @@ package io.huskit.gradle.containers.plugin.internal.buildservice;
 
 import io.huskit.containers.model.Containers;
 import io.huskit.containers.model.request.ContainersRequest;
+import io.huskit.containers.model.started.StartedContainers;
 import io.huskit.gradle.common.function.MemoizedSupplier;
 import io.huskit.gradle.common.plugin.model.DefaultInternalExtensionName;
 import io.huskit.gradle.containers.core.ContainersApplication;
@@ -21,7 +22,7 @@ public abstract class ContainersBuildService implements BuildService<ContainersB
             new GradleLog(ContainersBuildService.class)
     ));
 
-    public Containers containers(ContainersRequest request) {
+    public StartedContainers containers(ContainersRequest request) {
         return containersApplication.get().containers(request);
     }
 

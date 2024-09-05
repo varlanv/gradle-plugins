@@ -33,14 +33,14 @@ class MongoContainerIntegrationTest implements ContainersIntegrationTest {
             );
             var id = requestedContainer.id().json();
 
-            var list1 = fixture.application.containers(containersRequest).start().list();
+            var list1 = fixture.application.containers(containersRequest).list();
             assertThat(list1).hasSize(1);
             var container1 = (MongoContainer) list1.get(0);
             assertThat(container1.id().json()).isEqualTo(id);
             assertThat(container1.port().number()).isNotEqualTo(0);
             assertThat(DockerUtil.findHuskitContainersWithId(id)).hasSize(1);
 
-            var list2 = fixture.application.containers(containersRequest).start().list();
+            var list2 = fixture.application.containers(containersRequest).list();
             assertThat(list2).hasSize(1);
             var container2 = (MongoContainer) list2.get(0);
             assertThat(container2.id().json()).isEqualTo(id);
@@ -69,14 +69,14 @@ class MongoContainerIntegrationTest implements ContainersIntegrationTest {
             );
             var id2 = requestedContainer2.id().json();
 
-            var list1 = fixture.application.containers(containersRequest1).start().list();
+            var list1 = fixture.application.containers(containersRequest1).list();
             assertThat(list1).hasSize(1);
             var container1 = (MongoContainer) list1.get(0);
             assertThat(container1.id().json()).isEqualTo(id1);
             assertThat(container1.port().number()).isNotEqualTo(0);
             assertThat(DockerUtil.findHuskitContainersWithIds(id1, id2)).hasSize(1);
 
-            var list2 = fixture.application.containers(containersRequest2).start().list();
+            var list2 = fixture.application.containers(containersRequest2).list();
             assertThat(list2).hasSize(1);
             var container2 = (MongoContainer) list2.get(0);
             assertThat(container2.id().json()).isEqualTo(id2);
@@ -106,14 +106,14 @@ class MongoContainerIntegrationTest implements ContainersIntegrationTest {
             );
             var id2 = requestedContainer2.id().json();
 
-            var list1 = fixture.application.containers(request1).start().list();
+            var list1 = fixture.application.containers(request1).list();
             assertThat(DockerUtil.findHuskitContainersWithIds(id1, id2)).hasSize(1);
             assertThat(list1).hasSize(1);
             var container1 = (MongoContainer) list1.get(0);
             assertThat(container1.id().json()).isEqualTo(id1);
             assertThat(container1.port().number()).isNotEqualTo(0);
 
-            var list2 = fixture.application.containers(request2).start().list();
+            var list2 = fixture.application.containers(request2).list();
             assertThat(list2).hasSize(1);
             var container2 = (MongoContainer) list2.get(0);
             assertThat(container2.id().json()).isEqualTo(id2);
@@ -135,14 +135,14 @@ class MongoContainerIntegrationTest implements ContainersIntegrationTest {
             );
             var id = requestedContainer.id().json();
 
-            var list1 = fixture.application.containers(request).start().list();
+            var list1 = fixture.application.containers(request).list();
             assertThat(list1).hasSize(1);
             var container1 = (MongoContainer) list1.get(0);
             assertThat(container1.id().json()).isEqualTo(id);
             assertThat(container1.port().number()).isNotEqualTo(0);
             assertThat(DockerUtil.findHuskitContainersWithId(id)).hasSize(1);
 
-            var list2 = fixture.application.containers(request).start().list();
+            var list2 = fixture.application.containers(request).list();
             assertThat(list2).hasSize(1);
             var container2 = (MongoContainer) list2.get(0);
             assertThat(container2.id().json()).isEqualTo(id);
@@ -177,7 +177,7 @@ class MongoContainerIntegrationTest implements ContainersIntegrationTest {
             var nonReusableId = nonReusableRequestedContainer.id().json();
 
             // Start non-reusable container
-            var nonReusableContainerList = fixture.application.containers(nonReusableRequest).start().list();
+            var nonReusableContainerList = fixture.application.containers(nonReusableRequest).list();
             assertThat(DockerUtil.findHuskitContainersWithIds(nonReusableId, reusableId1, reusableId2)).hasSize(1);
             assertThat(nonReusableContainerList).hasSize(1);
             var nonReusableContainer = (MongoContainer) nonReusableContainerList.get(0);
@@ -185,7 +185,7 @@ class MongoContainerIntegrationTest implements ContainersIntegrationTest {
             assertThat(nonReusableContainer.port().number()).isNotEqualTo(0);
 
             // Start first reusable container
-            var reusableContainerList1 = fixture.application.containers(reusableRequest1).start().list();
+            var reusableContainerList1 = fixture.application.containers(reusableRequest1).list();
             assertThat(DockerUtil.findHuskitContainersWithIds(nonReusableId, reusableId1, reusableId2)).hasSize(2);
             assertThat(reusableContainerList1).hasSize(1);
             var reusableContainer1 = (MongoContainer) reusableContainerList1.get(0);
@@ -193,7 +193,7 @@ class MongoContainerIntegrationTest implements ContainersIntegrationTest {
             assertThat(reusableContainer1.port().number()).isNotEqualTo(nonReusableContainer.port().number());
 
             // Start second reusable container
-            var reusableContainerList2 = fixture.application.containers(reusableRequest2).start().list();
+            var reusableContainerList2 = fixture.application.containers(reusableRequest2).list();
             assertThat(DockerUtil.findHuskitContainersWithIds(nonReusableId, reusableId1, reusableId2)).hasSize(2);
             assertThat(reusableContainerList2).hasSize(1);
             var reusableContainer2 = (MongoContainer) reusableContainerList2.get(0);
@@ -224,14 +224,14 @@ class MongoContainerIntegrationTest implements ContainersIntegrationTest {
             var id1 = requestedContainer1.id().json();
             var id2 = requestedContainer2.id().json();
 
-            var list1 = fixture.application.containers(containersRequest1).start().list();
+            var list1 = fixture.application.containers(containersRequest1).list();
             assertThat(list1).hasSize(1);
             var container1 = (MongoContainer) list1.get(0);
             assertThat(container1.id().json()).isEqualTo(id1);
             assertThat(container1.port().number()).isNotEqualTo(0);
             assertThat(container1.connectionString()).isEqualTo(container1.connectionString()).isNotBlank();
 
-            var list2 = fixture.application.containers(containersRequest2).start().list();
+            var list2 = fixture.application.containers(containersRequest2).list();
             assertThat(list2).hasSize(1);
             var container2 = (MongoContainer) list2.get(0);
             assertThat(container2.id().json()).isEqualTo(id2);
@@ -254,7 +254,7 @@ class MongoContainerIntegrationTest implements ContainersIntegrationTest {
             );
             var id = requestedContainer.id().json();
 
-            var list1 = fixture.application.containers(containersRequest).start().list();
+            var list1 = fixture.application.containers(containersRequest).list();
             assertThat(list1).hasSize(1);
             var container = (MongoContainer) list1.get(0);
             assertThat(container.id().json()).isEqualTo(id);

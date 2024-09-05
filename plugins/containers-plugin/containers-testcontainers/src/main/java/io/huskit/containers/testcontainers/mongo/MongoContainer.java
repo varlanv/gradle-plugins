@@ -1,14 +1,17 @@
 package io.huskit.containers.testcontainers.mongo;
 
 import io.huskit.containers.model.Constants;
+import io.huskit.containers.model.ContainerType;
 import io.huskit.containers.model.MongoStartedContainer;
 import io.huskit.containers.model.id.ContainerId;
 import io.huskit.containers.model.port.ContainerPort;
 import io.huskit.containers.model.port.FixedContainerPort;
 import io.huskit.containers.model.request.MongoRequestedContainer;
+import io.huskit.containers.model.started.NonStartedContainer;
 import io.huskit.gradle.common.function.MemoizedSupplier;
 import io.huskit.log.Log;
 import lombok.RequiredArgsConstructor;
+import lombok.SneakyThrows;
 import org.testcontainers.containers.MongoDBContainer;
 import org.testcontainers.utility.DockerImageName;
 
@@ -17,7 +20,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 @RequiredArgsConstructor
 public final class MongoContainer implements MongoStartedContainer {
-
 
     Log log;
     MongoRequestedContainer request;
@@ -36,17 +38,9 @@ public final class MongoContainer implements MongoStartedContainer {
         return portSupplier.get();
     }
 
-    private ContainerPort _port() {
-        return new FixedContainerPort(mongoDBContainerSupplier.get().getFirstMappedPort());
-    }
-
     @Override
-    public void start() {
-        mongoDBContainerSupplier.get();
-    }
-
-    @Override
-    public void close() throws Exception {
+    @SneakyThrows
+    public NonStartedContainer stop() {
         synchronized (this) {
             if (mongoDBContainerSupplier.isInitialized()) {
                 if (request.reuseOptions().enabled() && request.reuseOptions().dontStopOnClose()) {
@@ -62,6 +56,22 @@ public final class MongoContainer implements MongoStartedContainer {
                 mongoDBContainerSupplier.reset();
             }
         }
+        return this;
+    }
+
+    @Override
+    public ContainerType type() {
+        return ContainerType.MONGO;
+    }
+
+    private ContainerPort _port() {
+        return new FixedContainerPort(mongoDBContainerSupplier.get().getFirstMappedPort());
+    }
+
+    @Override
+    public MongoContainer start() {
+        mongoDBContainerSupplier.get();
+        return this;
     }
 
     @Override
