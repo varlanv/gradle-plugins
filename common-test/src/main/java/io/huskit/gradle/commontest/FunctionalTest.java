@@ -65,6 +65,8 @@ public interface FunctionalTest extends BaseTest {
             if (params.buildCache()) {
                 args.add("--build-cache");
             }
+            args.add("--warning-mode=summary");
+            args.add("-Dorg.gradle.logging.level=lifecycle");
             fixtureConsumer.accept(
                     new RunnerFunctionalFixture(
                             GradleRunner.create()
@@ -92,6 +94,7 @@ public interface FunctionalTest extends BaseTest {
         System.err.println(lineStart);
         System.err.println();
         System.err.printf("%s STARTING GRADLE FUNCTIONAL TEST BUILD FOR SPEC %s. LOGS BELOW ARE COMMING FROM GRADLE BUILD UNDER TEST %s%n", mark, getClass().getSimpleName(), mark);
+        System.err.printf("Gradle build args: %s%n", String.join(" ", runner.getArguments()));
         System.err.printf("Java version - %s%n", System.getProperty("java.version"));
         System.err.println();
         System.err.println(lineStart);

@@ -24,7 +24,7 @@ public class HuskitContainersPluginFunctionalTest implements DockerFunctionalTes
     void test_0(DataTable dataTable) {
         runGradleRunnerFixture(
                 dataTable,
-                List.of("help", "--info"),
+                List.of("help"),
                 fixture -> {
                     setFileText(fixture.rootBuildFile(), "plugins { id 'io.huskit.gradle.containers-plugin' }");
                     var buildResult = build(fixture.runner());
@@ -118,7 +118,7 @@ public class HuskitContainersPluginFunctionalTest implements DockerFunctionalTes
     private void runUseCaseFixture(String useCaseName, DataTable dataTable, ThrowingConsumer<GradleRunResult> fixtureConsumer) {
         runGradleRunnerFixture(
                 dataTable,
-                List.of("clean", "check"),
+                List.of("check"),
                 fixture -> {
                     var useCaseDir = useCaseDir(useCaseName);
                     assertThat(useCaseDir).isNotNull();

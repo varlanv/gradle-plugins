@@ -19,13 +19,13 @@ public class HuskitPropertiesPluginFunctionalTest implements FunctionalTest {
     void test_0(DataTable dataTable) {
         runGradleRunnerFixture(
                 dataTable,
-                List.of("help", "--info"),
+                List.of("help"),
                 fixture -> {
                     setFileText(fixture.rootBuildFile(), "plugins { id 'io.huskit.gradle.properties-plugin' }");
 
                     var buildResult = fixture.runner().build();
 
-                    assertThat(buildResult.getOutput()).contains(String.format("Added extension: %s", Props.EXTENSION_NAME));
+                    assertThat(buildResult.getOutput()).contains(String.format("Added extension: [%s]", Props.EXTENSION_NAME));
                 });
     }
 }

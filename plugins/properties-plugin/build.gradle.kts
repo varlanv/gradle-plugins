@@ -12,5 +12,7 @@ gradlePlugin {
 }
 
 dependencies {
+    implementation(projects.logging.loggingApi)
+    implementation(projects.logging.loggingGradle)
     implementation(projects.plugins.commonPlugin)
 }
