@@ -5,7 +5,7 @@ import lombok.RequiredArgsConstructor;
 
 @Getter
 @RequiredArgsConstructor
-public class FixedContainerPort implements ContainerPort {
+public final class FixedContainerPort implements ContainerPort {
 
     int number;
 }

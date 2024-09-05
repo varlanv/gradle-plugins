@@ -2,7 +2,7 @@ package io.huskit.gradle.containers.plugin.internal;
 
 import io.huskit.containers.model.MongoStartedContainer;
 import io.huskit.containers.model.ProjectDescription;
-import io.huskit.gradle.containers.plugin.api.ContainerRequestedByUser;
+import io.huskit.gradle.containers.plugin.api.ContainerRequestSpec;
 import io.huskit.gradle.containers.plugin.internal.buildservice.ContainersBuildService;
 import io.huskit.containers.model.request.ContainersRequest;
 import io.huskit.log.Log;
@@ -19,7 +19,7 @@ public class AddContainersEnvironment implements Action<Task> {
     Log log;
     ProjectDescription projectDescription;
     Provider<ContainersBuildService> containersBuildServiceProvider;
-    ListProperty<ContainerRequestedByUser> containersRequestedByUser;
+    ListProperty<ContainerRequestSpec> containersRequestedByUser;
     String connectionStringEnvironmentVariableName = "MONGO_CONNECTION_STRING";
     String dbNameEnvironmentVariable = "MONGO_CONNECTION_STRING";
     String portEnvironmentVariableName = "MONGO_PORT";
@@ -34,7 +34,6 @@ public class AddContainersEnvironment implements Action<Task> {
                             projectDescription,
                             new RequestedContainersFromGradleUser(
                                     log,
-                                    projectDescription.rootProjectName(),
                                     containersRequestedByUser.get()
                             ),
                             log

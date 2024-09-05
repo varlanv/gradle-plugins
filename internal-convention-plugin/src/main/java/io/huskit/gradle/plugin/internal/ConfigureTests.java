@@ -7,6 +7,7 @@ import org.gradle.api.artifacts.ConfigurationContainer;
 import org.gradle.api.plugins.ExtensionContainer;
 import org.gradle.api.plugins.PluginManager;
 import org.gradle.api.plugins.jvm.JvmTestSuite;
+import org.gradle.api.provider.Provider;
 import org.gradle.api.tasks.TaskContainer;
 import org.gradle.testing.base.TestingExtension;
 
@@ -25,6 +26,7 @@ public class ConfigureTests {
     ConfigurationContainer configurations;
     PluginManager pluginManager;
     TaskContainer tasks;
+    Provider<TestSynchronizerBuildService> syncBuildService;
 
     public void configure() {
         pluginManager.withPlugin("java", plugin -> {
@@ -50,6 +52,8 @@ public class ConfigureTests {
                             test.testLogging(logging -> {
                                 logging.setShowStandardStreams(true);
                             });
+                            test.usesService(syncBuildService);
+                            test.doFirst(new ConfigureOnBeforeTestStart(syncBuildService));
                             test.setJvmArgs(
                                     Stream.of(
                                                     test.getJvmArgs(),

@@ -10,7 +10,7 @@ import java.util.List;
 
 @Getter
 @RequiredArgsConstructor
-public class DefaultRequestedContainers implements RequestedContainers {
+public final class DefaultRequestedContainers implements RequestedContainers {
 
     List<RequestedContainer> list;
 

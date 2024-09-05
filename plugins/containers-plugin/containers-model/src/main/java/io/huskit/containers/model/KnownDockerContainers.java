@@ -11,7 +11,7 @@ import java.util.Optional;
 import java.util.function.Function;
 
 @RequiredArgsConstructor
-public class KnownDockerContainers {
+public final class KnownDockerContainers {
 
     Log log;
     Map<ContainerType, Function<RequestedContainer, StartedContainerInternal>> knownContainers;

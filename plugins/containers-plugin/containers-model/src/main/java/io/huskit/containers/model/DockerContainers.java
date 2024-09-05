@@ -12,7 +12,7 @@ import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 @RequiredArgsConstructor
-public class DockerContainers implements Containers {
+public final class DockerContainers implements Containers {
 
     Log log;
     StartedContainersInternal startedContainersInternal;

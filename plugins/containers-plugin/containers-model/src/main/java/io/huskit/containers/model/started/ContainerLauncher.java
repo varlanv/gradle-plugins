@@ -14,7 +14,7 @@ import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 @RequiredArgsConstructor
-public class ContainerLauncher {
+public final class ContainerLauncher {
 
     private static final int TIMEOUT = 10;
     Log log;
@@ -59,7 +59,7 @@ public class ContainerLauncher {
                 latch.await(TIMEOUT, TimeUnit.SECONDS);
                 return Arrays.asList(containers);
             } finally {
-                executor.shutdownNow();
+                executor.shutdown();
             }
         } else {
             return List.of();

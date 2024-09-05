@@ -2,16 +2,19 @@ package io.huskit.gradle;
 
 import com.github.dockerjava.api.model.Container;
 import io.huskit.containers.model.id.MongoContainerId;
+import io.huskit.gradle.commontest.BaseTest;
 import io.huskit.gradle.commontest.DockerUtil;
 import io.huskit.gradle.commontest.FunctionalTest;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Tag;
 import org.testcontainers.DockerClientFactory;
 
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+@Tag(BaseTest.DOCKER_TEST_TAG)
 public interface DockerFunctionalTest extends FunctionalTest {
 
     @BeforeEach

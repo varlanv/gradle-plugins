@@ -5,7 +5,7 @@ import io.huskit.gradle.common.function.MemoizedSupplier;
 import java.io.IOException;
 import java.net.ServerSocket;
 
-public class DynamicContainerPort implements ContainerPort {
+public final class DynamicContainerPort implements ContainerPort {
 
     MemoizedSupplier<Integer> number = new MemoizedSupplier<>(this::randomPort);
 

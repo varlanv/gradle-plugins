@@ -7,10 +7,10 @@ import io.huskit.containers.model.port.FixedContainerPort;
 import io.huskit.containers.model.request.DefaultMongoRequestedContainer;
 import io.huskit.containers.model.request.RequestedContainer;
 import io.huskit.containers.model.request.RequestedContainers;
-import io.huskit.containers.model.reuse.DefaultMongoContainerReuse;
-import io.huskit.gradle.containers.plugin.api.ContainerRequestedByUser;
-import io.huskit.gradle.containers.plugin.api.ContainerRequestedByUserForTask;
-import io.huskit.gradle.containers.plugin.api.MongoContainerRequestedByUser;
+import io.huskit.containers.model.reuse.DefaultMongoContainerReuseOptions;
+import io.huskit.gradle.containers.plugin.api.ContainerRequestForTaskSpec;
+import io.huskit.gradle.containers.plugin.api.ContainerRequestSpec;
+import io.huskit.gradle.containers.plugin.api.mongo.MongoContainerRequestSpec;
 import io.huskit.log.Log;
 import lombok.RequiredArgsConstructor;
 
@@ -23,18 +23,17 @@ import java.util.stream.Collectors;
 public class RequestedContainersFromGradleUser implements RequestedContainers {
 
     Log log;
-    String rootProjectName;
-    Collection<ContainerRequestedByUser> containersRequestedByUser;
+    Collection<ContainerRequestSpec> containersRequestedByUser;
 
     @Override
     public List<RequestedContainer> list() {
         return containersRequestedByUser.stream()
-                .map(requested -> (ContainerRequestedByUserForTask) requested)
+                .map(ContainerRequestForTaskSpec.class::cast)
                 .map(requested -> {
                     var containerType = requested.containerType();
                     log.info("Preparing container request with type [{}], id [{}]", containerType, requested.id());
                     if (containerType == ContainerType.MONGO) {
-                        var mongoRequested = (MongoContainerRequestedByUser) requested;
+                        var mongoRequested = (MongoContainerRequestSpec) requested;
                         var containerReuseSpec = mongoRequested.getReuse().getOrNull();
                         return new DefaultMongoRequestedContainer(
                                 new DefaultRequestedContainer(
@@ -43,7 +42,7 @@ public class RequestedContainersFromGradleUser implements RequestedContainers {
                                         requested.id(),
                                         Optional.ofNullable(requested.getFixedPort().getOrNull()).map(FixedContainerPort::new).orElse(null),
                                         containerType,
-                                        new DefaultMongoContainerReuse(
+                                        new DefaultMongoContainerReuseOptions(
                                                 containerReuseSpec != null && Boolean.TRUE.equals(containerReuseSpec.getEnabled().getOrNull()),
                                                 containerReuseSpec != null && Boolean.TRUE.equals(containerReuseSpec.getNewDatabaseForEachTask().getOrNull()),
                                                 containerReuseSpec != null && Boolean.TRUE.equals(containerReuseSpec.getReuseBetweenBuilds().getOrNull())

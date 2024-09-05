@@ -16,7 +16,7 @@ dependencies {
     implementation(projects.logging.loggingGradle)
     implementation(projects.logging.loggingApi)
     implementation(projects.plugins.containersPlugin.containersModel)
-    implementation(projects.plugins.containersPlugin.containersTestcontainers)
+    implementation(projects.plugins.containersPlugin.containersCore)
     implementation(projects.plugins.commonPlugin)
     testImplementation(libs.bundles.testcontainers)
 }

@@ -1,11 +1,11 @@
 package io.huskit.containers.model.request;
 
-import io.huskit.containers.model.reuse.MongoContainerReuse;
+import io.huskit.containers.model.reuse.MongoContainerReuseOptions;
 
 public interface MongoRequestedContainer extends RequestedContainer {
 
     @Override
-    MongoContainerReuse containerReuse();
+    MongoContainerReuseOptions reuseOptions();
 
     String databaseName();
 }

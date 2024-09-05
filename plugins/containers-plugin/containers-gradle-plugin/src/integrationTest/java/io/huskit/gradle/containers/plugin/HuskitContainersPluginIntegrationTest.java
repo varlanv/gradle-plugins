@@ -1,13 +1,13 @@
 package io.huskit.gradle.containers.plugin;
 
-import io.huskit.containers.testcontainers.mongo.MongoContainer;
+import io.huskit.containers.model.Constants;
 import io.huskit.gradle.commontest.DockerIntegrationTest;
 import io.huskit.gradle.commontest.GradleIntegrationTest;
 import io.huskit.gradle.containers.plugin.api.ContainersExtension;
-import io.huskit.gradle.containers.plugin.api.MongoContainerRequestedByUser;
+import io.huskit.gradle.containers.plugin.api.mongo.MongoContainerRequestSpec;
 import io.huskit.gradle.containers.plugin.internal.ContainersBuildServiceParams;
 import io.huskit.gradle.containers.plugin.internal.ContainersTask;
-import io.huskit.gradle.containers.plugin.internal.DockerContainersExtension;
+import io.huskit.gradle.containers.plugin.internal.HuskitContainersExtension;
 import io.huskit.gradle.containers.plugin.internal.buildservice.ContainersBuildService;
 import lombok.RequiredArgsConstructor;
 import org.gradle.api.Project;
@@ -153,12 +153,12 @@ public class HuskitContainersPluginIntegrationTest implements GradleIntegrationT
             var dbName = "someDbName";
 
             project.getPlugins().apply(HuskitContainersPlugin.class);
-            var containersExtension = (DockerContainersExtension) project.getExtensions().getByType(ContainersExtension.class);
+            var containersExtension = (HuskitContainersExtension) project.getExtensions().getByType(ContainersExtension.class);
             containersExtension.mongo(mongo -> mongo.getDatabaseName().set(dbName));
 
             var requestedContainers = containersExtension.getContainersRequestedByUser().get();
             assertThat(requestedContainers).hasSize(1);
-            var requestedContainer = (MongoContainerRequestedByUser) requestedContainers.get(0);
+            var requestedContainer = (MongoContainerRequestSpec) requestedContainers.get(0);
             assertThat(requestedContainer.getDatabaseName().get()).isEqualTo(dbName);
         });
     }
@@ -171,12 +171,12 @@ public class HuskitContainersPluginIntegrationTest implements GradleIntegrationT
             var img = "someImage";
 
             project.getPlugins().apply(HuskitContainersPlugin.class);
-            var containersExtension = (DockerContainersExtension) project.getExtensions().getByType(ContainersExtension.class);
+            var containersExtension = (HuskitContainersExtension) project.getExtensions().getByType(ContainersExtension.class);
             containersExtension.mongo(mongo -> mongo.getImage().set(img));
 
             var requestedContainers = containersExtension.getContainersRequestedByUser().get();
             assertThat(requestedContainers).hasSize(1);
-            var requestedContainer = (MongoContainerRequestedByUser) requestedContainers.get(0);
+            var requestedContainer = (MongoContainerRequestSpec) requestedContainers.get(0);
             assertThat(requestedContainer.getImage().get()).isEqualTo(img);
         });
     }
@@ -189,12 +189,12 @@ public class HuskitContainersPluginIntegrationTest implements GradleIntegrationT
             var port = 42;
 
             project.getPlugins().apply(HuskitContainersPlugin.class);
-            var containersExtension = (DockerContainersExtension) project.getExtensions().getByType(ContainersExtension.class);
+            var containersExtension = (HuskitContainersExtension) project.getExtensions().getByType(ContainersExtension.class);
             containersExtension.mongo(mongo -> mongo.getFixedPort().set(port));
 
             var requestedContainers = containersExtension.getContainersRequestedByUser().get();
             assertThat(requestedContainers).hasSize(1);
-            var requestedContainer = (MongoContainerRequestedByUser) requestedContainers.get(0);
+            var requestedContainer = (MongoContainerRequestSpec) requestedContainers.get(0);
             assertThat(requestedContainer.getFixedPort().get()).isEqualTo(port);
         });
     }
@@ -208,7 +208,7 @@ public class HuskitContainersPluginIntegrationTest implements GradleIntegrationT
 
             project.getPlugins().apply(HuskitContainersPlugin.class);
 
-            var containersExtension = (DockerContainersExtension) project.getExtensions().getByType(ContainersExtension.class);
+            var containersExtension = (HuskitContainersExtension) project.getExtensions().getByType(ContainersExtension.class);
             var requestedContainers = containersExtension.getContainersRequestedByUser().get();
             assertThat(requestedContainers).isEmpty();
         });
@@ -221,11 +221,11 @@ public class HuskitContainersPluginIntegrationTest implements GradleIntegrationT
             var project = fixture.project();
             project.getPlugins().apply(JavaPlugin.class);
             project.getPlugins().apply(HuskitContainersPlugin.class);
-            var containersExtension = (DockerContainersExtension) project.getExtensions().getByType(ContainersExtension.class);
+            var containersExtension = (HuskitContainersExtension) project.getExtensions().getByType(ContainersExtension.class);
             containersExtension.shouldStartBefore(spec -> spec.task("test"));
             containersExtension.mongo(mongo -> {
                 mongo.getFixedPort().set(1);
-                mongo.getImage().set(MongoContainer.DEFAULT_IMAGE);
+                mongo.getImage().set(Constants.Mongo.DEFAULT_IMAGE);
             });
             evaluateProject(project);
 

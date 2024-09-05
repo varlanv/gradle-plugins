@@ -6,7 +6,7 @@ import lombok.experimental.NonFinal;
 
 @FieldNameConstants
 @RequiredArgsConstructor
-public class MongoContainerId implements ContainerId {
+public final class MongoContainerId implements ContainerId {
 
     private static final String JSON_TEMPLATE = "{" +
             "\"" + Fields.rootProjectName + "\":\"%s\"," +
@@ -22,7 +22,7 @@ public class MongoContainerId implements ContainerId {
     String databaseName;
     boolean reuseBetweenBuilds;
     boolean newDatabaseForEachTask;
-    transient boolean allowedReuse;
+    transient boolean reuseEnabled;
     volatile transient @NonFinal String json;
 
     @Override
@@ -30,7 +30,7 @@ public class MongoContainerId implements ContainerId {
         var result = json;
         if (result == null) {
             result = String.format(JSON_TEMPLATE,
-                    rootProjectName, allowedReuse ? "" : projectName, imageName, databaseName, reuseBetweenBuilds, newDatabaseForEachTask);
+                    rootProjectName, reuseEnabled ? "" : projectName, imageName, databaseName, reuseBetweenBuilds, newDatabaseForEachTask);
             json = result;
         }
         return result;

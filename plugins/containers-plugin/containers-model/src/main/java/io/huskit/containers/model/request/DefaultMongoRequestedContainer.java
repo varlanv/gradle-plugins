@@ -4,11 +4,11 @@ import io.huskit.containers.model.ContainerType;
 import io.huskit.containers.model.id.ContainerId;
 import io.huskit.containers.model.image.ContainerImage;
 import io.huskit.containers.model.port.ContainerPort;
-import io.huskit.containers.model.reuse.MongoContainerReuse;
+import io.huskit.containers.model.reuse.MongoContainerReuseOptions;
 import lombok.RequiredArgsConstructor;
 
 @RequiredArgsConstructor
-public class DefaultMongoRequestedContainer implements MongoRequestedContainer {
+public final class DefaultMongoRequestedContainer implements MongoRequestedContainer {
 
     RequestedContainer requestedContainer;
     String databaseName;
@@ -39,8 +39,8 @@ public class DefaultMongoRequestedContainer implements MongoRequestedContainer {
     }
 
     @Override
-    public MongoContainerReuse containerReuse() {
-        return (MongoContainerReuse) requestedContainer.containerReuse();
+    public MongoContainerReuseOptions reuseOptions() {
+        return (MongoContainerReuseOptions) requestedContainer.reuseOptions();
     }
 
     @Override

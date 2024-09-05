@@ -7,7 +7,7 @@ import java.util.Set;
 
 @Getter
 @RequiredArgsConstructor
-public class DefaultContainersIds implements ContainersIds {
+public final class DefaultContainersIds implements ContainersIds {
 
     Set<ContainerId> set;
 }

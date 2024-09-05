@@ -9,9 +9,9 @@ public class TestGradleVersions {
 
     List<String> list() {
         return List.of(
-                current()
-//                latest7(),
-//                latest6()
+                current(),
+                latest7(),
+                latest6()
         );
     }
 

@@ -65,13 +65,20 @@ public class ApplyInternalPluginLogic {
                         properties
                 )
         ).add();
+        var syncBuildService = project.getGradle().getSharedServices().registerIfAbsent(
+                TestSynchronizerBuildService.name,
+                TestSynchronizerBuildService.class,
+                spec -> {
+                }
+        );
         project.afterEvaluate(evaluated -> {
             new ConfigureTests(
                     extensions,
                     huskitConventionExtension,
                     configurations,
                     pluginManager,
-                    tasks
+                    tasks,
+                    syncBuildService
             ).configure();
         });
         new ConfigurePublishing(

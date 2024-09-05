@@ -6,6 +6,8 @@ import lombok.SneakyThrows;
 import lombok.experimental.UtilityClass;
 import org.testcontainers.DockerClientFactory;
 
+import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CountDownLatch;
@@ -43,7 +45,7 @@ public class DockerUtil {
                         }
                         latch.await(10, TimeUnit.SECONDS);
                     } finally {
-                        executorService.shutdownNow();
+                        executorService.shutdown();
                     }
                 }
             }
@@ -62,8 +64,20 @@ public class DockerUtil {
     }
 
     public List<Container> findHuskitContainersWithId(String id) {
+        var client = DockerClientFactory.instance().client();
+        var listContainersCmd = client.listContainersCmd().withLabelFilter(
+                Map.of(
+                        "huskit_container", "true",
+                        "huskit_id", id
+                )
+        );
+        return listContainersCmd.exec();
+    }
+
+    public List<Container> findHuskitContainersWithIds(String... ids) {
+        var idSet = new HashSet<>(Arrays.asList(ids));
         return findHuskitContainers().stream()
-                .filter(container -> container.getLabels().get("huskit_id").equals(id))
+                .filter(container -> idSet.contains(container.getLabels().get("huskit_id")))
                 .collect(Collectors.toList());
     }
 }
