@@ -1,6 +1,6 @@
 package io.huskit.gradle.containers.plugin.internal;
 
-import io.huskit.gradle.containers.plugin.api.ContainerRequestedByUser;
+import io.huskit.gradle.containers.plugin.api.ContainerRequestSpec;
 import io.huskit.gradle.containers.plugin.internal.buildservice.ContainersBuildService;
 import org.gradle.api.provider.ListProperty;
 import org.gradle.api.provider.Property;
@@ -14,5 +14,5 @@ public abstract class ContainerWorkActionParameters implements WorkParameters {
     public abstract Property<ContainersBuildService> getContainers();
 
     @Input
-    public abstract ListProperty<ContainerRequestedByUser> getRequestedContainers();
+    public abstract ListProperty<ContainerRequestSpec> getRequestedContainers();
 }

@@ -5,6 +5,7 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -47,23 +48,26 @@ class MemoizedSupplierTest implements UnitTest {
 
         var thread1Latch = new CountDownLatch(1);
         var thread1Value = new AtomicReference<Integer>();
-        var thread1 = new Thread(() -> {
-            thread1Latch.countDown();
-            thread1Value.set(subject.get());
-        });
-        thread1.start();
-        thread1Latch.await();
         var thread2Latch = new CountDownLatch(1);
         var thread2Value = new AtomicReference<Integer>();
-        var thread2 = new Thread(() -> {
-            thread2Latch.countDown();
-            thread2Value.set(subject.get());
-        });
-        thread2.start();
-        thread2Latch.await();
-        latch.countDown();
-        thread1.join();
-        thread2.join();
+        var executorService = Executors.newFixedThreadPool(2);
+        try {
+            var future1 = executorService.submit(new Thread(() -> {
+                thread1Latch.countDown();
+                thread1Value.set(subject.get());
+            }));
+            thread1Latch.await();
+            var future2 = executorService.submit(new Thread(() -> {
+                thread2Latch.countDown();
+                thread2Value.set(subject.get());
+            }));
+            thread2Latch.await();
+            latch.countDown();
+            future1.get();
+            future2.get();
+        } finally {
+            executorService.shutdown();
+        }
 
         assertThat(counter.get())
                 .as("counter incremented only once")

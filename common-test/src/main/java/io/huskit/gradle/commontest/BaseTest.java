@@ -16,6 +16,12 @@ import java.util.concurrent.TimeUnit;
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 public interface BaseTest {
 
+    String DOCKER_TEST_TAG = "docker-test";
+    String SLOW_TEST_TAG = "slow-test";
+    String FAST_TEST_TAG = "fast-test";
+    String UNIT_TEST_TAG = "unit-test";
+    String INTEGRATION_TEST_TAG = "integration-test";
+    String FUNCTIONAL_TEST_TAG = "functional-test";
     int DEFAULT_REPEAT_COUNT = 10;
 
     default <T> T parseJson(String json, Class<T> type) {
@@ -29,28 +35,31 @@ public interface BaseTest {
     @SneakyThrows
     default void parallel(int nThreads, ThrowingRunnable runnable) {
         var executorService = Executors.newFixedThreadPool(nThreads);
-        var readyToStartLock = new CountDownLatch(nThreads);
-        var startLock = new CountDownLatch(1);
-        var finishedLock = new CountDownLatch(nThreads);
+        try {
+            var readyToStartLock = new CountDownLatch(nThreads);
+            var startLock = new CountDownLatch(1);
+            var finishedLock = new CountDownLatch(nThreads);
 
-        for (var i = 0; i < nThreads; i++) {
-            executorService.submit(() -> {
-                try {
-                    readyToStartLock.countDown();
-                    startLock.await(5, TimeUnit.SECONDS);  // Wait without a timeout
-                    runnable.run();
-                } catch (Exception e) {
-                    throw new RuntimeException(e);
-                } finally {
-                    finishedLock.countDown();
-                }
-            });
+            for (var i = 0; i < nThreads; i++) {
+                executorService.submit(() -> {
+                    try {
+                        readyToStartLock.countDown();
+                        startLock.await(5, TimeUnit.SECONDS);  // Wait without a timeout
+                        runnable.run();
+                    } catch (Exception e) {
+                        throw new RuntimeException(e);
+                    } finally {
+                        finishedLock.countDown();
+                    }
+                });
+            }
+
+            readyToStartLock.await();  // Wait for all threads to be ready
+            startLock.countDown(); // Signal all threads to start
+            finishedLock.await(5, TimeUnit.SECONDS); // Wait for all threads to finish
+        } finally {
+            executorService.shutdown();
         }
-
-        readyToStartLock.await();  // Wait for all threads to be ready
-        startLock.countDown(); // Signal all threads to start
-        finishedLock.await(5, TimeUnit.SECONDS); // Wait for all threads to finish
-        executorService.shutdownNow();
     }
 
     default void parallel(ThrowingRunnable runnable) {
@@ -80,6 +89,10 @@ public interface BaseTest {
                 throw new RuntimeException(Objects.requireNonNullElse(originalException, e));
             }
         }
+    }
+
+    default TestStopWatch stopWatch() {
+        return new TestStopWatch();
     }
 
     interface ThrowingRunnable {

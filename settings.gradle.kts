@@ -17,8 +17,7 @@ plugins {
 
 rootProject.name = "huskit"
 
-val ci = providers.environmentVariable("CI").getOrNull()
-val isCi = ci != null && ci != "false"
+val isCi = providers.environmentVariable("CI").getOrNull()?.let { it != "false" } ?: false
 
 buildCache {
     local {
@@ -44,5 +43,6 @@ include(
         "plugins:common-plugin",
         "plugins:containers-plugin:containers-gradle-plugin",
         "plugins:containers-plugin:containers-model",
+        "plugins:containers-plugin:containers-core",
         "plugins:containers-plugin:containers-testcontainers"
 )

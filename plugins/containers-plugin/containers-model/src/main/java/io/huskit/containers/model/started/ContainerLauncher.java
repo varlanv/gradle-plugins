@@ -59,7 +59,7 @@ public final class ContainerLauncher {
                 latch.await(TIMEOUT, TimeUnit.SECONDS);
                 return Arrays.asList(containers);
             } finally {
-                executor.shutdownNow();
+                executor.shutdown();
             }
         } else {
             return List.of();

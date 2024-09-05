@@ -5,6 +5,8 @@ plugins {
 
 dependencies {
     implementation(libs.testcontainers.core)
+    implementation(libs.junit.platform.engine)
+    implementation(libs.junit.platform.launcher)
     implementation(libs.junit.jupiter.api)
     implementation(libs.apache.commons.lang)
     implementation(libs.apache.commons.io)

@@ -10,6 +10,7 @@ import org.gradle.testkit.runner.GradleRunner;
 import org.gradle.util.GradleVersion;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Tag;
+import org.junit.jupiter.api.Tags;
 import org.junit.jupiter.params.provider.Arguments;
 
 import java.io.File;
@@ -18,7 +19,7 @@ import java.util.*;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
 
-@Tag("functional-test")
+@Tags({@Tag(BaseTest.FUNCTIONAL_TEST_TAG), @Tag(BaseTest.SLOW_TEST_TAG)})
 public interface FunctionalTest extends BaseTest {
 
     default File huskitProjectRoot() {

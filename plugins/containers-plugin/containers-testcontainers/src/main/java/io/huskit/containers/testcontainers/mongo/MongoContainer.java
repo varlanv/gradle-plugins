@@ -1,5 +1,6 @@
 package io.huskit.containers.testcontainers.mongo;
 
+import io.huskit.containers.model.Constants;
 import io.huskit.containers.model.MongoStartedContainer;
 import io.huskit.containers.model.id.ContainerId;
 import io.huskit.containers.model.port.ContainerPort;
@@ -17,10 +18,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 @RequiredArgsConstructor
 public final class MongoContainer implements MongoStartedContainer {
 
-    public static final String CONNECTION_STRING_ENV = "MONGO_CONNECTION_STRING";
-    public static final String DB_NAME_ENV = "MONGO_DB_NAME";
-    public static final String PORT_ENV = "MONGO_PORT";
-    public static final String DEFAULT_IMAGE = "mongo:4.4.8";
 
     Log log;
     MongoRequestedContainer request;
@@ -98,16 +95,16 @@ public final class MongoContainer implements MongoStartedContainer {
             var result = connectionString + "/" + dbName;
             log.info("Reusable connection string - " + result);
             return Map.of(
-                    CONNECTION_STRING_ENV, result,
-                    PORT_ENV, String.valueOf(port().number()),
-                    DB_NAME_ENV, dbName
+                    Constants.Mongo.CONNECTION_STRING_ENV, result,
+                    Constants.Mongo.PORT_ENV, String.valueOf(port().number()),
+                    Constants.Mongo.DB_NAME_ENV, dbName
             );
         } else {
             log.info("Non reusable connection string - " + connectionString);
             return Map.of(
-                    CONNECTION_STRING_ENV, connectionString,
-                    PORT_ENV, String.valueOf(port().number()),
-                    DB_NAME_ENV, request.databaseName()
+                    Constants.Mongo.CONNECTION_STRING_ENV, connectionString,
+                    Constants.Mongo.PORT_ENV, String.valueOf(port().number()),
+                    Constants.Mongo.DB_NAME_ENV, request.databaseName()
             );
         }
     }

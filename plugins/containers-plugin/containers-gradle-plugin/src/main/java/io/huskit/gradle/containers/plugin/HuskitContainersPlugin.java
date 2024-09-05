@@ -1,6 +1,8 @@
 package io.huskit.gradle.containers.plugin;
 
+import io.huskit.containers.model.ProjectDescription;
 import io.huskit.gradle.common.plugin.model.NewOrExistingExtension;
+import io.huskit.gradle.containers.plugin.internal.ConfigureContainersPlugin;
 import io.huskit.log.GradleProjectLog;
 import org.gradle.api.Plugin;
 import org.gradle.api.Project;
@@ -10,11 +12,10 @@ public class HuskitContainersPlugin implements Plugin<Project> {
     @Override
     public void apply(Project project) {
         var extensions = project.getExtensions();
-        var objects = project.getObjects();
         var tasks = project.getTasks();
         var projectPath = project.getPath();
         var projectName = project.getName();
-        var projectDescription = new GradleProjectDescription(
+        var projectDescription = new ProjectDescription.Default(
                 project.getRootProject().getName(),
                 projectPath,
                 projectName
@@ -28,14 +29,13 @@ public class HuskitContainersPlugin implements Plugin<Project> {
         new ConfigureContainersPlugin(
                 log,
                 projectDescription,
-                objects,
                 new NewOrExistingExtension(
                         log,
                         extensions
                 ),
                 project.getGradle().getSharedServices(),
                 tasks,
-                project::afterEvaluate
-        ).configure();
+                runnable -> project.afterEvaluate(ignore -> runnable.run())
+        ).run();
     }
 }

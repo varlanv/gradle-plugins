@@ -45,7 +45,7 @@ public class DockerUtil {
                         }
                         latch.await(10, TimeUnit.SECONDS);
                     } finally {
-                        executorService.shutdownNow();
+                        executorService.shutdown();
                     }
                 }
             }
@@ -64,9 +64,14 @@ public class DockerUtil {
     }
 
     public List<Container> findHuskitContainersWithId(String id) {
-        return findHuskitContainers().stream()
-                .filter(container -> container.getLabels().get("huskit_id").equals(id))
-                .collect(Collectors.toList());
+        var client = DockerClientFactory.instance().client();
+        var listContainersCmd = client.listContainersCmd().withLabelFilter(
+                Map.of(
+                        "huskit_container", "true",
+                        "huskit_id", id
+                )
+        );
+        return listContainersCmd.exec();
     }
 
     public List<Container> findHuskitContainersWithIds(String... ids) {
