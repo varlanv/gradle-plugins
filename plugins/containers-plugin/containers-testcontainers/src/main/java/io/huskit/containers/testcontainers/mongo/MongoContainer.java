@@ -1,6 +1,7 @@
 package io.huskit.containers.testcontainers.mongo;
 
 import io.huskit.containers.model.Constants;
+import io.huskit.containers.model.ContainerLabels;
 import io.huskit.containers.model.ContainerType;
 import io.huskit.containers.model.MongoStartedContainer;
 import io.huskit.containers.model.id.ContainerId;
@@ -8,7 +9,7 @@ import io.huskit.containers.model.port.ContainerPort;
 import io.huskit.containers.model.port.FixedContainerPort;
 import io.huskit.containers.model.request.MongoRequestedContainer;
 import io.huskit.containers.model.started.NonStartedContainer;
-import io.huskit.gradle.common.function.MemoizedSupplier;
+import io.huskit.common.function.MemoizedSupplier;
 import io.huskit.log.Log;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
@@ -64,10 +65,6 @@ public final class MongoContainer implements MongoStartedContainer {
         return ContainerType.MONGO;
     }
 
-    private ContainerPort _port() {
-        return new FixedContainerPort(mongoDBContainerSupplier.get().getFirstMappedPort());
-    }
-
     @Override
     public MongoContainer start() {
         mongoDBContainerSupplier.get();
@@ -88,10 +85,6 @@ public final class MongoContainer implements MongoStartedContainer {
             log.info("Non reusable connection string - " + connectionStringBase);
             return connectionStringBase;
         }
-    }
-
-    private String connectionStringBase() {
-        return mongoDBContainerSupplier.get().getConnectionString();
     }
 
     @Override
@@ -118,7 +111,16 @@ public final class MongoContainer implements MongoStartedContainer {
         }
     }
 
+    private String connectionStringBase() {
+        return mongoDBContainerSupplier.get().getConnectionString();
+    }
+
+    private ContainerPort _port() {
+        return new FixedContainerPort(mongoDBContainerSupplier.get().getFirstMappedPort());
+    }
+
     private Map<String, String> buildLabels() {
+//        new ContainerLabels("todo")
         return Map.of(
                 "huskit_id", id().json(),
                 "huskit_container", "true"

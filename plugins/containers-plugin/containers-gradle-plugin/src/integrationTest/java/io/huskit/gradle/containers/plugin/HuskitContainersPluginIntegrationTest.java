@@ -79,7 +79,6 @@ public class HuskitContainersPluginIntegrationTest implements GradleIntegrationT
     @DisplayName("if parent project already created build service, and build service evaluated, then no error thrown")
     void test_3() {
         useProjectWithParent(fixture -> {
-
             fixture.parentProject().getPlugins().apply(HuskitContainersPlugin.class);
             fixture.project().getPlugins().apply(HuskitContainersPlugin.class);
             evaluateProject(fixture.parentProject());

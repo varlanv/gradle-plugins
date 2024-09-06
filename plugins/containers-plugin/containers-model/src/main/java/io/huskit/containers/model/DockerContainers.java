@@ -2,7 +2,7 @@ package io.huskit.containers.model;
 
 import io.huskit.containers.model.request.RequestedContainer;
 import io.huskit.containers.model.request.RequestedContainers;
-import io.huskit.containers.model.started.ContainerLauncher;
+import io.huskit.common.concurrent.ParallelRunner;
 import io.huskit.containers.model.started.StartedContainer;
 import io.huskit.containers.model.started.StartedContainers;
 import io.huskit.log.Log;
@@ -25,7 +25,7 @@ public final class DockerContainers implements Containers {
             var containers = requestedContainers.list().stream()
                     .map(requestedContainer -> (Supplier<RequestedContainer>) () -> requestedContainer)
                     .collect(Collectors.toList());
-            return new ContainerLauncher<RequestedContainer, StartedContainer>(containers)
+            return new ParallelRunner<RequestedContainer, StartedContainer>(containers)
                     .doParallel(startedContainersRegistry::getOrStart);
         };
     }

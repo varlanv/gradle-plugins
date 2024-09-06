@@ -1,18 +1,16 @@
-package io.huskit.containers.model.started;
+package io.huskit.common.concurrent;
 
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.*;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
 @RequiredArgsConstructor
-public final class ContainerLauncher<T, R> {
+public final class ParallelRunner<T, R> {
 
     private static final int TIMEOUT = 10;
     List<Supplier<T>> suppliers;
@@ -35,8 +33,8 @@ public final class ContainerLauncher<T, R> {
                     latch.countDown();
                 });
             }
-            executor.awaitTermination(TIMEOUT, TimeUnit.SECONDS);
-            executor.shutdown();
+            latch.await(TIMEOUT, TimeUnit.SECONDS);
+            executor.shutdownNow();
             return results;
         } else {
             return List.of();

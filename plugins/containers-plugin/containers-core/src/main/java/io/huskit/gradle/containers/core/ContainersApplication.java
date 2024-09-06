@@ -3,7 +3,7 @@ package io.huskit.gradle.containers.core;
 import io.huskit.containers.model.*;
 import io.huskit.containers.model.request.ContainersRequest;
 import io.huskit.containers.model.request.MongoRequestedContainer;
-import io.huskit.containers.model.started.ContainerLauncher;
+import io.huskit.common.concurrent.ParallelRunner;
 import io.huskit.containers.model.started.NonStartedContainer;
 import io.huskit.containers.model.started.StartedContainer;
 import io.huskit.containers.model.started.StartedContainers;
@@ -55,7 +55,7 @@ public class ContainersApplication implements AutoCloseable {
 
     @Override
     public void close() throws Exception {
-        new ContainerLauncher<StartedContainer, NonStartedContainer>(
+        new ParallelRunner<StartedContainer, NonStartedContainer>(
                 startedContainersRegistry.all()
                         .map(container -> (Supplier<StartedContainer>) () -> (StartedContainer) container)
                         .collect(Collectors.toList()))
