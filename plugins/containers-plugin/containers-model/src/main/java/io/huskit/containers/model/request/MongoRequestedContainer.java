@@ -7,5 +7,7 @@ public interface MongoRequestedContainer extends RequestedContainer {
     @Override
     MongoContainerReuseOptions reuseOptions();
 
+    MongoExposedEnvironment exposedEnvironment();
+
     String databaseName();
 }

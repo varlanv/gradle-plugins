@@ -22,7 +22,7 @@ public final class DockerContainers implements Containers {
     public StartedContainers start() {
         return () -> {
             log.info("Requesting containers to start - [{}]", requestedContainers);
-            var containers = requestedContainers.list().stream()
+            var containers = requestedContainers.stream()
                     .map(requestedContainer -> (Supplier<RequestedContainer>) () -> requestedContainer)
                     .collect(Collectors.toList());
             return new ParallelRunner<RequestedContainer, StartedContainer>(containers)
