@@ -1,10 +1,10 @@
 package io.huskit.containers.model.request;
 
-import java.util.List;
+import java.util.stream.Stream;
 
 public interface RequestedContainers {
 
-    List<RequestedContainer> list();
+    Stream<RequestedContainer> stream();
 
     int size();
 }

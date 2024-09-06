@@ -38,7 +38,7 @@ public class AddContainersEnvironment implements Action<Task> {
                             ),
                             log
                     )
-            ).start().list();
+            ).list();
             var startedContainer = (MongoStartedContainer) startedContainers.stream().findFirst().get();
             log.info("Adding containers environment to task: [{}]", task.getName());
             test.setEnvironment(startedContainer.environment());

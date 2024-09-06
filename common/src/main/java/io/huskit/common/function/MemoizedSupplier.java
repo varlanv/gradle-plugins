@@ -1,4 +1,4 @@
-package io.huskit.gradle.common.function;
+package io.huskit.common.function;
 
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.NonFinal;

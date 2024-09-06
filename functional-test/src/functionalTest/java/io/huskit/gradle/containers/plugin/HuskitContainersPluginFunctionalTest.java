@@ -41,7 +41,7 @@ public class HuskitContainersPluginFunctionalTest implements DockerFunctionalTes
                 useCaseName,
                 dataTable,
                 result -> {
-                    var messages = result.findMarkedMessages(Constants.Mongo.CONNECTION_STRING_ENV).values();
+                    var messages = result.findMarkedMessages(Constants.Mongo.DEFAULT_CONNECTION_STRING_ENV).values();
                     assertThat(messages.size()).isEqualTo(2);
                     assertThat(Set.copyOf(messages).size()).isEqualTo(2);
                     assertThat(findHuskitContainersForUseCase(useCaseName).size()).isEqualTo(0);
@@ -57,7 +57,7 @@ public class HuskitContainersPluginFunctionalTest implements DockerFunctionalTes
                 useCaseName,
                 dataTable,
                 result -> {
-                    var messages = result.findMarkedMessages(Constants.Mongo.CONNECTION_STRING_ENV).values();
+                    var messages = result.findMarkedMessages(Constants.Mongo.DEFAULT_CONNECTION_STRING_ENV).values();
                     assertThat(messages.size()).isEqualTo(6);
                     assertThat(Set.copyOf(messages).size()).isEqualTo(6);
                     assertThat(findHuskitContainersForUseCase(useCaseName).size()).isEqualTo(0);
@@ -73,7 +73,7 @@ public class HuskitContainersPluginFunctionalTest implements DockerFunctionalTes
                 useCaseName,
                 dataTable,
                 result -> {
-                    var messages = result.findMarkedMessages(Constants.Mongo.CONNECTION_STRING_ENV).values();
+                    var messages = result.findMarkedMessages(Constants.Mongo.DEFAULT_CONNECTION_STRING_ENV).values();
 
                     // Mongo containers were requested 6 times while only 1 unique connection string is used
                     assertThat(messages.size()).isEqualTo(6);
@@ -98,7 +98,7 @@ public class HuskitContainersPluginFunctionalTest implements DockerFunctionalTes
                 useCaseName,
                 dataTable,
                 result -> {
-                    var messages = result.findMarkedMessages(Constants.Mongo.CONNECTION_STRING_ENV).values();
+                    var messages = result.findMarkedMessages(Constants.Mongo.DEFAULT_CONNECTION_STRING_ENV).values();
 
                     // mongo containers were requested 6 times
                     assertThat(messages).hasSize(6);

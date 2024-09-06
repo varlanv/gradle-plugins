@@ -7,6 +7,7 @@ import lombok.RequiredArgsConstructor;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.stream.Stream;
 
 @Getter
 @RequiredArgsConstructor
@@ -20,6 +21,11 @@ public final class DefaultRequestedContainers implements RequestedContainers {
 
     public DefaultRequestedContainers(RequestedContainer requestedContainer) {
         this.list = List.of(requestedContainer);
+    }
+
+    @Override
+    public Stream<RequestedContainer> stream() {
+        return list.stream();
     }
 
     @Override

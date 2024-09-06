@@ -5,12 +5,16 @@ import io.huskit.containers.model.id.ContainerId;
 import io.huskit.containers.model.image.ContainerImage;
 import io.huskit.containers.model.port.ContainerPort;
 import io.huskit.containers.model.reuse.MongoContainerReuseOptions;
+import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
 @RequiredArgsConstructor
 public final class DefaultMongoRequestedContainer implements MongoRequestedContainer {
 
     RequestedContainer requestedContainer;
+    @Getter
+    MongoExposedEnvironment exposedEnvironment;
+    @Getter
     String databaseName;
 
     @Override
@@ -41,10 +45,5 @@ public final class DefaultMongoRequestedContainer implements MongoRequestedConta
     @Override
     public MongoContainerReuseOptions reuseOptions() {
         return (MongoContainerReuseOptions) requestedContainer.reuseOptions();
-    }
-
-    @Override
-    public String databaseName() {
-        return databaseName;
     }
 }

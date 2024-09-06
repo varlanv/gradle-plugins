@@ -1,14 +1,17 @@
 package io.huskit.containers.testcontainers.mongo;
 
-import io.huskit.containers.model.Constants;
+import io.huskit.common.function.MemoizedSupplier;
+import io.huskit.containers.model.ContainerLabels;
+import io.huskit.containers.model.ContainerType;
 import io.huskit.containers.model.MongoStartedContainer;
 import io.huskit.containers.model.id.ContainerId;
 import io.huskit.containers.model.port.ContainerPort;
 import io.huskit.containers.model.port.FixedContainerPort;
 import io.huskit.containers.model.request.MongoRequestedContainer;
-import io.huskit.gradle.common.function.MemoizedSupplier;
+import io.huskit.containers.model.started.NonStartedContainer;
 import io.huskit.log.Log;
 import lombok.RequiredArgsConstructor;
+import lombok.SneakyThrows;
 import org.testcontainers.containers.MongoDBContainer;
 import org.testcontainers.utility.DockerImageName;
 
@@ -17,7 +20,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 @RequiredArgsConstructor
 public final class MongoContainer implements MongoStartedContainer {
-
 
     Log log;
     MongoRequestedContainer request;
@@ -36,17 +38,9 @@ public final class MongoContainer implements MongoStartedContainer {
         return portSupplier.get();
     }
 
-    private ContainerPort _port() {
-        return new FixedContainerPort(mongoDBContainerSupplier.get().getFirstMappedPort());
-    }
-
     @Override
-    public void start() {
-        mongoDBContainerSupplier.get();
-    }
-
-    @Override
-    public void close() throws Exception {
+    @SneakyThrows
+    public NonStartedContainer stop() {
         synchronized (this) {
             if (mongoDBContainerSupplier.isInitialized()) {
                 if (request.reuseOptions().enabled() && request.reuseOptions().dontStopOnClose()) {
@@ -62,6 +56,18 @@ public final class MongoContainer implements MongoStartedContainer {
                 mongoDBContainerSupplier.reset();
             }
         }
+        return this;
+    }
+
+    @Override
+    public ContainerType type() {
+        return ContainerType.MONGO;
+    }
+
+    @Override
+    public MongoContainer start() {
+        mongoDBContainerSupplier.get();
+        return this;
     }
 
     @Override
@@ -80,39 +86,37 @@ public final class MongoContainer implements MongoStartedContainer {
         }
     }
 
-    private String connectionStringBase() {
-        return mongoDBContainerSupplier.get().getConnectionString();
-    }
-
     @Override
     public Map<String, String> environment() {
         start();
         var mongoContainerReuse = request.reuseOptions();
         var connectionString = connectionStringBaseSupplier.get();
+        var mongoExposedEnvironment = request.exposedEnvironment();
         if (mongoContainerReuse.enabled() && mongoContainerReuse.newDatabaseForEachRequest()) {
             var dbName = request.databaseName() + "_" + databaseNameCounter.incrementAndGet();
-            var result = connectionString + "/" + dbName;
-            log.info("Reusable connection string - " + result);
+            var connectionStringWithDb = connectionString + "/" + dbName;
+            log.info("Reusable connection string - [{}]", connectionStringWithDb);
             return Map.of(
-                    Constants.Mongo.CONNECTION_STRING_ENV, result,
-                    Constants.Mongo.PORT_ENV, String.valueOf(port().number()),
-                    Constants.Mongo.DB_NAME_ENV, dbName
+                    mongoExposedEnvironment.connectionString(), connectionStringWithDb,
+                    mongoExposedEnvironment.port(), String.valueOf(port().number()),
+                    mongoExposedEnvironment.databaseName(), dbName
             );
         } else {
-            log.info("Non reusable connection string - " + connectionString);
+            log.info("Non reusable connection string - [{}]", connectionString);
             return Map.of(
-                    Constants.Mongo.CONNECTION_STRING_ENV, connectionString,
-                    Constants.Mongo.PORT_ENV, String.valueOf(port().number()),
-                    Constants.Mongo.DB_NAME_ENV, request.databaseName()
+                    mongoExposedEnvironment.connectionString(), connectionString,
+                    mongoExposedEnvironment.port(), String.valueOf(port().number()),
+                    mongoExposedEnvironment.databaseName(), request.databaseName()
             );
         }
     }
 
-    private Map<String, String> buildLabels() {
-        return Map.of(
-                "huskit_id", id().json(),
-                "huskit_container", "true"
-        );
+    private String connectionStringBase() {
+        return mongoDBContainerSupplier.get().getConnectionString();
+    }
+
+    private ContainerPort _port() {
+        return new FixedContainerPort(mongoDBContainerSupplier.get().getFirstMappedPort());
     }
 
     private MongoDBContainer getMongoDBContainer() {
@@ -120,7 +124,7 @@ public final class MongoContainer implements MongoStartedContainer {
                 DockerImageName.parse(
                         request.image().value()
                 ).asCompatibleSubstituteFor("mongo")
-        ).withLabels(buildLabels()).withReuse(true);
+        ).withLabels(new ContainerLabels(id()).asMap()).withReuse(true);
         startAndLog(mongoDBContainer, request.reuseOptions().enabled());
         return mongoDBContainer;
     }

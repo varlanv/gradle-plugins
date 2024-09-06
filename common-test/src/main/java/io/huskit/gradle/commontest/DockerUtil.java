@@ -54,7 +54,7 @@ public class DockerUtil {
 
     private static void removeContainer(Container container, DockerClient client) {
         var containerId = container.getId();
-        client.removeContainerCmd(containerId).withForce(true).exec();
+        client.removeContainerCmd(containerId).withForce(true).withRemoveVolumes(true).exec();
     }
 
     public List<Container> findHuskitContainers() {

@@ -2,6 +2,7 @@ package io.huskit.gradle.containers.plugin.internal;
 
 import io.huskit.containers.model.ProjectDescription;
 import io.huskit.containers.model.request.ContainersRequest;
+import io.huskit.containers.model.started.NonStartedContainer;
 import io.huskit.containers.model.started.StartedContainer;
 import io.huskit.gradle.common.plugin.model.string.CapitalizedString;
 import io.huskit.gradle.containers.plugin.api.ContainerRequestSpec;
@@ -55,7 +56,7 @@ public abstract class ContainersTask extends DefaultTask {
                             requestedContainers,
                             log
                     )
-            ).start().list();
+            ).list();
             if (startedContainers.isEmpty()) {
                 log.info("No containers were started");
             } else {

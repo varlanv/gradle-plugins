@@ -1,5 +1,6 @@
 package io.huskit.gradle.common.function;
 
+import io.huskit.common.function.MemoizedSupplier;
 import io.huskit.gradle.commontest.UnitTest;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;

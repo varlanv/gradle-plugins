@@ -1,10 +1,10 @@
 package io.huskit.containers.model;
 
+import io.huskit.containers.model.request.RequestedContainer;
 import io.huskit.containers.model.request.RequestedContainers;
-import io.huskit.containers.model.started.ContainerLauncher;
-import io.huskit.containers.model.started.StartedContainerInternal;
+import io.huskit.common.concurrent.ParallelRunner;
+import io.huskit.containers.model.started.StartedContainer;
 import io.huskit.containers.model.started.StartedContainers;
-import io.huskit.containers.model.started.StartedContainersInternal;
 import io.huskit.log.Log;
 import lombok.RequiredArgsConstructor;
 
@@ -15,17 +15,18 @@ import java.util.stream.Collectors;
 public final class DockerContainers implements Containers {
 
     Log log;
-    StartedContainersInternal startedContainersInternal;
+    StartedContainersRegistry startedContainersRegistry;
     RequestedContainers requestedContainers;
 
     @Override
     public StartedContainers start() {
         return () -> {
             log.info("Requesting containers to start - [{}]", requestedContainers);
-            var containers = requestedContainers.list().stream()
-                    .map(requestedContainer -> (Supplier<StartedContainerInternal>) () -> startedContainersInternal.startOrCreateAndStart(requestedContainer))
+            var containers = requestedContainers.stream()
+                    .map(requestedContainer -> (Supplier<RequestedContainer>) () -> requestedContainer)
                     .collect(Collectors.toList());
-            return new ContainerLauncher(log, containers).start();
+            return new ParallelRunner<RequestedContainer, StartedContainer>(containers)
+                    .doParallel(startedContainersRegistry::getOrStart);
         };
     }
 }

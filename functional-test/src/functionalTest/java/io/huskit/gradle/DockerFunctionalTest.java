@@ -1,7 +1,6 @@
 package io.huskit.gradle;
 
 import com.github.dockerjava.api.model.Container;
-import io.huskit.containers.model.id.MongoContainerId;
 import io.huskit.gradle.commontest.BaseTest;
 import io.huskit.gradle.commontest.DockerUtil;
 import io.huskit.gradle.commontest.FunctionalTest;
@@ -40,7 +39,7 @@ public interface DockerFunctionalTest extends FunctionalTest {
                     if (idJson == null) {
                         return false;
                     }
-                    return getJsonField(idJson, MongoContainerId.Fields.rootProjectName, String.class).equals(useCase);
+                    return getJsonField(idJson, "rootProjectName", String.class).equals(useCase);
                 })
                 .collect(Collectors.toList());
     }

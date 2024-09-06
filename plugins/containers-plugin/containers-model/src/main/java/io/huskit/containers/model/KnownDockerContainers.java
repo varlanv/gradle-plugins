@@ -2,7 +2,7 @@ package io.huskit.containers.model;
 
 import io.huskit.containers.model.exception.UnknownContainerTypeException;
 import io.huskit.containers.model.request.RequestedContainer;
-import io.huskit.containers.model.started.StartedContainerInternal;
+import io.huskit.containers.model.started.NonStartedContainer;
 import io.huskit.log.Log;
 import lombok.RequiredArgsConstructor;
 
@@ -14,9 +14,9 @@ import java.util.function.Function;
 public final class KnownDockerContainers {
 
     Log log;
-    Map<ContainerType, Function<RequestedContainer, StartedContainerInternal>> knownContainers;
+    Map<ContainerType, Function<RequestedContainer, NonStartedContainer>> knownContainers;
 
-    public StartedContainerInternal prepareForStart(RequestedContainer requestedContainer) {
+    public NonStartedContainer prepareForStart(RequestedContainer requestedContainer) {
         var containerType = requestedContainer.containerType();
         return Optional.ofNullable(knownContainers.get(containerType))
                 .map(fn -> {

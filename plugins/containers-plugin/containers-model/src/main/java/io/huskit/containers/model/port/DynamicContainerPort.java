@@ -1,6 +1,6 @@
 package io.huskit.containers.model.port;
 
-import io.huskit.gradle.common.function.MemoizedSupplier;
+import io.huskit.common.function.MemoizedSupplier;
 
 import java.io.IOException;
 import java.net.ServerSocket;

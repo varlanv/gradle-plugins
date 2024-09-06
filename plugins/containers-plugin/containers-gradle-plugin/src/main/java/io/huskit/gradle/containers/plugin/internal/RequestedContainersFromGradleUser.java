@@ -5,6 +5,7 @@ import io.huskit.containers.model.DefaultRequestedContainer;
 import io.huskit.containers.model.image.DefaultContainerImage;
 import io.huskit.containers.model.port.FixedContainerPort;
 import io.huskit.containers.model.request.DefaultMongoRequestedContainer;
+import io.huskit.containers.model.request.MongoExposedEnvironment;
 import io.huskit.containers.model.request.RequestedContainer;
 import io.huskit.containers.model.request.RequestedContainers;
 import io.huskit.containers.model.reuse.DefaultMongoContainerReuseOptions;
@@ -15,9 +16,8 @@ import io.huskit.log.Log;
 import lombok.RequiredArgsConstructor;
 
 import java.util.Collection;
-import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @RequiredArgsConstructor
 public class RequestedContainersFromGradleUser implements RequestedContainers {
@@ -26,7 +26,7 @@ public class RequestedContainersFromGradleUser implements RequestedContainers {
     Collection<ContainerRequestSpec> containersRequestedByUser;
 
     @Override
-    public List<RequestedContainer> list() {
+    public Stream<RequestedContainer> stream() {
         return containersRequestedByUser.stream()
                 .map(ContainerRequestForTaskSpec.class::cast)
                 .map(requested -> {
@@ -35,6 +35,7 @@ public class RequestedContainersFromGradleUser implements RequestedContainers {
                     if (containerType == ContainerType.MONGO) {
                         var mongoRequested = (MongoContainerRequestSpec) requested;
                         var containerReuseSpec = mongoRequested.getReuse().getOrNull();
+                        var exposedEnvironmentSpec = mongoRequested.getExposedEnvironment().get();
                         return new DefaultMongoRequestedContainer(
                                 new DefaultRequestedContainer(
                                         () -> requested.getProjectPath().get(),
@@ -48,13 +49,17 @@ public class RequestedContainersFromGradleUser implements RequestedContainers {
                                                 containerReuseSpec != null && Boolean.TRUE.equals(containerReuseSpec.getReuseBetweenBuilds().getOrNull())
                                         )
                                 ),
+                                new MongoExposedEnvironment.Default(
+                                        exposedEnvironmentSpec.getConnectionString().get(),
+                                        exposedEnvironmentSpec.getPort().get(),
+                                        exposedEnvironmentSpec.getDatabaseName().get()
+                                ),
                                 mongoRequested.getDatabaseName().get()
                         );
                     } else {
                         throw new UnsupportedOperationException("Container type [" + containerType + "] is not supported");
                     }
-                })
-                .collect(Collectors.toList());
+                });
     }
 
     @Override
