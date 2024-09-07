@@ -27,35 +27,31 @@ public class ConfigureContainers implements Runnable {
     }
 
     private void handleShouldStartBeforeSpec(AbstractShouldStartBeforeSpec shouldStartBeforeSpec) {
-        if (shouldStartBeforeSpec.isSet()) {
-            getShouldRunBeforeTaskProvider(shouldStartBeforeSpec)
-                    .or(() -> getTaskTaskProviderFromTaskName(shouldStartBeforeSpec))
-                    .ifPresentOrElse(dependentTaskProvider -> {
-                        var containersTaskProvider = new RegisterContainersTask(
-                                log,
-                                projectDescription,
-                                tasks,
-                                dockerContainersExtension,
-                                containersBuildServiceProvider,
-                                dependentTaskProvider.getName()
-                        ).register();
-                        dependentTaskProvider.configure(configureContainerDependentTaskAction(containersTaskProvider));
-                    }, () -> {
-                        var dependentTask = shouldStartBeforeSpec.getShouldRunBeforeTask().get();
-                        var containersTask = new RegisterContainersTask(
-                                log,
-                                projectDescription,
-                                tasks,
-                                dockerContainersExtension,
-                                containersBuildServiceProvider,
-                                dependentTask.getName()
-                        ).register();
-                        var configureContainerDependentTask = configureContainerDependentTaskAction(containersTask);
-                        configureContainerDependentTask.configure(dependentTask);
-                    });
-        } else {
-            log.info("No containers will be started, because shouldStartBefore is set to false");
-        }
+        getShouldRunBeforeTaskProvider(shouldStartBeforeSpec)
+                .or(() -> getTaskTaskProviderFromTaskName(shouldStartBeforeSpec))
+                .ifPresentOrElse(dependentTaskProvider -> {
+                    var containersTaskProvider = new RegisterContainersTask(
+                            log,
+                            projectDescription,
+                            tasks,
+                            dockerContainersExtension,
+                            containersBuildServiceProvider,
+                            dependentTaskProvider.getName()
+                    ).register();
+                    dependentTaskProvider.configure(configureContainerDependentTaskAction(containersTaskProvider));
+                }, () -> {
+                    var dependentTask = shouldStartBeforeSpec.getShouldRunBeforeTask().get();
+                    var containersTask = new RegisterContainersTask(
+                            log,
+                            projectDescription,
+                            tasks,
+                            dockerContainersExtension,
+                            containersBuildServiceProvider,
+                            dependentTask.getName()
+                    ).register();
+                    var configureContainerDependentTask = configureContainerDependentTaskAction(containersTask);
+                    configureContainerDependentTask.configure(dependentTask);
+                });
     }
 
     private void handleShouldStartBeforeSpecNotPresent() {

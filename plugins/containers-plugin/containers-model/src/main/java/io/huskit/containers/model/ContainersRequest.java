@@ -1,6 +1,6 @@
-package io.huskit.containers.model.request;
+package io.huskit.containers.model;
 
-import io.huskit.containers.model.ProjectDescription;
+import io.huskit.containers.model.request.RequestedContainers;
 import io.huskit.log.Log;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
@@ -9,7 +9,7 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public final class ContainersRequest {
 
+    Log taskLog;
     ProjectDescription projectDescription;
     RequestedContainers requestedContainers;
-    Log taskLog;
 }

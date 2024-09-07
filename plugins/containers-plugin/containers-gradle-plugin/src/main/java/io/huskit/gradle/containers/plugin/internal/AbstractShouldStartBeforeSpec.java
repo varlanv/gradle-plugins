@@ -37,10 +37,6 @@ public abstract class AbstractShouldStartBeforeSpec implements ShouldStartBefore
         isSet = true;
     }
 
-    public boolean isSet() {
-        return isSet;
-    }
-
     private void checkNotAlreadySet() {
         if (isSet) {
             throw new IllegalStateException("shouldRunBefore has already been set");

@@ -1,13 +1,13 @@
 package io.huskit.gradle.containers.core;
 
-import io.huskit.containers.model.*;
-import io.huskit.containers.model.request.ContainersRequest;
-import io.huskit.containers.model.request.MongoRequestedContainer;
 import io.huskit.common.concurrent.ParallelRunner;
+import io.huskit.containers.model.*;
+import io.huskit.containers.model.request.MongoRequestedContainer;
 import io.huskit.containers.model.started.NonStartedContainer;
 import io.huskit.containers.model.started.StartedContainer;
 import io.huskit.containers.model.started.StartedContainers;
 import io.huskit.containers.testcontainers.mongo.MongoContainer;
+import io.huskit.containers.testcontainers.mongo.TestContainersDelegate;
 import io.huskit.containers.testcontainers.mongo.TestContainersUtils;
 import io.huskit.log.Log;
 import lombok.RequiredArgsConstructor;
@@ -33,7 +33,7 @@ public class ContainersApplication implements AutoCloseable {
         ).start();
     }
 
-    public static ContainersApplication application(Log commonLog) {
+    public static ContainersApplication application(Log commonLog, TestContainersDelegate testContainersDelegate) {
         var testContainersUtils = new TestContainersUtils(commonLog);
         testContainersUtils.setReuse();
         return new ContainersApplication(
@@ -45,6 +45,7 @@ public class ContainersApplication implements AutoCloseable {
                                 Map.of(
                                         ContainerType.MONGO, requestedContainer -> new MongoContainer(
                                                 commonLog,
+                                                testContainersDelegate,
                                                 (MongoRequestedContainer) requestedContainer
                                         )
                                 )

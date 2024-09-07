@@ -15,6 +15,7 @@ public class RegisterContainersBuildService {
     Log log;
     ProjectDescription projectDescription;
     BuildServiceRegistry sharedServices;
+    TestContainersDelegateExtension testContainersDelegateExtension;
 
     public Provider<ContainersBuildService> register() {
         var containersServiceName = ContainersBuildService.name();
@@ -22,6 +23,7 @@ public class RegisterContainersBuildService {
                 containersServiceName,
                 ContainersBuildService.class,
                 spec -> {
+                    spec.getParameters().getTestContainersDelegate().convention(testContainersDelegateExtension.delegate());
                     log.info("Registered build service: [{}] from project [{}]", containersServiceName, projectDescription.name());
                 });
         var buildServiceRegistration = Objects.requireNonNull(

@@ -11,6 +11,8 @@ apacheCommonsIo = "2.16.1"
 jacksonCore = "2.17.2"
 assertJ = "3.26.3"
 jetbrains-annotations = "24.1.0"
+mockito = "5.13.0"
+easymock = "5.4.0"
 
 [libraries]
 testcontainers-core = { group = "org.testcontainers", name = "testcontainers", version.ref = "testContainers" }
@@ -30,6 +32,8 @@ junit-jupiter-api = { group = "org.junit.jupiter", name = "junit-jupiter", versi
 junit-platform-launcher = { group = "org.junit.platform", name = "junit-platform-launcher", version.ref = "junitPlatform" }
 junit-platform-engine = { group = "org.junit.platform", name = "junit-platform-engine", version.ref = "junitPlatform" }
 jetbrains-annotations = { group = "org.jetbrains", name = "annotations", version.ref = "jetbrains-annotations" }
+mockito-core = { group = "org.mockito", name = "mockito-core", version.ref = "mockito" }
+easymock = { group = "org.easymock", name = "easymock", version.ref = "easymock" }
 
 [bundles]
 testcontainers = ["testcontainers-core", "testcontainers-mongodb", "testcontainers-postgresql", "testcontainers-kafka", "testcontainers-rabbitmq"]

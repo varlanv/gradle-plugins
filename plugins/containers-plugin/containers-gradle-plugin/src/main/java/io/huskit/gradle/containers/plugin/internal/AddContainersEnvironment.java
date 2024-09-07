@@ -1,8 +1,9 @@
 package io.huskit.gradle.containers.plugin.internal;
 
+import io.huskit.containers.model.ContainersRequest;
 import io.huskit.containers.model.MongoStartedContainer;
 import io.huskit.containers.model.ProjectDescription;
-import io.huskit.containers.model.request.ContainersRequest;
+import io.huskit.containers.model.started.StartedContainer;
 import io.huskit.gradle.containers.plugin.api.ContainerRequestSpec;
 import io.huskit.gradle.containers.plugin.internal.buildservice.ContainersBuildService;
 import io.huskit.log.Log;
@@ -13,6 +14,8 @@ import org.gradle.api.provider.ListProperty;
 import org.gradle.api.provider.Provider;
 import org.gradle.api.tasks.testing.Test;
 
+import java.util.List;
+
 @RequiredArgsConstructor
 public class AddContainersEnvironment implements Action<Task> {
 
@@ -20,30 +23,35 @@ public class AddContainersEnvironment implements Action<Task> {
     ProjectDescription projectDescription;
     Provider<ContainersBuildService> containersBuildServiceProvider;
     ListProperty<ContainerRequestSpec> containersRequestedByUser;
-    String connectionStringEnvironmentVariableName = "MONGO_CONNECTION_STRING";
-    String dbNameEnvironmentVariable = "MONGO_CONNECTION_STRING";
-    String portEnvironmentVariableName = "MONGO_PORT";
 
     @Override
     public void execute(Task task) {
+        executeAndReturn(task);
+    }
+
+    public List<StartedContainer> executeAndReturn(Task task) {
         if (task instanceof Test) {
             var test = (Test) task;
             var containersBuildService = containersBuildServiceProvider.get();
             var startedContainers = containersBuildService.containers(
                     new ContainersRequest(
+                            log,
                             projectDescription,
                             new RequestedContainersFromGradleUser(
-                                    log,
                                     containersRequestedByUser.get()
-                            ),
-                            log
+                            )
                     )
             ).list();
-            var startedContainer = (MongoStartedContainer) startedContainers.stream().findFirst().get();
-            log.info("Adding containers environment to task: [{}]", task.getName());
-            test.setEnvironment(startedContainer.environment());
+            if (!startedContainers.isEmpty()) {
+                var startedContainer = (MongoStartedContainer) startedContainers.stream().findFirst().get();
+                log.info("Adding containers environment to task: [{}]", task.getName());
+                var environment = startedContainer.environment();
+                test.setEnvironment(environment);
+                return startedContainers;
+            }
         } else {
             log.info("Task [{}] is not a test task, so environment variables will not be added", task.getName());
         }
+        return List.of();
     }
 }

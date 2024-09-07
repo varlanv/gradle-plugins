@@ -22,6 +22,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 public final class MongoContainer implements MongoStartedContainer {
 
     Log log;
+    TestContainersDelegate testContainersDelegate;
     MongoRequestedContainer request;
     AtomicInteger databaseNameCounter = new AtomicInteger();
     MemoizedSupplier<MongoDBContainer> mongoDBContainerSupplier = new MemoizedSupplier<>(this::getMongoDBContainer);
@@ -46,11 +47,11 @@ public final class MongoContainer implements MongoStartedContainer {
                 if (request.reuseOptions().enabled() && request.reuseOptions().dontStopOnClose()) {
                     // if container is reused - drop all databases except the default ones, instead of stopping the container
                     var dropCommand = "mongo --eval 'db.adminCommand(\"listDatabases\").databases.forEach(d => {if(![\"admin\", \"config\", \"local\"].includes(d.name)) { db.getSiblingDB(d.name).dropDatabase();} });'";
-                    mongoDBContainerSupplier.get().execInContainer("/bin/sh", "-c", dropCommand);
+                    testContainersDelegate.execInContainer(mongoDBContainerSupplier, "/bin/sh", "-c", dropCommand);
                     log.info("Dropped all databases except the default ones in mongo container [{}]", request.id().json());
                 } else {
                     var before = System.currentTimeMillis();
-                    mongoDBContainerSupplier.get().stop();
+                    testContainersDelegate.stop(mongoDBContainerSupplier);
                     log.info("Stopped mongo container in [{}] ms, key=[{}]", request.id().json(), System.currentTimeMillis() - before);
                 }
                 mongoDBContainerSupplier.reset();
@@ -66,7 +67,7 @@ public final class MongoContainer implements MongoStartedContainer {
 
     @Override
     public MongoContainer start() {
-        mongoDBContainerSupplier.get();
+        testContainersDelegate.start(mongoDBContainerSupplier);
         return this;
     }
 
@@ -112,11 +113,11 @@ public final class MongoContainer implements MongoStartedContainer {
     }
 
     private String connectionStringBase() {
-        return mongoDBContainerSupplier.get().getConnectionString();
+        return testContainersDelegate.getConnectionString(mongoDBContainerSupplier);
     }
 
     private ContainerPort _port() {
-        return new FixedContainerPort(mongoDBContainerSupplier.get().getFirstMappedPort());
+        return new FixedContainerPort(testContainersDelegate.getFirstMappedPort(mongoDBContainerSupplier));
     }
 
     private MongoDBContainer getMongoDBContainer() {

@@ -12,7 +12,6 @@ import io.huskit.containers.model.reuse.DefaultMongoContainerReuseOptions;
 import io.huskit.gradle.containers.plugin.api.ContainerRequestForTaskSpec;
 import io.huskit.gradle.containers.plugin.api.ContainerRequestSpec;
 import io.huskit.gradle.containers.plugin.api.mongo.MongoContainerRequestSpec;
-import io.huskit.log.Log;
 import lombok.RequiredArgsConstructor;
 
 import java.util.Collection;
@@ -22,7 +21,6 @@ import java.util.stream.Stream;
 @RequiredArgsConstructor
 public class RequestedContainersFromGradleUser implements RequestedContainers {
 
-    Log log;
     Collection<ContainerRequestSpec> containersRequestedByUser;
 
     @Override
@@ -31,7 +29,6 @@ public class RequestedContainersFromGradleUser implements RequestedContainers {
                 .map(ContainerRequestForTaskSpec.class::cast)
                 .map(requested -> {
                     var containerType = requested.containerType();
-                    log.info("Preparing container request with type [{}], id [{}]", containerType, requested.id());
                     if (containerType == ContainerType.MONGO) {
                         var mongoRequested = (MongoContainerRequestSpec) requested;
                         var containerReuseSpec = mongoRequested.getReuse().getOrNull();

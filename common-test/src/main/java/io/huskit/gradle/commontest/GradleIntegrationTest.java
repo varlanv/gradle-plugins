@@ -3,15 +3,26 @@ package io.huskit.gradle.commontest;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
+import lombok.experimental.NonFinal;
+import org.gradle.api.DefaultTask;
 import org.gradle.api.Project;
+import org.gradle.api.Task;
+import org.gradle.api.UnknownTaskException;
 import org.gradle.api.internal.project.ProjectInternal;
 import org.gradle.api.model.ObjectFactory;
+import org.gradle.api.provider.Provider;
 import org.gradle.api.provider.ProviderFactory;
+import org.gradle.api.services.BuildService;
+import org.gradle.api.tasks.TaskProvider;
 import org.gradle.testfixtures.ProjectBuilder;
 
 import java.io.File;
+import java.util.Set;
 import java.util.function.Consumer;
 import java.util.function.Function;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 public interface GradleIntegrationTest extends IntegrationTest {
 
@@ -56,7 +67,7 @@ public interface GradleIntegrationTest extends IntegrationTest {
     }
 
     @SneakyThrows
-    default void useProjectWithParent(Consumer<ProjectWithParentFixture> fixtureConsumer) {
+    default void runProjectWithParentFixture(Consumer<ProjectWithParentFixture> fixtureConsumer) {
         var parentProjectDirectory = newTempDir();
         runAndDeleteFile(parentProjectDirectory, () -> {
             var projectDirectory = new File(parentProjectDirectory, "gradle_test");
@@ -104,6 +115,92 @@ public interface GradleIntegrationTest extends IntegrationTest {
         File parentProjectDir;
         ObjectFactory objects;
         ProviderFactory providers;
+    }
 
+    default <T extends Task> TaskProviderAssertions<T> gradleAssert(TaskProvider<T> taskProvider) {
+        return new TaskProviderAssertions<>(taskProvider);
+    }
+
+    default <T extends Task> TaskAssertions<T> gradleAssert(T task) {
+        return new TaskAssertions<>(task);
+    }
+
+    default ProjectAssertions gradleAssert(Project project) {
+        return new ProjectAssertions(project);
+    }
+
+    @RequiredArgsConstructor
+    class TaskProviderAssertions<SELF extends Task> {
+
+        TaskProvider<SELF> subject;
+        private @NonFinal TaskAssertions<SELF> taskAssertions;
+
+        public TaskProviderAssertions<SELF> dependsOn(TaskProvider<? extends Task> taskProvider) {
+            getTaskAssertions().dependsOn(taskProvider);
+            return this;
+        }
+
+        public TaskProviderAssertions<SELF> mustRunAfter(TaskProvider<? extends Task> taskProvider) {
+            getTaskAssertions().mustRunAfter(taskProvider);
+            return this;
+        }
+
+        public <T extends Provider<? extends BuildService<?>>> TaskProviderAssertions<SELF> requiresService(T buildServiceProvider) {
+            getTaskAssertions().requiresService(buildServiceProvider);
+            return this;
+        }
+
+        private TaskAssertions<SELF> getTaskAssertions() {
+            if (taskAssertions == null) {
+                taskAssertions = new TaskAssertions<>(subject.get());
+            }
+            return taskAssertions;
+        }
+    }
+
+    @RequiredArgsConstructor
+    class TaskAssertions<SELF extends Task> {
+
+        SELF subject;
+
+        public TaskAssertions<SELF> dependsOn(TaskProvider<? extends Task> taskProvider) {
+            var dependsOn = subject.getDependsOn();
+            assertThat(dependsOn).contains(taskProvider);
+            return this;
+        }
+
+        @SuppressWarnings({"unchecked", "rawtypes"})
+        public TaskAssertions<SELF> mustRunAfter(TaskProvider<? extends Task> taskProvider) {
+            var dependencies = (Set) subject.getMustRunAfter().getDependencies(null);
+            Consumer<Set> containsTaskProvider = deps -> assertThat(deps).contains(taskProvider);
+            Consumer<Set> containsTask = deps -> assertThat(deps).contains(taskProvider.get());
+            Consumer<Set> containsTaskName = deps -> assertThat(deps).contains(taskProvider.getName());
+            assertThat(dependencies).satisfiesAnyOf(
+                    containsTaskProvider,
+                    containsTaskName,
+                    containsTask
+            );
+            return this;
+        }
+
+        public <T extends Provider<? extends BuildService<?>>> TaskAssertions<SELF> requiresService(T buildServiceProvider) {
+            var requiredServices = ((DefaultTask) subject).getRequiredServices();
+            var serviceRequired = requiredServices.isServiceRequired(buildServiceProvider);
+            assertThat(serviceRequired).isTrue();
+            return this;
+        }
+    }
+
+    @RequiredArgsConstructor
+    class ProjectAssertions {
+
+        Project project;
+
+        public ProjectAssertions doesNotHaveTask(String taskName) {
+            assertThatThrownBy(() -> project.getTasks().named(taskName))
+                    .isInstanceOf(UnknownTaskException.class)
+                    .hasMessageContaining(taskName);
+            return this;
+        }
     }
 }

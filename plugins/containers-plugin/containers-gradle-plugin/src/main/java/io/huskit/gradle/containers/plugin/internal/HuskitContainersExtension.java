@@ -46,6 +46,7 @@ public abstract class HuskitContainersExtension implements ContainersExtension {
         requested.getRootProjectName().convention(getRootProjectName());
         requested.getProjectPath().convention(getProjectPath());
         requested.getProjectName().convention(getProjectName());
+        requested.getImage().convention(Constants.Mongo.DEFAULT_IMAGE);
         action.execute(requested);
         getContainersRequestedByUser().add(requested);
         var exposedEnvironment = objects.newInstance(MongoExposedEnvironmentSpec.class);

@@ -18,6 +18,7 @@ public class MaybeAddContainersEnvironment {
 
     public void maybeAdd() {
         dependentTask.doFirst(
+                ContainersTask.doFirstActionName(),
                 new AddContainersEnvironment(
                         log,
                         projectDescription,
