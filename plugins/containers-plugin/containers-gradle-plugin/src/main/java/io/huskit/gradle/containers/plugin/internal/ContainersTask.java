@@ -2,8 +2,9 @@ package io.huskit.gradle.containers.plugin.internal;
 
 import io.huskit.containers.model.ProjectDescription;
 import io.huskit.containers.model.started.StartedContainer;
+import io.huskit.containers.testcontainers.mongo.TestContainersDelegate;
 import io.huskit.gradle.common.plugin.model.string.CapitalizedString;
-import io.huskit.gradle.containers.plugin.api.ContainerRequestSpec;
+import io.huskit.gradle.containers.plugin.api.ContainerRequestSpecView;
 import io.huskit.gradle.containers.plugin.internal.buildservice.ContainersBuildService;
 import io.huskit.log.GradleProjectLog;
 import org.gradle.api.DefaultTask;
@@ -13,6 +14,7 @@ import org.gradle.api.tasks.Input;
 import org.gradle.api.tasks.Internal;
 import org.gradle.api.tasks.TaskAction;
 import org.gradle.work.DisableCachingByDefault;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -37,7 +39,7 @@ public abstract class ContainersTask extends DefaultTask {
     public abstract Property<ProjectDescription> getProjectDescription();
 
     @Input
-    public abstract ListProperty<ContainerRequestSpec> getRequestedContainers();
+    public abstract ListProperty<ContainerRequestSpecView> getRequestedContainers();
 
 
     @TaskAction
@@ -46,6 +48,10 @@ public abstract class ContainersTask extends DefaultTask {
     }
 
     public List<StartedContainer> startAndReturnContainers() {
+        return startAndReturnContainers(null);
+    }
+
+    public List<StartedContainer> startAndReturnContainers(@Nullable TestContainersDelegate testContainersDelegate) {
         var containerRequestSpecs = getRequestedContainers().get();
         if (containerRequestSpecs.isEmpty()) {
             return List.of();
@@ -60,7 +66,8 @@ public abstract class ContainersTask extends DefaultTask {
                 new ContainersRequestV2(
                         log,
                         projectDescription,
-                        getRequestedContainers()
+                        getRequestedContainers(),
+                        testContainersDelegate
                 )
         ).list();
         if (startedContainers.isEmpty()) {

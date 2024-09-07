@@ -3,7 +3,7 @@ package io.huskit.gradle.containers.plugin.api;
 import org.gradle.api.Task;
 import org.gradle.api.tasks.TaskProvider;
 
-public interface ShouldStartBeforeSpec {
+public interface ShouldStartBeforeSpecView {
 
     void task(TaskProvider<Task> taskProvider);
 

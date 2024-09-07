@@ -1,6 +1,7 @@
 package io.huskit.gradle.containers.plugin.api;
 
-import io.huskit.gradle.containers.plugin.api.mongo.MongoContainerRequestSpec;
+import io.huskit.gradle.containers.plugin.internal.mongo.MongoContainerRequestSpec;
+import io.huskit.gradle.containers.plugin.api.mongo.MongoContainerRequestSpecView;
 import org.gradle.api.Action;
 
 /**
@@ -21,9 +22,9 @@ public interface ContainersExtension {
     /**
      * Configures the dependency that containers should start before.
      *
-     * @param action action to configure {@link ShouldStartBeforeSpec}
+     * @param action action to configure {@link ShouldStartBeforeSpecView}
      */
-    void shouldStartBefore(Action<ShouldStartBeforeSpec> action);
+    void shouldStartBefore(Action<ShouldStartBeforeSpecView> action);
 
     /**
      * Configures single mongo container.
@@ -31,5 +32,5 @@ public interface ContainersExtension {
      *
      * @param action action to configure mongo container {@link MongoContainerRequestSpec}
      */
-    void mongo(Action<MongoContainerRequestSpec> action);
+    void mongo(Action<MongoContainerRequestSpecView> action);
 }

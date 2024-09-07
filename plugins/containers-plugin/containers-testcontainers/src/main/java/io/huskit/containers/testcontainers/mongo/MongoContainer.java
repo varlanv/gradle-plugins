@@ -1,9 +1,7 @@
 package io.huskit.containers.testcontainers.mongo;
 
 import io.huskit.common.function.MemoizedSupplier;
-import io.huskit.containers.model.ContainerLabels;
-import io.huskit.containers.model.ContainerType;
-import io.huskit.containers.model.MongoStartedContainer;
+import io.huskit.containers.model.*;
 import io.huskit.containers.model.id.ContainerId;
 import io.huskit.containers.model.port.ContainerPort;
 import io.huskit.containers.model.port.FixedContainerPort;
@@ -15,7 +13,10 @@ import lombok.SneakyThrows;
 import org.testcontainers.containers.MongoDBContainer;
 import org.testcontainers.utility.DockerImageName;
 
+import java.time.Instant;
 import java.util.Map;
+import java.util.Optional;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
 @RequiredArgsConstructor
@@ -28,6 +29,9 @@ public final class MongoContainer implements MongoStartedContainer {
     MemoizedSupplier<MongoDBContainer> mongoDBContainerSupplier = new MemoizedSupplier<>(this::getMongoDBContainer);
     MemoizedSupplier<ContainerPort> portSupplier = new MemoizedSupplier<>(this::_port);
     MemoizedSupplier<String> connectionStringBaseSupplier = new MemoizedSupplier<>(this::connectionStringBase);
+    MemoizedSupplier<Optional<ExistingContainer>> existingContainerSupplier = new MemoizedSupplier<>(this::existingContainer);
+
+    AtomicBoolean isStarted = new AtomicBoolean();
 
     @Override
     public ContainerId id() {
@@ -44,10 +48,9 @@ public final class MongoContainer implements MongoStartedContainer {
     public NonStartedContainer stop() {
         synchronized (this) {
             if (mongoDBContainerSupplier.isInitialized()) {
-                if (request.reuseOptions().enabled() && request.reuseOptions().dontStopOnClose()) {
+                if (request.reuseOptions().enabled() && request.reuseOptions().reuseBetweenBuilds()) {
                     // if container is reused - drop all databases except the default ones, instead of stopping the container
-                    var dropCommand = "mongo --eval 'db.adminCommand(\"listDatabases\").databases.forEach(d => {if(![\"admin\", \"config\", \"local\"].includes(d.name)) { db.getSiblingDB(d.name).dropDatabase();} });'";
-                    testContainersDelegate.execInContainer(mongoDBContainerSupplier, "/bin/sh", "-c", dropCommand);
+                    testContainersDelegate.execInContainer(mongoDBContainerSupplier, "/bin/sh", "-c", Constants.Mongo.DROP_COMMAND);
                     log.info("Dropped all databases except the default ones in mongo container [{}]", request.id().json());
                 } else {
                     var before = System.currentTimeMillis();
@@ -67,24 +70,23 @@ public final class MongoContainer implements MongoStartedContainer {
 
     @Override
     public MongoContainer start() {
-        testContainersDelegate.start(mongoDBContainerSupplier);
-        return this;
-    }
-
-    @Override
-    public String connectionString() {
-        start();
-        var mongoContainerReuse = request.reuseOptions();
-        var connectionStringBase = connectionStringBaseSupplier.get();
-        if (mongoContainerReuse.enabled() && mongoContainerReuse.newDatabaseForEachRequest()) {
-            var dbName = request.databaseName() + "_" + databaseNameCounter.incrementAndGet();
-            var result = connectionStringBase + "/" + dbName;
-            log.info("Reusable connection string - " + result);
-            return result;
-        } else {
-            log.info("Non reusable connection string - " + connectionStringBase);
-            return connectionStringBase;
+        if (isStarted.compareAndSet(false, true)) {
+            var cleanupAfter = request.reuseOptions().cleanup().cleanupAfter();
+            if (!cleanupAfter.isZero()) {
+                existingContainerSupplier.get().ifPresent(existingContainer -> {
+                    if (existingContainer.isExpired(cleanupAfter)) {
+                        log.info("Existing mongo container is expired (started at [{}], current time is [{}], timeout is [{}]), stopping it - [{}] ",
+                                Instant.ofEpochMilli(existingContainer.createdAt()),
+                                Instant.now(),
+                                cleanupAfter,
+                                request.id().json());
+                        testContainersDelegate.remove(existingContainer);
+                    }
+                });
+            }
+            testContainersDelegate.start(mongoDBContainerSupplier.get());
         }
+        return this;
     }
 
     @Override
@@ -93,23 +95,26 @@ public final class MongoContainer implements MongoStartedContainer {
         var mongoContainerReuse = request.reuseOptions();
         var connectionString = connectionStringBaseSupplier.get();
         var mongoExposedEnvironment = request.exposedEnvironment();
+        var port = String.valueOf(port().number());
         if (mongoContainerReuse.enabled() && mongoContainerReuse.newDatabaseForEachRequest()) {
-            var dbName = request.databaseName() + "_" + databaseNameCounter.incrementAndGet();
-            var connectionStringWithDb = connectionString + "/" + dbName;
-            log.info("Reusable connection string - [{}]", connectionStringWithDb);
+            var counter = databaseNameCounter.incrementAndGet();
+            var dbName = request.databaseName() + "_" + counter;
             return Map.of(
-                    mongoExposedEnvironment.connectionString(), connectionStringWithDb,
-                    mongoExposedEnvironment.port(), String.valueOf(port().number()),
+                    mongoExposedEnvironment.connectionString(), connectionString + "/" + dbName,
+                    mongoExposedEnvironment.port(), port,
                     mongoExposedEnvironment.databaseName(), dbName
             );
         } else {
-            log.info("Non reusable connection string - [{}]", connectionString);
             return Map.of(
                     mongoExposedEnvironment.connectionString(), connectionString,
-                    mongoExposedEnvironment.port(), String.valueOf(port().number()),
+                    mongoExposedEnvironment.port(), port,
                     mongoExposedEnvironment.databaseName(), request.databaseName()
             );
         }
+    }
+
+    private Optional<ExistingContainer> existingContainer() {
+        return testContainersDelegate.getExistingContainer(request.id());
     }
 
     private String connectionStringBase() {
@@ -121,24 +126,9 @@ public final class MongoContainer implements MongoStartedContainer {
     }
 
     private MongoDBContainer getMongoDBContainer() {
-        var mongoDBContainer = new MongoDBContainer(
-                DockerImageName.parse(
-                        request.image().value()
-                ).asCompatibleSubstituteFor("mongo")
-        ).withLabels(new ContainerLabels(id()).asMap()).withReuse(true);
-        startAndLog(mongoDBContainer, request.reuseOptions().enabled());
-        return mongoDBContainer;
-    }
-
-    private void startAndLog(MongoDBContainer container, boolean reuseEnabled) {
-        var before = System.currentTimeMillis();
-        container.start();
-        var key = request.id().json();
-        var time = System.currentTimeMillis() - before;
-        if (reuseEnabled) {
-            log.info("Started mongo reusable container in [{}] ms, key=[{}]", key, time);
-        } else {
-            log.info("Started mongo non-reusable container in [{}] ms, key=[{}] ", key, time);
-        }
+        return new MongoDBContainer(
+                DockerImageName.parse(request.image().value()).asCompatibleSubstituteFor("mongo"))
+                .withLabels(new ContainerLabels(id()).asMap())
+                .withReuse(true);
     }
 }

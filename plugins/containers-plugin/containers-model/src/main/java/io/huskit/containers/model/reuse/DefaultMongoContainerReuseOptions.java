@@ -11,9 +11,10 @@ public final class DefaultMongoContainerReuseOptions implements MongoContainerRe
 
     boolean enabled;
     boolean newDatabaseForEachRequest;
-    boolean dontStopOnClose;
+    boolean reuseBetweenBuilds;
+    ContainerCleanupOptions cleanup;
 
     public DefaultMongoContainerReuseOptions(boolean enableAll) {
-        this(enableAll, enableAll, enableAll);
+        this(enableAll, enableAll, enableAll, ContainerCleanupOptions.NEVER);
     }
 }

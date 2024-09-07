@@ -4,5 +4,7 @@ public interface ContainerReuseOptions {
 
     boolean enabled();
 
-    boolean dontStopOnClose();
+    boolean reuseBetweenBuilds();
+
+    ContainerCleanupOptions cleanup();
 }

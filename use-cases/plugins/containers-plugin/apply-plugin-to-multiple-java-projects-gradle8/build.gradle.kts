@@ -28,15 +28,18 @@ subprojects {
 
     plugins.withType<HuskitContainersPlugin> {
         extensions.configure(ContainersExtension::class.java) {
+            shouldStartBefore {
+                task("test")
+            }
             mongo {
-                image.set("mongo:4.4.8") // can use `image = "..."` in later gradle versions
-                fixedPort.set(1) // can use `fixedPort = 1` in later gradle versions
-                shouldStartBefore {
-                    task("test")
-                }
+                image("mongo:4.4.8")
+                fixedPort(1)
                 reuse {
-                    newDatabaseForEachTask.set(true) // can use `newDatabaseForEachTask = true` in later gradle versions
-                    reuseBetweenBuilds.set(true) // can use `reuseBetweenBuilds = true` in later gradle versions
+                    newDatabaseForEachTask(true)
+                    reuseBetweenBuilds(true)
+                    cleanup {
+                        after(60, "seconds")
+                    }
                 }
             }
         }

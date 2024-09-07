@@ -1,12 +1,10 @@
 package usecase;
 
-import org.junit.jupiter.api.Test;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import org.junit.jupiter.api.RepeatedTest;
 
 public class Mongo3Test {
 
-    @Test
+    @RepeatedTest(1)
     public void someMethodTest() throws Exception {
         MongoUseCase.verifyMongoConnection();
     }

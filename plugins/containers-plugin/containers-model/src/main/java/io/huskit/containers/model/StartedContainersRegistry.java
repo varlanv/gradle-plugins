@@ -20,7 +20,6 @@ public class StartedContainersRegistry {
 
     Log log;
     ConcurrentMap<String, Value<StartedContainer>> startedContainersById = new ConcurrentHashMap<>();
-    ConcurrentMap<String, Value<StartedContainer>> startedContainersBySourceAndId = new ConcurrentHashMap<>();
     Collection<StartedContainer> allStartedContainers = new ConcurrentLinkedQueue<>();
     KnownDockerContainers knownDockerContainers;
 
@@ -30,11 +29,7 @@ public class StartedContainersRegistry {
 
     public StartedContainer getOrStart(RequestedContainer requestedContainer) {
         var key = requestedContainer.id().json();
-        if (requestedContainer.reuseOptions().enabled()) {
             return getStartedContainerInternal(startedContainersById, key, requestedContainer);
-        } else {
-            return getStartedContainerInternal(startedContainersBySourceAndId, key, requestedContainer);
-        }
     }
 
     private StartedContainer getStartedContainerInternal(ConcurrentMap<String, Value<StartedContainer>> startedContainersByKey,
