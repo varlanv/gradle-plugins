@@ -2,7 +2,7 @@ package io.huskit.gradle.containers.plugin.internal;
 
 import io.huskit.common.function.MemoizedSupplier;
 import io.huskit.containers.model.id.ContainerId;
-import io.huskit.gradle.containers.plugin.api.ContainerRequestForTaskSpec;
+import io.huskit.gradle.containers.plugin.internal.request.ContainerRequestSpec;
 import lombok.RequiredArgsConstructor;
 
 import java.util.Map;
@@ -11,7 +11,7 @@ import java.util.TreeMap;
 @RequiredArgsConstructor
 public class DefaultContainerId implements ContainerId {
 
-    ContainerRequestForTaskSpec containerRequestForTaskSpec;
+    ContainerRequestSpec containerRequestForTaskSpec;
     Map<String, Object> properties = new TreeMap<>();
     MemoizedSupplier<String> memoizedSupplier = new MemoizedSupplier<>(this::_json);
 

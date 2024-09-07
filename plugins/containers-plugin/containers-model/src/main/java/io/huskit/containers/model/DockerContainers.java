@@ -1,8 +1,8 @@
 package io.huskit.containers.model;
 
+import io.huskit.common.concurrent.ParallelRunner;
 import io.huskit.containers.model.request.RequestedContainer;
 import io.huskit.containers.model.request.RequestedContainers;
-import io.huskit.common.concurrent.ParallelRunner;
 import io.huskit.containers.model.started.StartedContainer;
 import io.huskit.containers.model.started.StartedContainers;
 import io.huskit.log.Log;
@@ -21,7 +21,7 @@ public final class DockerContainers implements Containers {
     @Override
     public StartedContainers start() {
         return () -> {
-            log.info("Requesting containers to start - [{}]", requestedContainers);
+            log.info("Requesting [{}] containers to start", requestedContainers.size());
             var containers = requestedContainers.stream()
                     .map(requestedContainer -> (Supplier<RequestedContainer>) () -> requestedContainer)
                     .collect(Collectors.toList());

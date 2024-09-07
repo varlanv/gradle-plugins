@@ -22,6 +22,8 @@ import java.util.stream.Stream;
 @Tags({@Tag(BaseTest.FUNCTIONAL_TEST_TAG), @Tag(BaseTest.SLOW_TEST_TAG)})
 public interface FunctionalTest extends BaseTest {
 
+    Set<String> IGNORED_FILES_FOR_COPY = Set.of(".git", ".gradle", ".idea", "build", "out", "target");
+
     default File huskitProjectRoot() {
         return TestUtils.huskitProjectRoot();
     }
@@ -67,6 +69,7 @@ public interface FunctionalTest extends BaseTest {
             }
             args.add("--warning-mode=summary");
             args.add("-Dorg.gradle.logging.level=lifecycle");
+            args.add("-Dorg.gradle.logging.stacktrace=all");
             fixtureConsumer.accept(
                     new RunnerFunctionalFixture(
                             GradleRunner.create()
@@ -154,7 +157,7 @@ public interface FunctionalTest extends BaseTest {
         }
         FileUtils.listFilesAndDirs(srcDir, TrueFileFilter.INSTANCE, TrueFileFilter.INSTANCE)
                 .forEach(file -> {
-                    if (!file.getAbsolutePath().equals(srcDir.getAbsolutePath())) {
+                    if (!file.getAbsolutePath().equals(srcDir.getAbsolutePath()) && !IGNORED_FILES_FOR_COPY.contains(file.getName())) {
                         var relativePath = getRelativePath(srcDir, file);
                         var destFile = new File(destDir, relativePath);
                         if (file.isDirectory()) {

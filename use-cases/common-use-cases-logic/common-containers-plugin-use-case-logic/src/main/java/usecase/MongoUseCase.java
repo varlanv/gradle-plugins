@@ -14,27 +14,31 @@ import java.util.Objects;
 public class MongoUseCase {
 
     public static void verifyMongoConnection() {
-        String mongoConnectionStringEnv = "MONGO_CONNECTION_STRING";
-        String mongoConnectionString = System.getenv(mongoConnectionStringEnv);
-        MongoClient mongoClient = MongoClients.create(System.getenv(mongoConnectionStringEnv));
-        MongoDatabase test = mongoClient.getDatabase("test");
-        MongoCollection<Document> testCollection = test.getCollection("test_collection");
-        ObjectId objectId = new ObjectId();
-        String key = "key";
-        String value = "value";
-        InsertOneResult insertOneResult = testCollection.insertOne(
-                new Document()
-                        .append("_id", objectId)
-                        .append(key, value)
-        );
-        Document doc = testCollection.find(Filters.eq("_id", insertOneResult.getInsertedId())).first();
-        if (!Objects.equals(objectId, doc.get("_id"))) {
-            throw new RuntimeException();
+        try {
+            String mongoConnectionStringEnv = "MONGO_CONNECTION_STRING";
+            String mongoConnectionString = System.getenv(mongoConnectionStringEnv);
+            MongoClient mongoClient = MongoClients.create(System.getenv(mongoConnectionStringEnv));
+            MongoDatabase test = mongoClient.getDatabase("test");
+            MongoCollection<Document> testCollection = test.getCollection("test_collection");
+            ObjectId objectId = new ObjectId();
+            String key = "key";
+            String value = "value";
+            InsertOneResult insertOneResult = testCollection.insertOne(
+                    new Document()
+                            .append("_id", objectId)
+                            .append(key, value)
+            );
+            Document doc = testCollection.find(Filters.eq("_id", insertOneResult.getInsertedId())).first();
+            if (!Objects.equals(objectId, doc.get("_id"))) {
+                throw new RuntimeException();
+            }
+            if (!Objects.equals(value, doc.get(key))) {
+                throw new RuntimeException();
+            }
+            String messageMarker = "~_~~";
+            System.out.println(messageMarker + mongoConnectionStringEnv + "=" + mongoConnectionString);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
         }
-        if (!Objects.equals(value, doc.get(key))) {
-            throw new RuntimeException();
-        }
-        String messageMarker = "~_~~";
-        System.out.println(messageMarker + mongoConnectionStringEnv + "=" + mongoConnectionString);
     }
 }

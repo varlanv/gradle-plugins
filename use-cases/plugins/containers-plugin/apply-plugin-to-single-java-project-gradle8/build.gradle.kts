@@ -1,6 +1,3 @@
-import io.huskit.gradle.containers.plugin.HuskitContainersPlugin
-import io.huskit.gradle.containers.plugin.api.ContainersExtension
-
 plugins {
     java
     id("io.huskit.gradle.containers-plugin")
@@ -23,14 +20,12 @@ plugins.withId("java") {
     }
 }
 
-plugins.withType<HuskitContainersPlugin> {
-    extensions.configure(ContainersExtension::class.java) {
-        mongo {
-            image.set("mongo:4.4.8") // can use `image = ".."` in later gradle versions
-            fixedPort.set(1) // can use `fixedPort = 1` in later gradle versions
-            shouldStartBefore {
-                task("test")
-            }
-        }
+huskitContainers {
+    shouldStartBefore {
+        task("test")
+    }
+    mongo {
+        image("mongo:4.4.8")
+        fixedPort(1)
     }
 }

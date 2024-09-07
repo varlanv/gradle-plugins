@@ -1,14 +1,12 @@
 package io.huskit.gradle.containers.plugin.internal;
 
 import io.huskit.containers.model.ProjectDescription;
-import io.huskit.containers.testcontainers.mongo.ActualTestContainersDelegate;
 import io.huskit.gradle.common.plugin.model.NewOrExistingExtension;
 import io.huskit.log.Log;
 import lombok.RequiredArgsConstructor;
 import org.gradle.api.services.BuildServiceRegistry;
 import org.gradle.api.tasks.TaskContainer;
 
-import java.util.List;
 import java.util.function.Consumer;
 
 @RequiredArgsConstructor
@@ -28,17 +26,10 @@ public class ConfigureContainersPlugin implements Runnable {
                 projectDescription,
                 extensions
         ).get();
-        var testContainersDelegateExtension = extensions.getOrCreate(
-                TestContainersDelegateExtension.class,
-                TestContainersDelegateExtension.class,
-                TestContainersDelegateExtension.name(),
-                () -> List.of(new ActualTestContainersDelegate())
-        );
         var containersBuildServiceProvider = new RegisterContainersBuildService(
                 log,
                 projectDescription,
-                sharedServices,
-                testContainersDelegateExtension
+                sharedServices
         ).register();
         afterEvaluateSupplier.accept(
                 new ConfigureContainers(

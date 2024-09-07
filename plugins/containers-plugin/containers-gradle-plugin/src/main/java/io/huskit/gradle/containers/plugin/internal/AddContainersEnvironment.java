@@ -1,10 +1,9 @@
 package io.huskit.gradle.containers.plugin.internal;
 
-import io.huskit.containers.model.ContainersRequest;
 import io.huskit.containers.model.MongoStartedContainer;
 import io.huskit.containers.model.ProjectDescription;
-import io.huskit.containers.model.started.StartedContainer;
-import io.huskit.gradle.containers.plugin.api.ContainerRequestSpec;
+import io.huskit.containers.testcontainers.mongo.TestContainersDelegate;
+import io.huskit.gradle.containers.plugin.api.ContainerRequestSpecView;
 import io.huskit.gradle.containers.plugin.internal.buildservice.ContainersBuildService;
 import io.huskit.log.Log;
 import lombok.RequiredArgsConstructor;
@@ -13,8 +12,9 @@ import org.gradle.api.Task;
 import org.gradle.api.provider.ListProperty;
 import org.gradle.api.provider.Provider;
 import org.gradle.api.tasks.testing.Test;
+import org.jetbrains.annotations.Nullable;
 
-import java.util.List;
+import java.util.Map;
 
 @RequiredArgsConstructor
 public class AddContainersEnvironment implements Action<Task> {
@@ -22,24 +22,23 @@ public class AddContainersEnvironment implements Action<Task> {
     Log log;
     ProjectDescription projectDescription;
     Provider<ContainersBuildService> containersBuildServiceProvider;
-    ListProperty<ContainerRequestSpec> containersRequestedByUser;
+    ListProperty<ContainerRequestSpecView> containersRequestedByUser;
 
     @Override
     public void execute(Task task) {
-        executeAndReturn(task);
+        executeAndReturn(task, null);
     }
 
-    public List<StartedContainer> executeAndReturn(Task task) {
+    public Map<String, String> executeAndReturn(Task task, @Nullable TestContainersDelegate testContainersDelegate) {
         if (task instanceof Test) {
             var test = (Test) task;
             var containersBuildService = containersBuildServiceProvider.get();
             var startedContainers = containersBuildService.containers(
-                    new ContainersRequest(
+                    new ContainersRequestV2(
                             log,
                             projectDescription,
-                            new RequestedContainersFromGradleUser(
-                                    containersRequestedByUser.get()
-                            )
+                            containersRequestedByUser,
+                            testContainersDelegate
                     )
             ).list();
             if (!startedContainers.isEmpty()) {
@@ -47,11 +46,11 @@ public class AddContainersEnvironment implements Action<Task> {
                 log.info("Adding containers environment to task: [{}]", task.getName());
                 var environment = startedContainer.environment();
                 test.setEnvironment(environment);
-                return startedContainers;
+                return environment;
             }
         } else {
             log.info("Task [{}] is not a test task, so environment variables will not be added", task.getName());
         }
-        return List.of();
+        return Map.of();
     }
 }

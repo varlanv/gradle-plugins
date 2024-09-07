@@ -1,12 +1,12 @@
-package io.huskit.gradle.containers.plugin.internal;
+package io.huskit.gradle.containers.plugin.internal.request;
 
-import io.huskit.gradle.containers.plugin.api.ShouldStartBeforeSpec;
+import io.huskit.gradle.containers.plugin.api.ShouldStartBeforeSpecView;
 import lombok.experimental.NonFinal;
 import org.gradle.api.Task;
 import org.gradle.api.provider.Property;
 import org.gradle.api.tasks.TaskProvider;
 
-public abstract class AbstractShouldStartBeforeSpec implements ShouldStartBeforeSpec {
+public abstract class AbstractShouldStartBeforeSpec implements ShouldStartBeforeSpecView {
 
     private @NonFinal boolean isSet = false;
 
