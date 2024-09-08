@@ -1,19 +1,34 @@
 package io.huskit.containers.testcontainers.mongo;
 
+import com.github.dockerjava.api.DockerClient;
+import com.github.dockerjava.api.model.Container;
+import io.huskit.common.function.MemoizedSupplier;
 import io.huskit.containers.model.ExistingContainer;
 import io.huskit.containers.model.id.ContainerId;
+import io.huskit.log.Log;
+import io.huskit.log.ProfileLog;
+import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import org.testcontainers.DockerClientFactory;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.MongoDBContainer;
 
-import java.io.Serializable;
+import java.io.*;
 import java.time.Duration;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Properties;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Supplier;
+import java.util.stream.Collectors;
 
+@RequiredArgsConstructor
 public class ActualTestContainersDelegate implements TestContainersDelegate, Serializable {
+
+    private static final AtomicBoolean reuseInitialized = new AtomicBoolean();
+    private static final Supplier<DockerClient> dockerClient = new MemoizedSupplier<>(() -> ProfileLog.withProfile("Testcontainers initialize", () -> DockerClientFactory.instance().client()));
+    Log log;
 
     @Override
     @SneakyThrows
@@ -43,9 +58,8 @@ public class ActualTestContainersDelegate implements TestContainersDelegate, Ser
 
     @Override
     public Optional<ExistingContainer> getExistingContainer(ContainerId id) {
-        var client = DockerClientFactory.instance().client();
         var idJson = id.json();
-        var huskitId = client.listContainersCmd().withLabelFilter(Map.of("huskit_id", idJson)).exec();
+        var huskitId = dockerClient.get().listContainersCmd().withLabelFilter(Map.of("huskit_id", idJson)).exec();
         if (huskitId.size() == 1) {
             var container = huskitId.get(0);
             var labels = container.getLabels();
@@ -64,10 +78,62 @@ public class ActualTestContainersDelegate implements TestContainersDelegate, Ser
 
     @Override
     public void remove(ExistingContainer existingContainer) {
-        DockerClientFactory.instance().client()
+        dockerClient.get()
                 .removeContainerCmd(existingContainer.containerId())
                 .withRemoveVolumes(true)
                 .withForce(true)
                 .exec();
+    }
+
+    /**
+     * Enables reuse of TestContainers containers.
+     * Testcontainers library requires property {@code testcontainers.reuse.enable} to be set to {@code true} in
+     * {@code ~/.testcontainers.properties} file.
+     */
+    @Override
+    @SneakyThrows
+    public void setReuse() {
+        if (!reuseInitialized.get()) {
+            synchronized (this) {
+                if (!reuseInitialized.get()) {
+                    var userHomePath = System.getProperty("user.home");
+                    var propertiesFile = getTestcontainerPropertiesFile(userHomePath);
+                    var props = new Properties();
+                    try (var reader = new FileReader(propertiesFile)) {
+                        props.load(reader);
+                    }
+                    var reuseKey = "testcontainers.reuse.enable";
+                    if (!"true".equals(props.getProperty(reuseKey))) {
+                        props.put(reuseKey, "true");
+                        try (var writer = new FileWriter(propertiesFile)) {
+                            props.store(writer, "Modified by huskit-containers plugin");
+                        }
+                        log.lifecycle("Enabled property [{}] in file [{}] for TestContainers containers reuse. See https://java.testcontainers.org/features/reuse/",
+                                reuseKey, propertiesFile);
+                        reuseInitialized.set(true);
+                    }
+                }
+            }
+        }
+    }
+
+    public List<Map<String, String>> findHuskitContainers() {
+        var listContainersCmd = dockerClient.get().listContainersCmd().withLabelFilter(Map.of("huskit_container", "true"));
+        return listContainersCmd.exec().stream()
+                .map(Container::getLabels)
+                .collect(Collectors.toList());
+    }
+
+
+    private File getTestcontainerPropertiesFile(String userHomePath) throws IOException {
+        var userHome = new File(userHomePath);
+        var properties = new File(userHome, ".testcontainers.properties");
+        if (!properties.exists()) {
+            if (!properties.createNewFile()) {
+                throw new IllegalStateException(String.format("Containers reuse was requested, but could not create file [%s] to" +
+                        " allow testcontainers to reuse containers. see https://java.testcontainers.org/features/reuse/", properties));
+            }
+        }
+        return properties;
     }
 }

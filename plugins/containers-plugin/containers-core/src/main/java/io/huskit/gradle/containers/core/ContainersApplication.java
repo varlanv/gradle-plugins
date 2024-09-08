@@ -8,7 +8,6 @@ import io.huskit.containers.model.started.StartedContainer;
 import io.huskit.containers.model.started.StartedContainers;
 import io.huskit.containers.testcontainers.mongo.MongoContainer;
 import io.huskit.containers.testcontainers.mongo.TestContainersDelegate;
-import io.huskit.containers.testcontainers.mongo.TestContainersUtils;
 import io.huskit.log.Log;
 import lombok.RequiredArgsConstructor;
 
@@ -34,8 +33,7 @@ public class ContainersApplication implements AutoCloseable {
     }
 
     public static ContainersApplication application(Log commonLog, TestContainersDelegate testContainersDelegate) {
-        var testContainersUtils = new TestContainersUtils(commonLog);
-        testContainersUtils.setReuse();
+        testContainersDelegate.setReuse();
         return new ContainersApplication(
                 commonLog,
                 new StartedContainersRegistry(

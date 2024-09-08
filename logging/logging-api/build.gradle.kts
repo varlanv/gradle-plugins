@@ -4,5 +4,6 @@ plugins {
 }
 
 dependencies {
+    implementation(projects.common)
     implementation(libs.slf4j.api)
 }

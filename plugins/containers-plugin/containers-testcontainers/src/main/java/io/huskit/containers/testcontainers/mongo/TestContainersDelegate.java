@@ -5,6 +5,7 @@ import io.huskit.containers.model.id.ContainerId;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.MongoDBContainer;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.function.Supplier;
 
@@ -23,4 +24,6 @@ public interface TestContainersDelegate {
     Optional<ExistingContainer> getExistingContainer(ContainerId id);
 
     void remove(ExistingContainer existingContainer);
+
+    void setReuse();
 }

@@ -7,6 +7,7 @@ import io.huskit.gradle.common.plugin.model.string.CapitalizedString;
 import io.huskit.gradle.containers.plugin.api.ContainerRequestSpecView;
 import io.huskit.gradle.containers.plugin.internal.buildservice.ContainersBuildService;
 import io.huskit.log.GradleProjectLog;
+import io.huskit.log.ProfileLog;
 import org.gradle.api.DefaultTask;
 import org.gradle.api.provider.ListProperty;
 import org.gradle.api.provider.Property;
@@ -52,16 +53,24 @@ public abstract class ContainersTask extends DefaultTask {
     }
 
     public List<StartedContainer> startAndReturnContainers(@Nullable TestContainersDelegate testContainersDelegate) {
-        var containerRequestSpecs = getRequestedContainers().get();
-        if (containerRequestSpecs.isEmpty()) {
-            return List.of();
-        }
         var projectDescription = getProjectDescription().get();
         var log = new GradleProjectLog(
                 ContainersTask.class,
                 projectDescription.path(),
                 projectDescription.name()
         );
+        return ProfileLog.withProfile(
+                "io.huskit.gradle.containers.plugin.internal.ContainersTask.getStartedContainers",
+                () -> getStartedContainers(testContainersDelegate, log, projectDescription));
+    }
+
+    private List<StartedContainer> getStartedContainers(@Nullable TestContainersDelegate testContainersDelegate,
+                                                        GradleProjectLog log,
+                                                        ProjectDescription projectDescription) {
+        var containerRequestSpecs = getRequestedContainers().get();
+        if (containerRequestSpecs.isEmpty()) {
+            return List.of();
+        }
         var startedContainers = getContainersBuildService().get().containers(
                 new ContainersRequestV2(
                         log,

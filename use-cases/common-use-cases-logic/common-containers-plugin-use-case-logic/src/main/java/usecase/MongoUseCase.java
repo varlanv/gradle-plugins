@@ -9,15 +9,16 @@ import com.mongodb.client.result.InsertOneResult;
 import org.bson.Document;
 import org.bson.types.ObjectId;
 
+import java.time.Duration;
 import java.util.Objects;
 
 public class MongoUseCase {
 
     public static void verifyMongoConnection() {
-        try {
-            String mongoConnectionStringEnv = "MONGO_CONNECTION_STRING";
-            String mongoConnectionString = System.getenv(mongoConnectionStringEnv);
-            MongoClient mongoClient = MongoClients.create(System.getenv(mongoConnectionStringEnv));
+        var timeBefore = System.currentTimeMillis();
+        String mongoConnectionStringEnv = "MONGO_CONNECTION_STRING";
+        String mongoConnectionString = System.getenv(mongoConnectionStringEnv);
+        try (MongoClient mongoClient = MongoClients.create(System.getenv(mongoConnectionStringEnv))) {
             MongoDatabase test = mongoClient.getDatabase("test");
             MongoCollection<Document> testCollection = test.getCollection("test_collection");
             ObjectId objectId = new ObjectId();
@@ -39,6 +40,8 @@ public class MongoUseCase {
             System.out.println(messageMarker + mongoConnectionStringEnv + "=" + mongoConnectionString);
         } catch (Exception e) {
             throw new RuntimeException(e);
+        } finally {
+            System.out.printf("Mongo test body time: [%s]%n", Duration.ofMillis(System.currentTimeMillis() - timeBefore));
         }
     }
 }

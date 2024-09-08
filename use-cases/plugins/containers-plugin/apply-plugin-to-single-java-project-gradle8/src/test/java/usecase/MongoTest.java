@@ -5,7 +5,7 @@ import org.junit.jupiter.api.Test;
 public class MongoTest {
 
     @Test
-    public void someMethodTest() {
+    void someMethodTest() {
         MongoUseCase.verifyMongoConnection();
     }
 }

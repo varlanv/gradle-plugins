@@ -9,11 +9,15 @@ import io.huskit.gradle.containers.plugin.internal.ContainersBuildServiceParams;
 import io.huskit.gradle.containers.plugin.internal.ContainersRequestV2;
 import io.huskit.gradle.containers.plugin.internal.request.RequestedContainersFromGradleUser;
 import io.huskit.log.GradleLog;
+import io.huskit.log.ProfileLog;
 import lombok.experimental.NonFinal;
 import org.gradle.api.services.BuildService;
 
 import java.io.Serializable;
+import java.time.Duration;
 import java.util.Optional;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicLong;
 
 public abstract class ContainersBuildService implements BuildService<ContainersBuildServiceParams>, AutoCloseable, Serializable {
 
@@ -22,6 +26,9 @@ public abstract class ContainersBuildService implements BuildService<ContainersB
     }
 
     private volatile @NonFinal ContainersApplication application;
+    AtomicLong timeStarted = new AtomicLong();
+    private static final AtomicInteger counter = new AtomicInteger();
+    private static final ActualTestContainersDelegate testContainersDelegate = new ActualTestContainersDelegate(new GradleLog(ContainersBuildService.class));
 
     @SuppressWarnings("resource")
     public StartedContainers containers(ContainersRequestV2 request) {
@@ -30,9 +37,11 @@ public abstract class ContainersBuildService implements BuildService<ContainersB
             synchronized (this) {
                 app = application;
                 if (app == null) {
+                    timeStarted.set(System.currentTimeMillis());
+                    var log = new GradleLog(ContainersBuildService.class);
                     application = app = ContainersApplication.application(
-                            new GradleLog(ContainersBuildService.class),
-                            Optional.ofNullable(request.testContainersDelegate()).orElseGet(ActualTestContainersDelegate::new)
+                            log,
+                            Optional.ofNullable(request.testContainersDelegate()).orElse(testContainersDelegate)
                     );
                 }
             }
@@ -50,7 +59,9 @@ public abstract class ContainersBuildService implements BuildService<ContainersB
     public void close() throws Exception {
         var app = application;
         if (app != null) {
-            app.close();
+            ProfileLog.withProfile("io.huskit.gradle.containers.core.ContainersApplication.close", app::close);
         }
+        new GradleLog(ContainersBuildService.class).error("------------------------------------------Finished in [{}]ms key [{}]----------------------------------------",
+                Duration.ofMillis(System.currentTimeMillis() - timeStarted.get()).toMillis(), counter.getAndIncrement());
     }
 }

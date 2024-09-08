@@ -319,6 +319,7 @@ public class HuskitContainersPluginIntegrationTest implements GradleIntegrationT
             verify(fixture.testContainersDelegateMock()).start(any());
             verify(fixture.testContainersDelegateMock()).getFirstMappedPort(any());
             verify(fixture.testContainersDelegateMock()).getExistingContainer(any());
+            verify(fixture.testContainersDelegateMock()).setReuse();
             verifyNoMoreInteractions(fixture.testContainersDelegateMock());
         });
     }
@@ -366,6 +367,7 @@ public class HuskitContainersPluginIntegrationTest implements GradleIntegrationT
             verify(fixture.testContainersDelegateMock()).start(any());
             verify(fixture.testContainersDelegateMock()).getFirstMappedPort(any());
             verify(fixture.testContainersDelegateMock()).getExistingContainer(any());
+            verify(fixture.testContainersDelegateMock()).setReuse();
             verifyNoMoreInteractions(fixture.testContainersDelegateMock());
         });
     }
@@ -406,6 +408,7 @@ public class HuskitContainersPluginIntegrationTest implements GradleIntegrationT
             verify(fixture.testContainersDelegateMock()).start(any());
             verify(fixture.testContainersDelegateMock()).getFirstMappedPort(any());
             verify(fixture.testContainersDelegateMock()).getExistingContainer(any());
+            verify(fixture.testContainersDelegateMock()).setReuse();
             verifyNoMoreInteractions(fixture.testContainersDelegateMock());
         });
     }
@@ -448,6 +451,7 @@ public class HuskitContainersPluginIntegrationTest implements GradleIntegrationT
             verify(fixture.testContainersDelegateMock()).getFirstMappedPort(any());
             verify(fixture.testContainersDelegateMock()).execInContainer(any(), eq("/bin/sh"), eq("-c"), eq(Constants.Mongo.DROP_COMMAND));
             verify(fixture.testContainersDelegateMock()).getExistingContainer(any());
+            verify(fixture.testContainersDelegateMock()).setReuse();
             verifyNoMoreInteractions(fixture.testContainersDelegateMock());
         });
     }
@@ -479,6 +483,7 @@ public class HuskitContainersPluginIntegrationTest implements GradleIntegrationT
             verify(fixture.testContainersDelegateMock()).getFirstMappedPort(any());
             verify(fixture.testContainersDelegateMock()).stop(any());
             verify(fixture.testContainersDelegateMock()).getExistingContainer(any());
+            verify(fixture.testContainersDelegateMock()).setReuse();
             verifyNoMoreInteractions(fixture.testContainersDelegateMock());
         });
     }
@@ -522,6 +527,7 @@ public class HuskitContainersPluginIntegrationTest implements GradleIntegrationT
             verify(fixture.testContainersDelegateMock()).start(any());
             verify(fixture.testContainersDelegateMock()).stop(any());
             verify(fixture.testContainersDelegateMock()).getFirstMappedPort(any());
+            verify(fixture.testContainersDelegateMock()).setReuse();
             verifyNoMoreInteractions(fixture.testContainersDelegateMock());
         });
     }
