@@ -1,4 +1,4 @@
-package io.huskit.gradle.containers.plugin.internal.request;
+package io.huskit.gradle.containers.plugin.internal.spec;
 
 import io.huskit.gradle.containers.plugin.api.ShouldStartBeforeSpecView;
 import lombok.experimental.NonFinal;
@@ -39,7 +39,7 @@ public abstract class AbstractShouldStartBeforeSpec implements ShouldStartBefore
 
     private void checkNotAlreadySet() {
         if (isSet) {
-            throw new IllegalStateException("shouldRunBefore has already been set");
+            throw new IllegalArgumentException("shouldRunBefore has already been set");
         }
     }
 }

@@ -4,8 +4,8 @@ import io.huskit.containers.model.ProjectDescription;
 import io.huskit.containers.model.started.StartedContainer;
 import io.huskit.containers.testcontainers.mongo.TestContainersDelegate;
 import io.huskit.gradle.common.plugin.model.string.CapitalizedString;
-import io.huskit.gradle.containers.plugin.api.ContainerRequestSpecView;
 import io.huskit.gradle.containers.plugin.internal.buildservice.ContainersBuildService;
+import io.huskit.gradle.containers.plugin.internal.spec.ContainerRequestSpec;
 import io.huskit.log.GradleProjectLog;
 import io.huskit.log.ProfileLog;
 import org.gradle.api.DefaultTask;
@@ -40,7 +40,7 @@ public abstract class ContainersTask extends DefaultTask {
     public abstract Property<ProjectDescription> getProjectDescription();
 
     @Input
-    public abstract ListProperty<ContainerRequestSpecView> getRequestedContainers();
+    public abstract ListProperty<ContainerRequestSpec> getRequestedContainers();
 
 
     @TaskAction

@@ -9,12 +9,8 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public final class DefaultMongoContainerReuseOptions implements MongoContainerReuseOptions {
 
-    boolean enabled;
-    boolean newDatabaseForEachRequest;
-    boolean reuseBetweenBuilds;
+    Boolean enabled;
+    Boolean newDatabaseForEachRequest;
+    Boolean reuseBetweenBuilds;
     ContainerCleanupOptions cleanup;
-
-    public DefaultMongoContainerReuseOptions(boolean enableAll) {
-        this(enableAll, enableAll, enableAll, ContainerCleanupOptions.NEVER);
-    }
 }

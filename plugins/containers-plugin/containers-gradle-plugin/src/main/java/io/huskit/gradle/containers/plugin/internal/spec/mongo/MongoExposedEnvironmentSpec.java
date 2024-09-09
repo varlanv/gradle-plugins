@@ -1,4 +1,4 @@
-package io.huskit.gradle.containers.plugin.internal.mongo;
+package io.huskit.gradle.containers.plugin.internal.spec.mongo;
 
 import io.huskit.gradle.containers.plugin.api.mongo.MongoExposedEnvironmentSpecView;
 import org.gradle.api.provider.Property;

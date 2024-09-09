@@ -15,6 +15,7 @@ public class RegisterContainersBuildService {
     Log log;
     ProjectDescription projectDescription;
     BuildServiceRegistry sharedServices;
+    HuskitContainersExtension containersExtension;
 
     public Provider<ContainersBuildService> register() {
         var containersServiceName = ContainersBuildService.name();

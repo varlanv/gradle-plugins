@@ -1,7 +1,15 @@
-package io.huskit.gradle.containers.plugin.api;
+package io.huskit.gradle.containers.plugin.internal.spec;
 
+import io.huskit.containers.model.port.ContainerPort;
+import io.huskit.containers.model.port.DynamicContainerPort;
+import io.huskit.containers.model.port.FixedContainerPort;
+import io.huskit.containers.model.port.FixedRangePort;
+import io.huskit.gradle.containers.plugin.api.ContainerPortSpecView;
+import io.huskit.gradle.containers.plugin.api.FixedContainerPortSpecView;
 import org.gradle.api.Action;
 import org.gradle.api.provider.Property;
+
+import java.util.Optional;
 
 public interface ContainerPortSpec extends ContainerPortSpecView {
 
@@ -29,5 +37,21 @@ public interface ContainerPortSpec extends ContainerPortSpecView {
             }
         }
         getDynamic().set(false);
+    }
+
+    default ContainerPort resolve(ContainerPortSpec portSpec) {
+        return Optional.ofNullable(portSpec.getFixed().getOrNull())
+                .map(fixedPort -> {
+                    var hostValue = fixedPort.getHostValue().getOrNull();
+                    var hostRange = fixedPort.getHostRange().getOrNull();
+                    if (hostValue != null) {
+                        return new FixedContainerPort(hostValue, fixedPort.getContainerValue().get());
+                    } else if (hostRange != null) {
+                        return new FixedRangePort(hostRange.left(), hostRange.right(), fixedPort.getContainerValue().get());
+                    } else {
+                        return null;
+                    }
+                })
+                .orElseGet(DynamicContainerPort::new);
     }
 }

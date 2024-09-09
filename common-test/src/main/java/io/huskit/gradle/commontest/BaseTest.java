@@ -12,6 +12,7 @@ import java.util.Objects;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicReference;
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 public interface BaseTest {
@@ -35,6 +36,7 @@ public interface BaseTest {
     @SneakyThrows
     default void parallel(int nThreads, ThrowingRunnable runnable) {
         var executorService = Executors.newFixedThreadPool(nThreads);
+        var exceptionRef = new AtomicReference<Exception>();
         try {
             var readyToStartLock = new CountDownLatch(nThreads);
             var startLock = new CountDownLatch(1);
@@ -47,7 +49,7 @@ public interface BaseTest {
                         startLock.await(5, TimeUnit.SECONDS);  // Wait without a timeout
                         runnable.run();
                     } catch (Exception e) {
-                        throw new RuntimeException(e);
+                        exceptionRef.set(e);
                     } finally {
                         finishedLock.countDown();
                     }
@@ -59,6 +61,9 @@ public interface BaseTest {
             finishedLock.await(5, TimeUnit.SECONDS); // Wait for all threads to finish
         } finally {
             executorService.shutdown();
+        }
+        if (exceptionRef.get() != null) {
+            throw exceptionRef.get();
         }
     }
 

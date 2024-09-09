@@ -4,6 +4,7 @@ import com.github.dockerjava.api.DockerClient;
 import com.github.dockerjava.api.model.Container;
 import io.huskit.common.function.MemoizedSupplier;
 import io.huskit.containers.model.DefaultExistingContainer;
+import io.huskit.containers.model.ExistingContainer;
 import io.huskit.containers.model.id.ContainerId;
 import io.huskit.log.Log;
 import io.huskit.log.ProfileLog;
@@ -27,7 +28,9 @@ import java.util.stream.Collectors;
 public class ActualTestContainersDelegate implements TestContainersDelegate, Serializable {
 
     private static final AtomicBoolean reuseInitialized = new AtomicBoolean();
-    private static final Supplier<DockerClient> dockerClient = new MemoizedSupplier<>(() -> ProfileLog.withProfile("Testcontainers initialize", () -> DockerClientFactory.instance().client()));
+    private static final Supplier<DockerClient> dockerClient = new MemoizedSupplier<>(() ->
+            ProfileLog.withProfile("Testcontainers initialize", () ->
+                    DockerClientFactory.instance().client()));
     Log log;
 
     @Override
@@ -57,7 +60,7 @@ public class ActualTestContainersDelegate implements TestContainersDelegate, Ser
     }
 
     @Override
-    public Optional<DefaultExistingContainer> getExistingContainer(ContainerId id) {
+    public Optional<ExistingContainer> getExistingContainer(ContainerId id) {
         var idJson = id.json();
         var huskitId = dockerClient.get().listContainersCmd().withLabelFilter(Map.of("huskit_id", idJson)).exec();
         if (huskitId.size() == 1) {
@@ -77,7 +80,7 @@ public class ActualTestContainersDelegate implements TestContainersDelegate, Ser
     }
 
     @Override
-    public void remove(DefaultExistingContainer existingContainer) {
+    public void remove(ExistingContainer existingContainer) {
         dockerClient.get()
                 .removeContainerCmd(existingContainer.containerId())
                 .withRemoveVolumes(true)

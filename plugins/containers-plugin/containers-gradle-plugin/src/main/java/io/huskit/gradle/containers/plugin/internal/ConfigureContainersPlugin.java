@@ -21,24 +21,26 @@ public class ConfigureContainersPlugin implements Runnable {
 
     @Override
     public void run() {
-        var dockerContainersExtension = new PrepareContainersExtension(
-                log,
+        var containersExtension = new PrepareContainersExtension(
                 projectDescription,
                 extensions
         ).get();
-        var containersBuildServiceProvider = new RegisterContainersBuildService(
-                log,
-                projectDescription,
-                sharedServices
-        ).register();
         afterEvaluateSupplier.accept(
-                new ConfigureContainers(
-                        log,
-                        projectDescription,
-                        dockerContainersExtension,
-                        tasks,
-                        containersBuildServiceProvider
-                )
+                () -> {
+                    var containersBuildServiceProvider = new RegisterContainersBuildService(
+                            log,
+                            projectDescription,
+                            sharedServices,
+                            containersExtension
+                    ).register();
+                    new ConfigureContainers(
+                            log,
+                            projectDescription,
+                            containersExtension,
+                            tasks,
+                            containersBuildServiceProvider
+                    ).run();
+                }
         );
     }
 }

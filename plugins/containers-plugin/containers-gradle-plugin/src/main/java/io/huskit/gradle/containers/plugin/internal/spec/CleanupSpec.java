@@ -1,4 +1,4 @@
-package io.huskit.gradle.containers.plugin.internal;
+package io.huskit.gradle.containers.plugin.internal.spec;
 
 import io.huskit.gradle.containers.plugin.api.CleanupSpecView;
 import org.gradle.api.provider.Property;
@@ -26,9 +26,9 @@ public interface CleanupSpec extends CleanupSpecView {
         }
         var duration = Duration.of(time, unit);
         if (duration.isNegative()) {
-            throw new IllegalArgumentException("`cleanupAfter` cannot be negative");
+            throw new IllegalArgumentException(String.format("`cleanupAfter` [%s] cannot be negative", duration));
         } else if (time != 0 && duration.getSeconds() < 60) {
-            throw new IllegalArgumentException("`cleanupAfter` cannot be less than 60 seconds");
+            throw new IllegalArgumentException(String.format("`cleanupAfter` [%s] cannot be less than 60 seconds", duration));
         }
         getCleanupAfter().set(duration);
     }

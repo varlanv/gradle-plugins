@@ -4,7 +4,7 @@ import io.huskit.containers.model.Constants;
 import io.huskit.gradle.DockerFunctionalTest;
 import io.huskit.gradle.GradleRunResult;
 import io.huskit.gradle.commontest.DataTable;
-import io.huskit.gradle.containers.plugin.api.ContainersExtension;
+import io.huskit.gradle.containers.plugin.internal.HuskitContainersExtension;
 import org.apache.commons.lang3.StringUtils;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -28,7 +28,7 @@ public class HuskitContainersPluginFunctionalTest implements DockerFunctionalTes
                 fixture -> {
                     setFileText(fixture.rootBuildFile(), "plugins { id 'io.huskit.gradle.containers-plugin' }");
                     var buildResult = build(fixture.runner());
-                    assertThat(buildResult.getOutput()).contains(ContainersExtension.name());
+                    assertThat(buildResult.getOutput()).contains(HuskitContainersExtension.name());
                 });
     }
 

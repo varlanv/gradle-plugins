@@ -1,6 +1,6 @@
 package io.huskit.gradle.containers.plugin.api;
 
-import io.huskit.gradle.containers.plugin.internal.CleanupSpec;
+import io.huskit.gradle.containers.plugin.internal.spec.CleanupSpec;
 
 import java.time.Duration;
 import java.time.temporal.ChronoUnit;

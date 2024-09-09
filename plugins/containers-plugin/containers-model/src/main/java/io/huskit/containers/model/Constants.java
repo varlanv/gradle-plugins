@@ -1,12 +1,12 @@
 package io.huskit.containers.model;
 
-import lombok.experimental.UtilityClass;
-
 import java.time.Duration;
 import java.time.temporal.ChronoUnit;
 
-@UtilityClass
 public class Constants {
+
+    private Constants() {
+    }
 
     public static class Cleanup {
 
