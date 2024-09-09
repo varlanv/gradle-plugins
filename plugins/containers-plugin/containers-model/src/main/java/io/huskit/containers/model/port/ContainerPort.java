@@ -1,6 +1,12 @@
 package io.huskit.containers.model.port;
 
+import java.util.Optional;
+
 public interface ContainerPort {
 
-    int number();
+    Integer hostValue();
+
+    Optional<Integer> containerValue();
+
+    Boolean isFixed();
 }

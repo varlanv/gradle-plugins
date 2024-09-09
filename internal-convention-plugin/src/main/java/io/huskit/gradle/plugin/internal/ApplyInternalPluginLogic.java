@@ -81,11 +81,11 @@ public class ApplyInternalPluginLogic {
                     tasks,
                     syncBuildService
             ).configure();
+            new ConfigurePublishing(
+                    pluginManager,
+                    extensions,
+                    components
+            ).configure();
         });
-        new ConfigurePublishing(
-                pluginManager,
-                extensions,
-                components
-        ).configure();
     }
 }

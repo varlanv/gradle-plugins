@@ -7,6 +7,7 @@ pluginManagement {
     }
     plugins {
         id("org.gradle.toolchains.foojay-resolver-convention").version(providers.gradleProperty("foojayToolchainPluginVersion").get())
+        id("com.gradleup.shadow").version(providers.gradleProperty("shadowPluginVersion").get())
     }
     includeBuild("internal-convention-plugin")
 }

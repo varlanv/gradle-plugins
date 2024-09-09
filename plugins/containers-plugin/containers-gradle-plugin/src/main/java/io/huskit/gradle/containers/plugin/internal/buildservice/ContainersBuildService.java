@@ -6,7 +6,7 @@ import io.huskit.containers.testcontainers.mongo.ActualTestContainersDelegate;
 import io.huskit.gradle.common.plugin.model.DefaultInternalExtensionName;
 import io.huskit.gradle.containers.core.ContainersApplication;
 import io.huskit.gradle.containers.plugin.internal.ContainersBuildServiceParams;
-import io.huskit.gradle.containers.plugin.internal.ContainersRequestV2;
+import io.huskit.gradle.containers.plugin.internal.ContainersServiceRequest;
 import io.huskit.gradle.containers.plugin.internal.request.RequestedContainersFromGradleUser;
 import io.huskit.log.GradleLog;
 import io.huskit.log.ProfileLog;
@@ -31,7 +31,7 @@ public abstract class ContainersBuildService implements BuildService<ContainersB
     private static final ActualTestContainersDelegate testContainersDelegate = new ActualTestContainersDelegate(new GradleLog(ContainersBuildService.class));
 
     @SuppressWarnings("resource")
-    public StartedContainers containers(ContainersRequestV2 request) {
+    public StartedContainers containers(ContainersServiceRequest request) {
         var app = application;
         if (app == null) {
             synchronized (this) {

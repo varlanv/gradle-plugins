@@ -9,7 +9,7 @@ import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-class ExistingContainerTest implements UnitTest {
+class DefaultExistingContainerTest implements UnitTest {
 
     @Test
     @DisplayName("`isExpired` if container is expired, should return true")
@@ -41,7 +41,7 @@ class ExistingContainerTest implements UnitTest {
         assertThat(subject.isExpired(Duration.ofSeconds(0))).isFalse();
     }
 
-    private ExistingContainer buildSubject(long createdAt) {
-        return new ExistingContainer("id", "containerId", createdAt, Map.of());
+    private DefaultExistingContainer buildSubject(long createdAt) {
+        return new DefaultExistingContainer("id", "containerId", createdAt, Map.of());
     }
 }

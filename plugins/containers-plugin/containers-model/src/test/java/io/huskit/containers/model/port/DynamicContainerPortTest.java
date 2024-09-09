@@ -13,7 +13,7 @@ public class DynamicContainerPortTest implements UnitTest {
     void test_0() {
         var port = new DynamicContainerPort();
 
-        var portNumber = port.number();
+        var portNumber = port.hostValue();
 
         assertThat(portNumber).isGreaterThan(0);
     }
@@ -24,8 +24,8 @@ public class DynamicContainerPortTest implements UnitTest {
         var port1 = new DynamicContainerPort();
         var port2 = new DynamicContainerPort();
 
-        var portNumber1 = port1.number();
-        var portNumber2 = port2.number();
+        var portNumber1 = port1.hostValue();
+        var portNumber2 = port2.hostValue();
 
         assertThat(portNumber1).isNotEqualTo(portNumber2);
     }

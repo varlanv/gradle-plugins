@@ -31,14 +31,14 @@ public class AddContainersEnvironment implements Action<Task> {
     }
 
     public Map<String, String> executeAndReturn(Task task, @Nullable TestContainersDelegate testContainersDelegate) {
-        return ProfileLog.withProfile(
-                "io.huskit.gradle.containers.plugin.internal.AddContainersEnvironment.executeAndReturn",
-                () -> {
-                    if (task instanceof Test) {
+        if (task instanceof Test) {
+            return ProfileLog.withProfile(
+                    "io.huskit.gradle.containers.plugin.internal.AddContainersEnvironment.executeAndReturn",
+                    () -> {
                         var test = (Test) task;
                         var containersBuildService = containersBuildServiceProvider.get();
                         var startedContainers = containersBuildService.containers(
-                                new ContainersRequestV2(
+                                new ContainersServiceRequest(
                                         log,
                                         projectDescription,
                                         containersRequestedByUser,
@@ -52,10 +52,10 @@ public class AddContainersEnvironment implements Action<Task> {
                             test.setEnvironment(environment);
                             return environment;
                         }
-                    } else {
-                        log.info("Task [{}] is not a test task, so environment variables will not be added", task.getName());
+                        return Map.of();
                     }
-                    return Map.of();
-                });
+            );
+        }
+        return Map.of();
     }
 }

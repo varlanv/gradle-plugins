@@ -3,7 +3,7 @@ package io.huskit.containers.testcontainers.mongo;
 import com.github.dockerjava.api.DockerClient;
 import com.github.dockerjava.api.model.Container;
 import io.huskit.common.function.MemoizedSupplier;
-import io.huskit.containers.model.ExistingContainer;
+import io.huskit.containers.model.DefaultExistingContainer;
 import io.huskit.containers.model.id.ContainerId;
 import io.huskit.log.Log;
 import io.huskit.log.ProfileLog;
@@ -42,7 +42,7 @@ public class ActualTestContainersDelegate implements TestContainersDelegate, Ser
     }
 
     @Override
-    public <T extends GenericContainer<?>> int getFirstMappedPort(Supplier<T> container) {
+    public <T extends GenericContainer<?>> Integer getFirstMappedPort(Supplier<T> container) {
         return container.get().getFirstMappedPort();
     }
 
@@ -57,14 +57,14 @@ public class ActualTestContainersDelegate implements TestContainersDelegate, Ser
     }
 
     @Override
-    public Optional<ExistingContainer> getExistingContainer(ContainerId id) {
+    public Optional<DefaultExistingContainer> getExistingContainer(ContainerId id) {
         var idJson = id.json();
         var huskitId = dockerClient.get().listContainersCmd().withLabelFilter(Map.of("huskit_id", idJson)).exec();
         if (huskitId.size() == 1) {
             var container = huskitId.get(0);
             var labels = container.getLabels();
             return Optional.of(
-                    new ExistingContainer(
+                    new DefaultExistingContainer(
                             idJson,
                             container.getId(),
                             Duration.ofSeconds(container.getCreated()).toMillis(),
@@ -77,7 +77,7 @@ public class ActualTestContainersDelegate implements TestContainersDelegate, Ser
     }
 
     @Override
-    public void remove(ExistingContainer existingContainer) {
+    public void remove(DefaultExistingContainer existingContainer) {
         dockerClient.get()
                 .removeContainerCmd(existingContainer.containerId())
                 .withRemoveVolumes(true)

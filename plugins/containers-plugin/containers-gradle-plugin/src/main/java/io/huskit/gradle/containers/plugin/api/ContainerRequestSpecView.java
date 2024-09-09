@@ -1,8 +1,10 @@
 package io.huskit.gradle.containers.plugin.api;
 
+import org.gradle.api.Action;
+
 public interface ContainerRequestSpecView {
 
     void image(String image);
 
-    void fixedPort(Integer port);
+    void port(Action<ContainerPortSpecView> portAction);
 }

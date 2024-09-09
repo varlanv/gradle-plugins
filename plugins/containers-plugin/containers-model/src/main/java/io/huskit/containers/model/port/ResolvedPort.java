@@ -5,25 +5,17 @@ import lombok.RequiredArgsConstructor;
 
 import java.util.Optional;
 
-@Getter
 @RequiredArgsConstructor
-public final class FixedContainerPort implements ContainerPort {
+public class ResolvedPort implements ContainerPort {
 
+    @Getter
     Integer hostValue;
     Integer containerValue;
-
-    @Override
-    public Integer hostValue() {
-        return hostValue;
-    }
+    @Getter
+    Boolean isFixed;
 
     @Override
     public Optional<Integer> containerValue() {
         return Optional.of(containerValue);
-    }
-
-    @Override
-    public Boolean isFixed() {
-        return true;
     }
 }

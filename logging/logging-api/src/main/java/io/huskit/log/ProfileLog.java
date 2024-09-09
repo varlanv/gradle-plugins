@@ -38,10 +38,18 @@ public class ProfileLog<T> implements Runnable, Supplier<T> {
     }
 
     public static <T> T withProfile(String description, ThrowingSupplier<T> supplier) {
-        return new ProfileLog<>(new Slf4jLog(), description, supplier).get();
+        return withProfile(description, new Slf4jLog(), supplier);
+    }
+
+    public static <T> T withProfile(String description, Log log, ThrowingSupplier<T> supplier) {
+        return new ProfileLog<>(log, description, supplier).get();
     }
 
     public static void withProfile(String description, ThrowingRunnable runnable) {
-        new ProfileLog<>(new Slf4jLog(), description, runnable).run();
+        withProfile(description, new Slf4jLog(), runnable);
+    }
+
+    public static void withProfile(String description, Log log, ThrowingRunnable runnable) {
+        new ProfileLog<>(log, description, runnable).run();
     }
 }

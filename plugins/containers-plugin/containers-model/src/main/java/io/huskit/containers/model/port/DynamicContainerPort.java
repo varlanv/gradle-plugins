@@ -1,17 +1,30 @@
 package io.huskit.containers.model.port;
 
 import io.huskit.common.function.MemoizedSupplier;
+import lombok.RequiredArgsConstructor;
 
 import java.io.IOException;
 import java.net.ServerSocket;
+import java.util.Optional;
 
+@RequiredArgsConstructor
 public final class DynamicContainerPort implements ContainerPort {
 
-    MemoizedSupplier<Integer> number = new MemoizedSupplier<>(this::randomPort);
+    MemoizedSupplier<Integer> value = new MemoizedSupplier<>(this::randomPort);
 
     @Override
-    public int number() {
-        return number.get();
+    public Integer hostValue() {
+        return value.get();
+    }
+
+    @Override
+    public Optional<Integer> containerValue() {
+        return Optional.empty();
+    }
+
+    @Override
+    public Boolean isFixed() {
+        return false;
     }
 
     private int randomPort() {

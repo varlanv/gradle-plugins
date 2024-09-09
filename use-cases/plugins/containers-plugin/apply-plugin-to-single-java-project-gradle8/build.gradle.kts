@@ -26,6 +26,5 @@ huskitContainers {
     }
     mongo {
         image("mongo:4.4.8")
-        fixedPort(1)
     }
 }

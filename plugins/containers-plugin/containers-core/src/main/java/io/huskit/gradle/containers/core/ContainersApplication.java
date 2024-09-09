@@ -1,6 +1,6 @@
 package io.huskit.gradle.containers.core;
 
-import io.huskit.common.concurrent.ParallelRunner;
+import io.huskit.common.concurrent.ParallelFnRunner;
 import io.huskit.containers.model.*;
 import io.huskit.containers.model.request.MongoRequestedContainer;
 import io.huskit.containers.model.started.NonStartedContainer;
@@ -9,28 +9,18 @@ import io.huskit.containers.model.started.StartedContainers;
 import io.huskit.containers.testcontainers.mongo.MongoContainer;
 import io.huskit.containers.testcontainers.mongo.TestContainersDelegate;
 import io.huskit.log.Log;
+import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 
 import java.util.Map;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
-@RequiredArgsConstructor
+@RequiredArgsConstructor(access = AccessLevel.PRIVATE)
 public class ContainersApplication implements AutoCloseable {
 
     Log log;
     StartedContainersRegistry startedContainersRegistry;
-
-    public StartedContainers containers(ContainersRequest request) {
-        return new ValidatedDockerContainers(
-                new DockerContainers(
-                        log,
-                        startedContainersRegistry,
-                        request.requestedContainers()
-                ),
-                request.requestedContainers()
-        ).start();
-    }
 
     public static ContainersApplication application(Log commonLog, TestContainersDelegate testContainersDelegate) {
         testContainersDelegate.setReuse();
@@ -52,21 +42,32 @@ public class ContainersApplication implements AutoCloseable {
         );
     }
 
+    public StartedContainers containers(ContainersRequest request) {
+        return new ValidatedDockerContainers(
+                new DockerContainers(
+                        log,
+                        startedContainersRegistry,
+                        request.requestedContainers()
+                ),
+                request.requestedContainers()
+        ).start();
+    }
+
     @Override
     public void close() throws Exception {
-        new ParallelRunner<StartedContainer, NonStartedContainer>(
+        new ParallelFnRunner<StartedContainer, NonStartedContainer>(
                 startedContainersRegistry.all()
                         .map(container -> (Supplier<StartedContainer>) () -> (StartedContainer) container)
                         .collect(Collectors.toList()))
                 .doParallel(this::tryClose);
     }
 
-    private NonStartedContainer tryClose(StartedContainer container) {
+    private void tryClose(StartedContainer container) {
         try {
-            return container.stop();
+            container.stop();
         } catch (Exception e) {
-            log.error("Failed to stop container [{}]. Ignoring exception", container.id(), e);
-            return null;
+            // TODO add verification for log
+            log.error("Failed to stop container [{}]. Ignoring exception - [{}]", container.id(), e.getMessage());
         }
     }
 }

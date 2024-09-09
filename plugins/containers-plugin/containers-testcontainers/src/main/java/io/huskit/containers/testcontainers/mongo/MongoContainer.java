@@ -1,10 +1,13 @@
 package io.huskit.containers.testcontainers.mongo;
 
+import com.github.dockerjava.api.model.ExposedPort;
+import com.github.dockerjava.api.model.PortBinding;
+import com.github.dockerjava.api.model.Ports;
 import io.huskit.common.function.MemoizedSupplier;
 import io.huskit.containers.model.*;
 import io.huskit.containers.model.id.ContainerId;
 import io.huskit.containers.model.port.ContainerPort;
-import io.huskit.containers.model.port.FixedContainerPort;
+import io.huskit.containers.model.port.ResolvedPort;
 import io.huskit.containers.model.request.MongoRequestedContainer;
 import io.huskit.containers.model.started.NonStartedContainer;
 import io.huskit.log.Log;
@@ -29,7 +32,7 @@ public final class MongoContainer implements MongoStartedContainer {
     MemoizedSupplier<MongoDBContainer> mongoDBContainerSupplier = new MemoizedSupplier<>(this::getMongoDBContainer);
     MemoizedSupplier<ContainerPort> portSupplier = new MemoizedSupplier<>(this::_port);
     MemoizedSupplier<String> connectionStringBaseSupplier = new MemoizedSupplier<>(this::connectionStringBase);
-    MemoizedSupplier<Optional<ExistingContainer>> existingContainerSupplier = new MemoizedSupplier<>(this::existingContainer);
+    MemoizedSupplier<Optional<DefaultExistingContainer>> existingContainerSupplier = new MemoizedSupplier<>(this::existingContainer);
 
     AtomicBoolean isStarted = new AtomicBoolean();
 
@@ -95,7 +98,7 @@ public final class MongoContainer implements MongoStartedContainer {
         var mongoContainerReuse = request.reuseOptions();
         var connectionString = connectionStringBaseSupplier.get();
         var mongoExposedEnvironment = request.exposedEnvironment();
-        var port = String.valueOf(port().number());
+        var port = String.valueOf(port().hostValue());
         if (mongoContainerReuse.enabled() && mongoContainerReuse.newDatabaseForEachRequest()) {
             var counter = databaseNameCounter.incrementAndGet();
             var dbName = request.databaseName() + "_" + counter;
@@ -113,7 +116,7 @@ public final class MongoContainer implements MongoStartedContainer {
         }
     }
 
-    private Optional<ExistingContainer> existingContainer() {
+    private Optional<DefaultExistingContainer> existingContainer() {
         return testContainersDelegate.getExistingContainer(request.id());
     }
 
@@ -122,13 +125,28 @@ public final class MongoContainer implements MongoStartedContainer {
     }
 
     private ContainerPort _port() {
-        return new FixedContainerPort(testContainersDelegate.getFirstMappedPort(mongoDBContainerSupplier));
+        var requestPort = request.port();
+        var firstMappedPort = testContainersDelegate.getFirstMappedPort(mongoDBContainerSupplier);
+        if (requestPort.isFixed()) {
+            return new ResolvedPort(firstMappedPort, requestPort.containerValue().orElseThrow(), true);
+        } else {
+            return new ResolvedPort(firstMappedPort, 1/*todo not 1*/, true);
+        }
     }
 
     private MongoDBContainer getMongoDBContainer() {
-        return new MongoDBContainer(
+        var port = request.port();
+//                        .withExposedPorts(8080) // Exposing the container port
+//                .withCreateContainerCmdModifier(cmd -> cmd.getHostConfig()
+//                    .withPortBindings(new PortBinding(Ports.Binding.bindPort(9090), new ExposedPort(8080))))) {
+        var portNumber = port.hostValue();
+        var mongoDBContainer = new MongoDBContainer(
                 DockerImageName.parse(request.image().value()).asCompatibleSubstituteFor("mongo"))
                 .withLabels(new ContainerLabels(id()).asMap())
                 .withReuse(true);
+        if (port.isFixed()) {
+            return mongoDBContainer.withCreateContainerCmdModifier(cmd -> cmd.getHostConfig().withPortBindings(new PortBinding(Ports.Binding.bindPort(portNumber), new ExposedPort(27017))));
+        }
+        return mongoDBContainer;
     }
 }

@@ -61,6 +61,7 @@ public abstract class ContainersTask extends DefaultTask {
         );
         return ProfileLog.withProfile(
                 "io.huskit.gradle.containers.plugin.internal.ContainersTask.getStartedContainers",
+                log,
                 () -> getStartedContainers(testContainersDelegate, log, projectDescription));
     }
 
@@ -72,7 +73,7 @@ public abstract class ContainersTask extends DefaultTask {
             return List.of();
         }
         var startedContainers = getContainersBuildService().get().containers(
-                new ContainersRequestV2(
+                new ContainersServiceRequest(
                         log,
                         projectDescription,
                         getRequestedContainers(),

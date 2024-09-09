@@ -1,5 +1,6 @@
 plugins {
-    id("java-library")
+    `maven-publish`
+    `java-library`
     id("io.huskit.gradle.internal-gradle-convention-plugin")
 }
 

@@ -18,14 +18,22 @@ import java.util.concurrent.ConcurrentMap;
 public class SynchronizingTestListener implements TestExecutionListener {
 
     private static final String SYNC_FILE_PATH_STR = System.getProperty("io.huskit.gradle.build.sync.file.path");
-    private static final File SYNC_FILE = new File(SYNC_FILE_PATH_STR);
     private static final TestTag DOCKER_TEST_TAG_OBJ = TestTag.create(BaseTest.DOCKER_TEST_TAG);
+    private static final File SYNC_FILE;
     private final ConcurrentMap<String, LockHolder> syncMap = new ConcurrentHashMap<>();
+
+    static {
+        if (SYNC_FILE_PATH_STR != null && !SYNC_FILE_PATH_STR.isEmpty()) {
+            SYNC_FILE = new File(SYNC_FILE_PATH_STR);
+        } else {
+            SYNC_FILE = null;
+        }
+    }
 
     @Override
     @SneakyThrows
     public void executionStarted(TestIdentifier testIdentifier) {
-        if (testIdentifier.isTest() && testIdentifier.getTags().contains(DOCKER_TEST_TAG_OBJ)) {
+        if (SYNC_FILE != null && testIdentifier.isTest() && testIdentifier.getTags().contains(DOCKER_TEST_TAG_OBJ)) {
             var raf = new RandomAccessFile(SYNC_FILE, "rw");
             var channel = raf.getChannel();
             var lock = channel.lock();
@@ -36,7 +44,7 @@ public class SynchronizingTestListener implements TestExecutionListener {
     @Override
     @SneakyThrows
     public void executionFinished(TestIdentifier testIdentifier, TestExecutionResult testExecutionResult) {
-        if (testIdentifier.isTest()) {
+        if (SYNC_FILE != null && testIdentifier.isTest()) {
             var uniqueId = testIdentifier.getUniqueId();
             var lockHolder = syncMap.get(uniqueId);
             if (lockHolder != null) {

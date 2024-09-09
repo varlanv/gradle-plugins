@@ -33,7 +33,6 @@ subprojects {
             }
             mongo {
                 image("mongo:4.4.8")
-                fixedPort(1)
                 reuse {
                     newDatabaseForEachTask(true)
                     reuseBetweenBuilds(true)

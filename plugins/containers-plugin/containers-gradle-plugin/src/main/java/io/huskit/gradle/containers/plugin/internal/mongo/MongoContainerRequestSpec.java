@@ -5,7 +5,6 @@ import io.huskit.containers.model.id.ContainerId;
 import io.huskit.gradle.containers.plugin.api.mongo.MongoContainerRequestSpecView;
 import io.huskit.gradle.containers.plugin.api.mongo.MongoContainerReuseSpecView;
 import io.huskit.gradle.containers.plugin.api.mongo.MongoExposedEnvironmentSpecView;
-import io.huskit.gradle.containers.plugin.internal.DefaultContainerId;
 import io.huskit.gradle.containers.plugin.internal.request.ContainerRequestSpec;
 import org.gradle.api.Action;
 import org.gradle.api.provider.Property;
@@ -15,29 +14,32 @@ import java.util.Map;
 
 public interface MongoContainerRequestSpec extends ContainerRequestSpec, MongoContainerRequestSpecView {
 
-    @NotNull
-    default ContainerId id() {
-        var reuse = getReuse().get();
-        var exposedEnv = getExposedEnvironment().get();
-        var reuseEnabled = reuse.getEnabled().get();
-        return new DefaultContainerId(this).with(Map.of(
-                "projectName", reuseEnabled ? "" : getProjectName().get(),
-                "databaseName", getDatabaseName().get(),
-                "reuseBetweenBuilds", reuse.getReuseBetweenBuilds().get(),
-                "newDatabaseForEachTask", reuse.getNewDatabaseForEachTask().get(),
-                "reuseEnabled", reuseEnabled,
-                "exposedPort", exposedEnv.getPort().get(),
-                "exposedConnectionString", exposedEnv.getConnectionString().get(),
-                "exposedDatabaseName", exposedEnv.getDatabaseName().get()
-        ));
-    }
-
     Property<String> getDatabaseName();
 
     Property<MongoContainerReuseSpec> getReuse();
 
     Property<MongoExposedEnvironmentSpec> getExposedEnvironment();
 
+    @NotNull
+    default ContainerId id() {
+        var reuse = getReuse().get();
+        var exposedEnv = getExposedEnvironment().get();
+        var reuseEnabled = reuse.getEnabled().get();
+        return ContainerId.of(
+                Map.of(
+                        "rootProjectName", getRootProjectName().get(),
+                        "projectName", reuseEnabled ? "" : getProjectName().get(),
+                        "image", getImage().get(),
+                        "databaseName", getDatabaseName().get(),
+                        "reuseBetweenBuilds", reuse.getReuseBetweenBuilds().get(),
+                        "newDatabaseForEachTask", reuse.getNewDatabaseForEachTask().get(),
+                        "reuseEnabled", reuseEnabled,
+                        "exposedPort", exposedEnv.getPort().get(),
+                        "exposedConnectionString", exposedEnv.getConnectionString().get(),
+                        "exposedDatabaseName", exposedEnv.getDatabaseName().get()
+                )
+        );
+    }
 
     default void reuse(Action<MongoContainerReuseSpecView> action) {
         var reuse = getReuse().get();

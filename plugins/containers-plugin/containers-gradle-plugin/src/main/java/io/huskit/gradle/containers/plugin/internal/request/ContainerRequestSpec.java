@@ -3,7 +3,10 @@ package io.huskit.gradle.containers.plugin.internal.request;
 import io.huskit.containers.model.ContainerType;
 import io.huskit.containers.model.ProjectDescription;
 import io.huskit.containers.model.id.ContainerId;
+import io.huskit.gradle.containers.plugin.api.ContainerPortSpec;
+import io.huskit.gradle.containers.plugin.api.ContainerPortSpecView;
 import io.huskit.gradle.containers.plugin.api.ContainerRequestSpecView;
+import org.gradle.api.Action;
 import org.gradle.api.provider.Property;
 import org.gradle.api.tasks.Internal;
 
@@ -22,9 +25,9 @@ public interface ContainerRequestSpec extends ContainerRequestSpecView {
     @Internal
     Property<String> getProjectName();
 
-    Property<Integer> getFixedPort();
-
     Property<String> getImage();
+
+    Property<ContainerPortSpec> getPort();
 
     default ProjectDescription projectDescription() {
         return new ProjectDescription.Default(
@@ -35,8 +38,8 @@ public interface ContainerRequestSpec extends ContainerRequestSpecView {
     }
 
     @Override
-    default void fixedPort(Integer port) {
-        getFixedPort().set(port);
+    default void port(Action<ContainerPortSpecView> portAction) {
+        portAction.execute(getPort().get());
     }
 
     @Override
