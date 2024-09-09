@@ -1,5 +1,6 @@
 package io.huskit.containers.model;
 
+import java.time.Duration;
 import java.util.Map;
 
 public interface ExistingContainer {
@@ -12,4 +13,5 @@ public interface ExistingContainer {
 
     Map<String, String> labels();
 
+    boolean isExpired(Duration cleanupAfter);
 }

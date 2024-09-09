@@ -1,20 +1,21 @@
-package io.huskit.gradle.containers.plugin.internal.request;
+package io.huskit.gradle.containers.plugin.internal.spec;
 
 import io.huskit.containers.model.ContainerType;
-import io.huskit.containers.model.ProjectDescription;
 import io.huskit.containers.model.id.ContainerId;
-import io.huskit.gradle.containers.plugin.api.ContainerPortSpec;
+import io.huskit.containers.model.request.RequestedContainer;
 import io.huskit.gradle.containers.plugin.api.ContainerPortSpecView;
 import io.huskit.gradle.containers.plugin.api.ContainerRequestSpecView;
 import org.gradle.api.Action;
+import org.gradle.api.Named;
 import org.gradle.api.provider.Property;
 import org.gradle.api.tasks.Internal;
+import org.jetbrains.annotations.NotNull;
 
-public interface ContainerRequestSpec extends ContainerRequestSpecView {
+import java.util.Map;
+
+public interface ContainerRequestSpec extends ContainerRequestSpecView, Named {
 
     ContainerType containerType();
-
-    ContainerId id();
 
     @Internal
     Property<String> getRootProjectName();
@@ -29,13 +30,10 @@ public interface ContainerRequestSpec extends ContainerRequestSpecView {
 
     Property<ContainerPortSpec> getPort();
 
-    default ProjectDescription projectDescription() {
-        return new ProjectDescription.Default(
-                getRootProjectName().get(),
-                getProjectPath().get(),
-                getProjectName().get()
-        );
-    }
+    @NotNull
+    Map<String, Object> idProps();
+
+    RequestedContainer toRequestedContainer();
 
     @Override
     default void port(Action<ContainerPortSpecView> portAction) {
@@ -45,5 +43,16 @@ public interface ContainerRequestSpec extends ContainerRequestSpecView {
     @Override
     default void image(String image) {
         getImage().set(image);
+    }
+
+    @NotNull
+    default ContainerId id() {
+        return ContainerId.of(idProps());
+    }
+
+    @NotNull
+    @Override
+    default String getName() {
+        return id().json();
     }
 }

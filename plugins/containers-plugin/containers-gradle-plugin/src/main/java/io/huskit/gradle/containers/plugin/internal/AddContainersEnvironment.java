@@ -3,8 +3,8 @@ package io.huskit.gradle.containers.plugin.internal;
 import io.huskit.containers.model.MongoStartedContainer;
 import io.huskit.containers.model.ProjectDescription;
 import io.huskit.containers.testcontainers.mongo.TestContainersDelegate;
-import io.huskit.gradle.containers.plugin.api.ContainerRequestSpecView;
 import io.huskit.gradle.containers.plugin.internal.buildservice.ContainersBuildService;
+import io.huskit.gradle.containers.plugin.internal.spec.ContainerRequestSpec;
 import io.huskit.log.Log;
 import io.huskit.log.ProfileLog;
 import lombok.RequiredArgsConstructor;
@@ -23,7 +23,7 @@ public class AddContainersEnvironment implements Action<Task> {
     Log log;
     ProjectDescription projectDescription;
     Provider<ContainersBuildService> containersBuildServiceProvider;
-    ListProperty<ContainerRequestSpecView> containersRequestedByUser;
+    ListProperty<ContainerRequestSpec> containersRequestedByUser;
 
     @Override
     public void execute(Task task) {

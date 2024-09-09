@@ -1,4 +1,4 @@
-package io.huskit.gradle.containers.plugin.internal;
+package io.huskit.gradle.containers.plugin.internal.spec;
 
 import io.huskit.gradle.containers.plugin.api.ContainerReuseSpecView;
 import org.gradle.api.provider.Property;

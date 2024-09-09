@@ -18,6 +18,7 @@ import org.testcontainers.utility.DockerImageName;
 
 import java.time.Instant;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -32,7 +33,7 @@ public final class MongoContainer implements MongoStartedContainer {
     MemoizedSupplier<MongoDBContainer> mongoDBContainerSupplier = new MemoizedSupplier<>(this::getMongoDBContainer);
     MemoizedSupplier<ContainerPort> portSupplier = new MemoizedSupplier<>(this::_port);
     MemoizedSupplier<String> connectionStringBaseSupplier = new MemoizedSupplier<>(this::connectionStringBase);
-    MemoizedSupplier<Optional<DefaultExistingContainer>> existingContainerSupplier = new MemoizedSupplier<>(this::existingContainer);
+    MemoizedSupplier<Optional<ExistingContainer>> existingContainerSupplier = new MemoizedSupplier<>(this::existingContainer);
 
     AtomicBoolean isStarted = new AtomicBoolean();
 
@@ -116,7 +117,7 @@ public final class MongoContainer implements MongoStartedContainer {
         }
     }
 
-    private Optional<DefaultExistingContainer> existingContainer() {
+    private Optional<ExistingContainer> existingContainer() {
         return testContainersDelegate.getExistingContainer(request.id());
     }
 
@@ -136,16 +137,17 @@ public final class MongoContainer implements MongoStartedContainer {
 
     private MongoDBContainer getMongoDBContainer() {
         var port = request.port();
-//                        .withExposedPorts(8080) // Exposing the container port
-//                .withCreateContainerCmdModifier(cmd -> cmd.getHostConfig()
-//                    .withPortBindings(new PortBinding(Ports.Binding.bindPort(9090), new ExposedPort(8080))))) {
-        var portNumber = port.hostValue();
+        var hostPort = port.hostValue();
         var mongoDBContainer = new MongoDBContainer(
                 DockerImageName.parse(request.image().value()).asCompatibleSubstituteFor("mongo"))
                 .withLabels(new ContainerLabels(id()).asMap())
                 .withReuse(true);
         if (port.isFixed()) {
-            return mongoDBContainer.withCreateContainerCmdModifier(cmd -> cmd.getHostConfig().withPortBindings(new PortBinding(Ports.Binding.bindPort(portNumber), new ExposedPort(27017))));
+            return mongoDBContainer.withCreateContainerCmdModifier(cmd ->
+                    Objects.requireNonNull(cmd.getHostConfig()).withPortBindings(
+                            new PortBinding(
+                                    Ports.Binding.bindPort(hostPort),
+                                    new ExposedPort(port.containerValue().orElseThrow()))));
         }
         return mongoDBContainer;
     }

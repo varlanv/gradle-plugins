@@ -21,14 +21,14 @@ import java.util.concurrent.atomic.AtomicLong;
 
 public abstract class ContainersBuildService implements BuildService<ContainersBuildServiceParams>, AutoCloseable, Serializable {
 
+    private static final AtomicInteger counter = new AtomicInteger();
+    private static final ActualTestContainersDelegate testContainersDelegate = new ActualTestContainersDelegate(new GradleLog(ContainersBuildService.class));
+    private volatile @NonFinal ContainersApplication application;
+    AtomicLong timeStarted = new AtomicLong();
+
     public static String name() {
         return new DefaultInternalExtensionName("containers_build_service").toString();
     }
-
-    private volatile @NonFinal ContainersApplication application;
-    AtomicLong timeStarted = new AtomicLong();
-    private static final AtomicInteger counter = new AtomicInteger();
-    private static final ActualTestContainersDelegate testContainersDelegate = new ActualTestContainersDelegate(new GradleLog(ContainersBuildService.class));
 
     @SuppressWarnings("resource")
     public StartedContainers containers(ContainersServiceRequest request) {

@@ -1,9 +1,9 @@
-package io.huskit.gradle.containers.plugin.internal.mongo;
+package io.huskit.gradle.containers.plugin.internal.spec.mongo;
 
 import io.huskit.gradle.containers.plugin.api.CleanupSpecView;
 import io.huskit.gradle.containers.plugin.api.mongo.MongoContainerReuseSpecView;
-import io.huskit.gradle.containers.plugin.internal.CleanupSpec;
-import io.huskit.gradle.containers.plugin.internal.ContainerReuseSpec;
+import io.huskit.gradle.containers.plugin.internal.spec.CleanupSpec;
+import io.huskit.gradle.containers.plugin.internal.spec.ContainerReuseSpec;
 import org.gradle.api.Action;
 import org.gradle.api.provider.Property;
 

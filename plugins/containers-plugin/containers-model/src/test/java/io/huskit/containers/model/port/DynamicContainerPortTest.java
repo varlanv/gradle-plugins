@@ -9,7 +9,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 public class DynamicContainerPortTest implements UnitTest {
 
     @Test
-    @DisplayName("should allocate random port")
+    @DisplayName("`hostValue` should allocate random port")
     void test_0() {
         var port = new DynamicContainerPort();
 
@@ -19,7 +19,7 @@ public class DynamicContainerPortTest implements UnitTest {
     }
 
     @Test
-    @DisplayName("should allocate different ports")
+    @DisplayName("`hostValue` should allocate different ports")
     void test_1() {
         var port1 = new DynamicContainerPort();
         var port2 = new DynamicContainerPort();
@@ -28,5 +28,21 @@ public class DynamicContainerPortTest implements UnitTest {
         var portNumber2 = port2.hostValue();
 
         assertThat(portNumber1).isNotEqualTo(portNumber2);
+    }
+
+    @Test
+    @DisplayName("`containerValue` should be empty")
+    void test_2() {
+        var port = new DynamicContainerPort();
+
+        assertThat(port.containerValue()).isEmpty();
+    }
+
+    @Test
+    @DisplayName("`isFixed` should return false")
+    void test_3() {
+        var port = new DynamicContainerPort();
+
+        assertThat(port.isFixed()).isFalse();
     }
 }

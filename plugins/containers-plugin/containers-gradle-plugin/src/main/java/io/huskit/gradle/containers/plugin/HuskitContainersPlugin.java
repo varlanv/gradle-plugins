@@ -11,8 +11,6 @@ public class HuskitContainersPlugin implements Plugin<Project> {
 
     @Override
     public void apply(Project project) {
-        var extensions = project.getExtensions();
-        var tasks = project.getTasks();
         var projectPath = project.getPath();
         var projectName = project.getName();
         var projectDescription = new ProjectDescription.Default(
@@ -31,10 +29,10 @@ public class HuskitContainersPlugin implements Plugin<Project> {
                 projectDescription,
                 new NewOrExistingExtension(
                         log,
-                        extensions
+                        project.getExtensions()
                 ),
                 project.getGradle().getSharedServices(),
-                tasks,
+                project.getTasks(),
                 runnable -> project.afterEvaluate(ignore -> runnable.run())
         ).run();
     }

@@ -1,7 +1,7 @@
 package io.huskit.gradle.containers.plugin.api;
 
-import io.huskit.gradle.containers.plugin.internal.mongo.MongoContainerRequestSpec;
 import io.huskit.gradle.containers.plugin.api.mongo.MongoContainerRequestSpecView;
+import io.huskit.gradle.containers.plugin.internal.spec.mongo.MongoContainerRequestSpec;
 import org.gradle.api.Action;
 
 /**
@@ -9,15 +9,6 @@ import org.gradle.api.Action;
  * Main user facade for plugin configuration in build.gradle file.
  */
 public interface ContainersExtension {
-
-    /**
-     * Default extension name.
-     *
-     * @return extension name
-     */
-    static String name() {
-        return "huskitContainers";
-    }
 
     /**
      * Configures the dependency that containers should start before.

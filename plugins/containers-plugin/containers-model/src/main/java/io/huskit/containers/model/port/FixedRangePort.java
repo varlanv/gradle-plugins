@@ -1,6 +1,7 @@
 package io.huskit.containers.model.port;
 
 import io.huskit.common.function.MemoizedSupplier;
+import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 
 import java.io.IOException;
@@ -9,10 +10,11 @@ import java.util.Optional;
 import java.util.concurrent.ThreadLocalRandom;
 
 @RequiredArgsConstructor
-public class PortRange implements ContainerPort {
+public class FixedRangePort implements ContainerPort {
 
     Integer rangeFrom;
     Integer rangeTo;
+    @NonNull
     Integer containerValue;
     MemoizedSupplier<Integer> value = new MemoizedSupplier<>(this::randomPort);
 

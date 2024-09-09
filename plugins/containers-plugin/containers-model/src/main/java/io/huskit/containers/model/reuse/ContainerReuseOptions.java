@@ -2,9 +2,9 @@ package io.huskit.containers.model.reuse;
 
 public interface ContainerReuseOptions {
 
-    boolean enabled();
+    Boolean enabled();
 
-    boolean reuseBetweenBuilds();
+    Boolean reuseBetweenBuilds();
 
     ContainerCleanupOptions cleanup();
 }
