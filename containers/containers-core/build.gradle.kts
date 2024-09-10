@@ -7,7 +7,7 @@ plugins {
 dependencies {
     implementation(projects.common)
     implementation(projects.logging.loggingApi)
-    implementation(projects.plugins.containersPlugin.containersModel)
-    implementation(projects.plugins.containersPlugin.containersTestcontainers)
+    implementation(projects.containers.containersModel)
+    implementation(projects.containers.containersTestcontainers)
     testImplementation(libs.bundles.testcontainers)
 }

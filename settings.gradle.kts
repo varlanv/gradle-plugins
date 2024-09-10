@@ -42,10 +42,10 @@ include(
         "plugins:spock-plugin",
         "plugins:properties-plugin",
         "plugins:common-plugin",
+        "containers:containers-model",
+        "containers:containers-core",
+        "containers:containers-testcontainers",
         "plugins:containers-plugin:containers-gradle-plugin",
-        "plugins:containers-plugin:containers-model",
-        "plugins:containers-plugin:containers-core",
-        "plugins:containers-plugin:containers-testcontainers"
 )
 
 // increment this to change checksum when circleci cache needs to be invalidated
