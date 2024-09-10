@@ -1,13 +1,13 @@
 package io.huskit.gradle.containers.plugin.internal.buildservice;
 
 import io.huskit.containers.model.ContainersRequest;
-import io.huskit.containers.model.started.StartedContainers;
+import io.huskit.containers.model.started.StartedContainer;
 import io.huskit.containers.testcontainers.mongo.ActualTestContainersDelegate;
 import io.huskit.gradle.common.plugin.model.DefaultInternalExtensionName;
 import io.huskit.gradle.containers.core.ContainersApplication;
 import io.huskit.gradle.containers.plugin.internal.ContainersBuildServiceParams;
 import io.huskit.gradle.containers.plugin.internal.ContainersServiceRequest;
-import io.huskit.gradle.containers.plugin.internal.request.RequestedContainersFromGradleUser;
+import io.huskit.gradle.containers.plugin.internal.spec.ContainerRequestSpec;
 import io.huskit.log.GradleLog;
 import io.huskit.log.ProfileLog;
 import lombok.experimental.NonFinal;
@@ -15,9 +15,11 @@ import org.gradle.api.services.BuildService;
 
 import java.io.Serializable;
 import java.time.Duration;
+import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.stream.Collectors;
 
 public abstract class ContainersBuildService implements BuildService<ContainersBuildServiceParams>, AutoCloseable, Serializable {
 
@@ -31,7 +33,7 @@ public abstract class ContainersBuildService implements BuildService<ContainersB
     }
 
     @SuppressWarnings("resource")
-    public StartedContainers containers(ContainersServiceRequest request) {
+    public List<StartedContainer> containers(ContainersServiceRequest request) {
         var app = application;
         if (app == null) {
             synchronized (this) {
@@ -50,7 +52,7 @@ public abstract class ContainersBuildService implements BuildService<ContainersB
                 new ContainersRequest(
                         request.taskLog(),
                         request.projectDescription(),
-                        new RequestedContainersFromGradleUser(request.requestSpec().get())
+                        request.requestSpec().get().stream().map(ContainerRequestSpec::toRequestedContainer).collect(Collectors.toList())
                 )
         );
     }

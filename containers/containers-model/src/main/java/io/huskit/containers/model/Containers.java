@@ -1,8 +1,10 @@
 package io.huskit.containers.model;
 
-import io.huskit.containers.model.started.StartedContainers;
+import io.huskit.containers.model.started.StartedContainer;
+
+import java.util.List;
 
 public interface Containers {
 
-    StartedContainers start();
+    List<StartedContainer> start();
 }

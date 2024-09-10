@@ -5,13 +5,13 @@ import io.huskit.containers.model.*;
 import io.huskit.containers.model.request.MongoRequestedContainer;
 import io.huskit.containers.model.started.NonStartedContainer;
 import io.huskit.containers.model.started.StartedContainer;
-import io.huskit.containers.model.started.StartedContainers;
 import io.huskit.containers.testcontainers.mongo.MongoContainer;
 import io.huskit.containers.testcontainers.mongo.TestContainersDelegate;
 import io.huskit.log.Log;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 
+import java.util.List;
 import java.util.Map;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
@@ -42,7 +42,7 @@ public class ContainersApplication implements AutoCloseable {
         );
     }
 
-    public StartedContainers containers(ContainersRequest request) {
+    public List<StartedContainer> containers(ContainersRequest request) {
         return new ValidatedDockerContainers(
                 new DockerContainers(
                         log,

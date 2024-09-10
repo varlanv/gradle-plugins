@@ -139,7 +139,7 @@ public final class MongoContainer implements MongoStartedContainer {
         var port = request.port();
         var hostPort = port.hostValue();
         var mongoDBContainer = new MongoDBContainer(
-                DockerImageName.parse(request.image().value()).asCompatibleSubstituteFor("mongo"))
+                DockerImageName.parse(request.image().id()).asCompatibleSubstituteFor("mongo"))
                 .withLabels(new ContainerLabels(id()).asMap())
                 .withReuse(true);
         if (port.isFixed()) {

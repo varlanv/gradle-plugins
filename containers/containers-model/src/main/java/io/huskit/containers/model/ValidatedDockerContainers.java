@@ -1,22 +1,23 @@
 package io.huskit.containers.model;
 
 import io.huskit.containers.model.exception.NonUniqueContainerException;
-import io.huskit.containers.model.request.RequestedContainers;
-import io.huskit.containers.model.started.StartedContainers;
+import io.huskit.containers.model.request.RequestedContainer;
+import io.huskit.containers.model.started.StartedContainer;
 import lombok.RequiredArgsConstructor;
 
 import java.util.HashSet;
+import java.util.List;
 
 @RequiredArgsConstructor
 public final class ValidatedDockerContainers implements Containers {
 
     Containers delegate;
-    RequestedContainers requestedContainers;
+    List<RequestedContainer> requestedContainers;
 
     @Override
-    public StartedContainers start() {
+    public List<StartedContainer> start() {
         var containersIds = new HashSet<>();
-        requestedContainers.stream().forEach(requestedContainer -> {
+        requestedContainers.forEach(requestedContainer -> {
             var containerId = requestedContainer.id().json();
             if (!containersIds.add(containerId)) {
                 throw new NonUniqueContainerException(containerId, requestedContainer.containerType());

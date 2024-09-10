@@ -8,7 +8,7 @@ public final class DefaultContainerImage implements ContainerImage {
     CharSequence charSequence;
 
     @Override
-    public String value() {
+    public String id() {
         return charSequence.toString();
     }
 }

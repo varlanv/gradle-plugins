@@ -79,7 +79,7 @@ public abstract class ContainersTask extends DefaultTask {
                         getRequestedContainers(),
                         testContainersDelegate
                 )
-        ).list();
+        );
         if (startedContainers.isEmpty()) {
             log.info("No containers were started");
         } else {
