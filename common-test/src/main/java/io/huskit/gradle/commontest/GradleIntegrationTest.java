@@ -13,10 +13,14 @@ import org.gradle.api.model.ObjectFactory;
 import org.gradle.api.provider.Provider;
 import org.gradle.api.provider.ProviderFactory;
 import org.gradle.api.services.BuildService;
+import org.gradle.api.services.BuildServiceParameters;
+import org.gradle.api.services.BuildServiceRegistration;
 import org.gradle.api.tasks.TaskProvider;
 import org.gradle.testfixtures.ProjectBuilder;
 
 import java.io.File;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Set;
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -200,6 +204,34 @@ public interface GradleIntegrationTest extends IntegrationTest {
             assertThatThrownBy(() -> project.getTasks().named(taskName))
                     .isInstanceOf(UnknownTaskException.class)
                     .hasMessageContaining(taskName);
+            return this;
+        }
+
+        public ProjectAssertions hasOnlyOneService(String name) {
+            var buildServices = new ArrayList<>(project.getGradle().getSharedServices().getRegistrations());
+            assertThat(buildServices).hasSize(1);
+            assertThat(buildServices.get(0).getName()).isEqualTo(name);
+            return this;
+        }
+
+        @SneakyThrows
+        @SuppressWarnings("unchecked")
+        public <BSP extends BuildServiceParameters, BS extends BuildService<BSP>, BSR extends BuildServiceRegistration<BS, BSP>> ProjectAssertions withBuildServiceRegistration(String name, ThrowingConsumer<BSR> consumer) {
+            var registrations = List.copyOf(project.getGradle().getSharedServices().getRegistrations());
+            var maybeBuildServiceRegistration = registrations.stream().filter(reg -> reg.getName().equals(name)).findFirst();
+            assertThat(maybeBuildServiceRegistration).isPresent();
+            var buildServiceRegistration = maybeBuildServiceRegistration.get();
+            consumer.accept((BSR) buildServiceRegistration);
+            return this;
+        }
+
+        public ProjectAssertions hasExtensionWithName(String name) {
+            assertThat(project.getExtensions().findByName(name)).isNotNull();
+            return this;
+        }
+
+        public ProjectAssertions hasExtensionWithType(Class<?> type) {
+            assertThat(project.getExtensions().findByType(type)).isNotNull();
             return this;
         }
     }

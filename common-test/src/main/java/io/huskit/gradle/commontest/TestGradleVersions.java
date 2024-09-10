@@ -24,7 +24,7 @@ public class TestGradleVersions {
     }
 
     String latest8() {
-        return "8.10";
+        return "8.10.1";
     }
 
     String latest6() {

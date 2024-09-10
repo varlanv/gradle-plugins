@@ -9,6 +9,10 @@ import org.gradle.api.plugins.PluginManager;
 import org.gradle.api.plugins.jvm.JvmTestSuite;
 import org.gradle.api.provider.Provider;
 import org.gradle.api.tasks.TaskContainer;
+import org.gradle.api.tasks.testing.Test;
+import org.gradle.jvm.toolchain.JavaLanguageVersion;
+import org.gradle.jvm.toolchain.JavaToolchainService;
+import org.gradle.jvm.toolchain.JvmVendorSpec;
 import org.gradle.testing.base.TestingExtension;
 
 import java.util.*;
@@ -24,6 +28,7 @@ public class ConfigureTests {
     ConfigurationContainer configurations;
     PluginManager pluginManager;
     TaskContainer tasks;
+    JavaToolchainService javaToolchainService;
     Provider<TestSynchronizerBuildService> syncBuildService;
 
     public void configure() {
@@ -34,8 +39,13 @@ public class ConfigureTests {
             var integrationTestSuite = suites.register(
                     integrationTestTaskName,
                     JvmTestSuite.class,
-                    suite -> {
-                    });
+                    suite ->
+                            suite.getTargets().all(target ->
+                                    target.getTestTask().configure(test ->
+                                            test.getJavaLauncher().set(javaToolchainService.launcherFor(config -> {
+                                                config.getLanguageVersion().set(JavaLanguageVersion.of(17));
+                                                config.getVendor().set(JvmVendorSpec.AZUL);
+                                            })))));
             suites.configureEach(suite -> {
                 if (suite instanceof JvmTestSuite) {
                     var jvmTestSuite = (JvmTestSuite) suite;
@@ -46,6 +56,14 @@ public class ConfigureTests {
                     });
                     jvmTestSuite.getTargets().all(target -> {
                         target.getTestTask().configure(test -> {
+                            var sysProps = new HashMap<>(test.getSystemProperties());
+                            sysProps.putAll(
+                                    Map.of(
+                                            "junit.jupiter.execution.parallel.enabled", "true",
+                                            "junit.jupiter.execution.parallel.mode.default", "SAME_THREAD"
+                                    )
+                            );
+                            test.setSystemProperties(sysProps);
                             test.getOutputs().upToDateWhen(task -> false);
                             test.testLogging(logging -> {
                                 logging.setShowStandardStreams(true);
@@ -59,7 +77,7 @@ public class ConfigureTests {
                                     Stream.of(
                                                     test.getJvmArgs(),
                                                     Arrays.asList(
-//                                                            "-XX:TieredStopAtLevel=1",
+                                                            "-XX:TieredStopAtLevel=1",
                                                             "-noverify",
 //                                                            "-Xmx2048m",
                                                             "-XX:+UseParallelGC",
@@ -75,6 +93,14 @@ public class ConfigureTests {
                 }
             });
             tasks.named("check", task -> task.dependsOn(integrationTestSuite));
+            tasks.register("fastTests", Test.class, test -> {
+                test.setGroup("verification");
+                test.setDescription("Runs only fast tests, which includes unit tests and some integration tests");
+                test.dependsOn("test");
+                if (!integrationTestTaskName.equals("functionalTest")) {
+                    test.dependsOn(integrationTestTaskName);
+                }
+            });
             configurations.named(integrationTestTaskName + "Implementation", configuration -> {
                 configuration.extendsFrom(configurations.getByName("testImplementation"));
             });

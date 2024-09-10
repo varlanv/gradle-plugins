@@ -12,6 +12,7 @@ import org.gradle.api.plugins.PluginManager;
 import org.gradle.api.provider.Provider;
 import org.gradle.api.provider.ProviderFactory;
 import org.gradle.api.tasks.TaskContainer;
+import org.gradle.jvm.toolchain.JavaToolchainService;
 
 @RequiredArgsConstructor
 public class ApplyInternalPluginLogic {
@@ -79,6 +80,7 @@ public class ApplyInternalPluginLogic {
                     configurations,
                     pluginManager,
                     tasks,
+                    extensions.getByType(JavaToolchainService.class),
                     syncBuildService
             ).configure();
             new ConfigurePublishing(
