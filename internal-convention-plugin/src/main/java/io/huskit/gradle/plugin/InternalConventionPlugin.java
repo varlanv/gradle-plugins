@@ -10,6 +10,7 @@ import org.gradle.api.artifacts.VersionCatalogsExtension;
 import org.gradle.api.provider.ProviderFactory;
 
 import javax.inject.Inject;
+import java.util.Objects;
 
 @RequiredArgsConstructor(onConstructor = @__(@Inject))
 public class InternalConventionPlugin implements Plugin<Project> {
@@ -19,21 +20,18 @@ public class InternalConventionPlugin implements Plugin<Project> {
     @Override
     public void apply(Project project) {
         var extensions = project.getExtensions();
-        var environment = (InternalEnvironment) extensions.findByName(InternalEnvironment.EXTENSION_NAME);
-        if (environment == null) {
-            var ci = providers.environmentVariable("CI").isPresent();
-            environment = new InternalEnvironment(ci, false);
-        }
-        var properties = (InternalProperties) extensions.findByName(InternalProperties.EXTENSION_NAME);
-        if (properties == null) {
-            properties = new InternalProperties(
-                    ((VersionCatalogsExtension) extensions.getByName("versionCatalogs")).named("libs")
-            );
-        }
-        var huskitConventionExtension = (HuskitInternalConventionExtension) extensions.findByName(HuskitInternalConventionExtension.EXTENSION_NAME);
-        if (huskitConventionExtension == null) {
-            huskitConventionExtension = extensions.create(HuskitInternalConventionExtension.EXTENSION_NAME, HuskitInternalConventionExtension.class);
-        }
+        var environment = (InternalEnvironment) Objects.requireNonNullElseGet(
+                extensions.findByName(InternalEnvironment.EXTENSION_NAME),
+                () -> new InternalEnvironment(
+                        providers.environmentVariable("CI").isPresent(),
+                        false
+                ));
+        var properties = (InternalProperties) Objects.requireNonNullElseGet(
+                extensions.findByName(InternalProperties.EXTENSION_NAME),
+                () -> new InternalProperties(((VersionCatalogsExtension) extensions.getByName("versionCatalogs")).named("libs")));
+        var huskitConventionExtension = (HuskitInternalConventionExtension) Objects.requireNonNullElseGet(
+                extensions.findByName(HuskitInternalConventionExtension.EXTENSION_NAME),
+                () -> extensions.create(HuskitInternalConventionExtension.EXTENSION_NAME, HuskitInternalConventionExtension.class));
         huskitConventionExtension.getIntegrationTestName().convention("integrationTest");
         new ApplyInternalPluginLogic(
                 project.getPath(),

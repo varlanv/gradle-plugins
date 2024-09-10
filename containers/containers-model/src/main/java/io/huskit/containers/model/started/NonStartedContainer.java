@@ -1,11 +1,11 @@
 package io.huskit.containers.model.started;
 
 import io.huskit.containers.model.ContainerType;
-import io.huskit.containers.model.id.ContainerId;
+import io.huskit.containers.model.id.ContainerKey;
 
 public interface NonStartedContainer {
 
-    ContainerId id();
+    ContainerKey id();
 
     ContainerType type();
 

@@ -5,7 +5,7 @@ import com.github.dockerjava.api.model.PortBinding;
 import com.github.dockerjava.api.model.Ports;
 import io.huskit.common.function.MemoizedSupplier;
 import io.huskit.containers.model.*;
-import io.huskit.containers.model.id.ContainerId;
+import io.huskit.containers.model.id.ContainerKey;
 import io.huskit.containers.model.port.ContainerPort;
 import io.huskit.containers.model.port.ResolvedPort;
 import io.huskit.containers.model.request.MongoRequestedContainer;
@@ -38,7 +38,7 @@ public final class MongoContainer implements MongoStartedContainer {
     AtomicBoolean isStarted = new AtomicBoolean();
 
     @Override
-    public ContainerId id() {
+    public ContainerKey id() {
         return request.id();
     }
 

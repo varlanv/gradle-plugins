@@ -1,10 +1,10 @@
 package io.huskit.common.concurrent;
 
+import io.huskit.common.Nothing;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
@@ -51,7 +51,7 @@ public final class ParallelFnRunner<T, R> {
     public void doParallel(Consumer<T> consumer) {
         doParallel(value -> {
             consumer.accept(value);
-            return null;
+            return Nothing.instance();
         });
     }
 }

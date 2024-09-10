@@ -1,6 +1,6 @@
 package io.huskit.containers.model.request;
 
-import io.huskit.containers.model.id.ContainerId;
+import io.huskit.containers.model.id.ContainerKey;
 import io.huskit.containers.model.image.ContainerImage;
 import io.huskit.containers.model.port.ContainerPort;
 import io.huskit.containers.model.reuse.MongoContainerReuseOptions;
@@ -16,6 +16,6 @@ public final class DefaultMongoRequestedContainer implements MongoRequestedConta
     String databaseName;
     ContainerImage image;
     ContainerPort port;
-    ContainerId id;
+    ContainerKey id;
     MongoContainerReuseOptions reuseOptions;
 }

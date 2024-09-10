@@ -8,6 +8,8 @@ public class Constants {
     private Constants() {
     }
 
+    public static final String KEY_LABEL = "huskit_key";
+
     public static class Cleanup {
 
         public static final Duration DEFAULT_CLEANUP_AFTER = Duration.of(12, ChronoUnit.HOURS);

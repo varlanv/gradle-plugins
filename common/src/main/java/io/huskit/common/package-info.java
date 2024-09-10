@@ -1,5 +1,5 @@
 @DefaultQualifier(NonNull.class)
-package io.huskit.gradle.plugin;
+package io.huskit.common;
 
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.framework.qual.DefaultQualifier;

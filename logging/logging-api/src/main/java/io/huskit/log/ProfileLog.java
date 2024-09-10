@@ -1,5 +1,6 @@
 package io.huskit.log;
 
+import io.huskit.common.Nothing;
 import io.huskit.common.function.ThrowingRunnable;
 import io.huskit.common.function.ThrowingSupplier;
 import lombok.AccessLevel;
@@ -19,7 +20,7 @@ public class ProfileLog<T> implements Runnable, Supplier<T> {
     ProfileLog(Log log, String description, ThrowingRunnable delegate) {
         this(log, description, () -> {
             delegate.run();
-            return null;
+            return Nothing.instance();
         });
     }
 

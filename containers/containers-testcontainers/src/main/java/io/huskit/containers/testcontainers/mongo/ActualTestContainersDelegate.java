@@ -3,9 +3,10 @@ package io.huskit.containers.testcontainers.mongo;
 import com.github.dockerjava.api.DockerClient;
 import com.github.dockerjava.api.model.Container;
 import io.huskit.common.function.MemoizedSupplier;
+import io.huskit.containers.model.Constants;
 import io.huskit.containers.model.DefaultExistingContainer;
 import io.huskit.containers.model.ExistingContainer;
-import io.huskit.containers.model.id.ContainerId;
+import io.huskit.containers.model.id.ContainerKey;
 import io.huskit.log.Log;
 import io.huskit.log.ProfileLog;
 import lombok.RequiredArgsConstructor;
@@ -60,32 +61,36 @@ public class ActualTestContainersDelegate implements TestContainersDelegate, Ser
     }
 
     @Override
-    public Optional<ExistingContainer> getExistingContainer(ContainerId id) {
-        var idJson = id.json();
-        var huskitId = dockerClient.get().listContainersCmd().withLabelFilter(Map.of("huskit_id", idJson)).exec();
-        if (huskitId.size() == 1) {
-            var container = huskitId.get(0);
-            var labels = container.getLabels();
-            return Optional.of(
-                    new DefaultExistingContainer(
-                            idJson,
-                            container.getId(),
-                            Duration.ofSeconds(container.getCreated()).toMillis(),
-                            labels
-                    )
-            );
-        } else {
-            return Optional.empty();
+    public Optional<ExistingContainer> getExistingContainer(ContainerKey key) {
+        var keyJson = key.json();
+        try (var listContainersCmd = dockerClient.get().listContainersCmd();) {
+            var huskitContainers = listContainersCmd.withLabelFilter(Map.of(Constants.KEY_LABEL, keyJson)).exec();
+            if (huskitContainers.size() == 1) {
+                var container = huskitContainers.get(0);
+                var labels = container.getLabels();
+                return Optional.of(
+                        new DefaultExistingContainer(
+                                keyJson,
+                                container.getId(),
+                                Duration.ofSeconds(container.getCreated()).toMillis(),
+                                labels
+                        )
+                );
+            } else {
+                return Optional.empty();
+            }
         }
     }
 
     @Override
     public void remove(ExistingContainer existingContainer) {
-        dockerClient.get()
-                .removeContainerCmd(existingContainer.containerId())
-                .withRemoveVolumes(true)
-                .withForce(true)
-                .exec();
+        try (var removeContainerCmd = dockerClient.get()
+                .removeContainerCmd(existingContainer.containerKey())) {
+            removeContainerCmd
+                    .withRemoveVolumes(true)
+                    .withForce(true)
+                    .exec();
+        }
     }
 
     /**
@@ -121,10 +126,11 @@ public class ActualTestContainersDelegate implements TestContainersDelegate, Ser
     }
 
     public List<Map<String, String>> findHuskitContainers() {
-        var listContainersCmd = dockerClient.get().listContainersCmd().withLabelFilter(Map.of("huskit_container", "true"));
-        return listContainersCmd.exec().stream()
-                .map(Container::getLabels)
-                .collect(Collectors.toList());
+        try (var listContainersCmd = dockerClient.get().listContainersCmd().withLabelFilter(Map.of("huskit_container", "true"))) {
+            return listContainersCmd.exec().stream()
+                    .map(Container::getLabels)
+                    .collect(Collectors.toList());
+        }
     }
 
 

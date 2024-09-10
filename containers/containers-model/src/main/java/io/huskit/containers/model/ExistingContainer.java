@@ -7,7 +7,7 @@ public interface ExistingContainer {
 
     String huskitId();
 
-    String containerId();
+    String containerKey();
 
     Long createdAt();
 

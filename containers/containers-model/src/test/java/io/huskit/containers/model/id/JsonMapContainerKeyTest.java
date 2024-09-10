@@ -11,12 +11,12 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-class JsonMapContainerIdTest implements BaseTest {
+class JsonMapContainerKeyTest implements BaseTest {
 
     @Test
     @DisplayName("`json` if no properties, should return empty json")
     void test_0() {
-        var subject = new JsonMapContainerId();
+        var subject = new JsonMapContainerKey();
 
         var actual = subject.json();
 
@@ -26,7 +26,7 @@ class JsonMapContainerIdTest implements BaseTest {
     @Test
     @DisplayName("`json` if has properties, should return json")
     void test_1() {
-        var subject = new JsonMapContainerId(
+        var subject = new JsonMapContainerKey(
                 Map.of("key1", "value",
                         "key2", 1)
         );
@@ -39,7 +39,7 @@ class JsonMapContainerIdTest implements BaseTest {
     @Test
     @DisplayName("`json` if try to add null value, should not throw exception")
     void test_3() {
-        var subject = new JsonMapContainerId().with("key", null);
+        var subject = new JsonMapContainerKey().with("key", null);
 
         var actual = subject.json();
 
@@ -51,7 +51,7 @@ class JsonMapContainerIdTest implements BaseTest {
     void test_4() {
         var props = new HashMap<String, Object>();
         props.put("key", null);
-        var subject = new JsonMapContainerId().with(props);
+        var subject = new JsonMapContainerKey().with(props);
 
         var actual = subject.json();
 
@@ -61,7 +61,7 @@ class JsonMapContainerIdTest implements BaseTest {
     @Test
     @DisplayName("`json` if try to add map empty map, should return empty json")
     void test_5() {
-        var subject = new JsonMapContainerId().with(Map.of());
+        var subject = new JsonMapContainerKey().with(Map.of());
 
         var actual = subject.json();
 
@@ -71,7 +71,7 @@ class JsonMapContainerIdTest implements BaseTest {
     @Test
     @DisplayName("`json` when adding map with unsorted keys, should return sorted json")
     void test_6() {
-        var subject = new JsonMapContainerId().with(
+        var subject = new JsonMapContainerKey().with(
                 Map.of(
                         "key2", "value2",
                         "key1", "value1",
@@ -87,7 +87,7 @@ class JsonMapContainerIdTest implements BaseTest {
     @Test
     @DisplayName("`with` if try to add null key, should throw exception")
     void test_7() {
-        var subject = new JsonMapContainerId();
+        var subject = new JsonMapContainerKey();
         assertThatThrownBy(() -> subject.with(null, "value"))
                 .isInstanceOf(NullPointerException.class);
     }
@@ -95,7 +95,7 @@ class JsonMapContainerIdTest implements BaseTest {
     @Test
     @DisplayName("`with` if add non null entry, then should return new instance with entry")
     void test_8() {
-        var subject = new JsonMapContainerId();
+        var subject = new JsonMapContainerKey();
 
         var newSubject = subject.with("key42", 42);
 
@@ -105,7 +105,7 @@ class JsonMapContainerIdTest implements BaseTest {
     @Test
     @DisplayName("`with` if try to add map with null key, should throw exception")
     void test_9() {
-        var subject = new JsonMapContainerId();
+        var subject = new JsonMapContainerKey();
         var props = new HashMap<String, Object>();
         props.put(null, "value");
         assertThatThrownBy(() -> subject.with(props))

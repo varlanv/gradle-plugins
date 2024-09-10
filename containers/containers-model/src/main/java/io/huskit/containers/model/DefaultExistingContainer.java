@@ -11,7 +11,7 @@ import java.util.Map;
 public class DefaultExistingContainer implements ExistingContainer {
 
     String huskitId;
-    String containerId;
+    String containerKey;
     Long createdAt;
     Map<String, String> labels;
 

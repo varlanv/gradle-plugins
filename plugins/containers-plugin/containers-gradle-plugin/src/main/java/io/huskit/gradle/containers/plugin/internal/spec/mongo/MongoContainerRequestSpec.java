@@ -67,12 +67,12 @@ public interface MongoContainerRequestSpec extends ContainerRequestSpec, MongoCo
                 new DefaultContainerImage(getImage().get()),
                 port.resolve(port),
                 id(),
-                new DefaultMongoContainerReuseOptions(
-                        Boolean.TRUE.equals(containerReuseSpec.getEnabled().getOrNull()),
-                        Boolean.TRUE.equals(containerReuseSpec.getNewDatabaseForEachTask().getOrNull()),
-                        Boolean.TRUE.equals(containerReuseSpec.getReuseBetweenBuilds().getOrNull()),
-                        ContainerCleanupOptions.after(cleanupSpec.getCleanupAfter().getOrNull())
-                )
+                DefaultMongoContainerReuseOptions.builder()
+                        .enabled(Boolean.TRUE.equals(containerReuseSpec.getEnabled().getOrNull()))
+                        .reuseBetweenBuilds(Boolean.TRUE.equals(containerReuseSpec.getReuseBetweenBuilds().getOrNull()))
+                        .newDatabaseForEachRequest(Boolean.TRUE.equals(containerReuseSpec.getNewDatabaseForEachTask().getOrNull()))
+                        .cleanup(ContainerCleanupOptions.after(cleanupSpec.getCleanupAfter().getOrNull()))
+                        .build()
         );
     }
 

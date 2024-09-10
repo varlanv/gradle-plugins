@@ -31,6 +31,7 @@ public class ConfigureTests {
     JavaToolchainService javaToolchainService;
     Provider<TestSynchronizerBuildService> syncBuildService;
 
+    @SuppressWarnings("UnstableApiUsage")
     public void configure() {
         pluginManager.withPlugin("java", plugin -> {
             var testing = (TestingExtension) extensions.getByName("testing");

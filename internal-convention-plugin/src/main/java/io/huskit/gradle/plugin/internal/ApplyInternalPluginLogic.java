@@ -48,24 +48,13 @@ public class ApplyInternalPluginLogic {
                 environment
         ).configure();
         new AddCommonDependencies(
-                new AddLombokDependencies(
-                        pluginManager,
-                        properties,
-                        dependencies
-                ),
-                new AddSpockDependencies(
-                        pluginManager,
-                        properties,
-                        dependencies
-                ),
-                new AddTestDependencies(
-                        pluginManager,
-                        projectPath,
-                        environment,
-                        dependencies,
-                        commonTestProject,
-                        properties
-                )
+                pluginManager,
+                properties,
+                dependencies,
+                environment,
+                properties,
+                projectPath,
+                commonTestProject
         ).add();
         var syncBuildService = project.getGradle().getSharedServices().registerIfAbsent(
                 TestSynchronizerBuildService.name,

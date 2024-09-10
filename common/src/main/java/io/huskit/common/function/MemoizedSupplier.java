@@ -2,6 +2,7 @@ package io.huskit.common.function;
 
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.NonFinal;
+import org.checkerframework.checker.nullness.qual.Nullable;
 
 import java.util.Objects;
 import java.util.function.Supplier;
@@ -19,7 +20,9 @@ import java.util.function.Supplier;
 public class MemoizedSupplier<T> implements Supplier<T> {
 
     Supplier<T> delegate;
-    volatile @NonFinal T value;
+    @Nullable
+    @NonFinal
+    volatile T value;
 
     @Override
     public T get() {

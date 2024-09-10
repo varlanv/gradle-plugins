@@ -45,6 +45,7 @@ include(
         "containers:containers-model",
         "containers:containers-core",
         "containers:containers-testcontainers",
+        "containers:containers-huskit",
         "plugins:containers-plugin:containers-gradle-plugin",
 )
 

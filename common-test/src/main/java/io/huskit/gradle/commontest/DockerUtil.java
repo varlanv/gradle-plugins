@@ -63,12 +63,12 @@ public class DockerUtil {
         return listContainersCmd.exec();
     }
 
-    public List<Container> findHuskitContainersWithId(String id) {
+    public List<Container> findHuskitContainersWithKey(String key) {
         var client = DockerClientFactory.instance().client();
         var listContainersCmd = client.listContainersCmd().withLabelFilter(
                 Map.of(
                         "huskit_container", "true",
-                        "huskit_id", id
+                        "huskit_id", key
                 )
         );
         return listContainersCmd.exec();
