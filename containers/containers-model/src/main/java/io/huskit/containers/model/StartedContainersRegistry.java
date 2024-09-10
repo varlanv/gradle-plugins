@@ -5,6 +5,7 @@ import io.huskit.containers.model.started.StartedContainer;
 import io.huskit.log.Log;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.NonFinal;
+import org.checkerframework.checker.nullness.qual.Nullable;
 
 import java.util.Collection;
 import java.util.Objects;
@@ -28,8 +29,8 @@ public class StartedContainersRegistry {
     }
 
     public StartedContainer getOrStart(RequestedContainer requestedContainer) {
-        var key = requestedContainer.id().json();
-            return getStartedContainerInternal(startedContainersById, key, requestedContainer);
+        var key = requestedContainer.key().json();
+        return getStartedContainerInternal(startedContainersById, key, requestedContainer);
     }
 
     private StartedContainer getStartedContainerInternal(ConcurrentMap<String, Value<StartedContainer>> startedContainersByKey,
@@ -58,6 +59,7 @@ public class StartedContainersRegistry {
     private static class Value<T> {
 
         @NonFinal
+        @Nullable
         volatile T ref;
         Lock lock = new ReentrantLock();
     }

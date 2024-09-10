@@ -25,7 +25,7 @@ public class ReplaceablePropsIntegrationTest implements GradleIntegrationTest {
             assertThat(log.loggedMessages()).hasSize(1);
             var loggedMessage = log.loggedMessages().get(0);
             assertThat(loggedMessage.args()).hasSize(1);
-            assertThat(loggedMessage.args().get(0)).isEqualTo(Props.EXTENSION_NAME);
+            assertThat(loggedMessage.args().get(0)).isEqualTo(Props.name());
             assertThat(loggedMessage.message()).contains("found, using existing instance");
         });
     }
@@ -42,13 +42,13 @@ public class ReplaceablePropsIntegrationTest implements GradleIntegrationTest {
             assertThat(log.loggedMessages()).hasSize(1);
             var loggedMessage = log.loggedMessages().get(0);
             assertThat(loggedMessage.args()).hasSize(1);
-            assertThat(loggedMessage.args().get(0)).isEqualTo(Props.EXTENSION_NAME);
+            assertThat(loggedMessage.args().get(0)).isEqualTo(Props.name());
             assertThat(loggedMessage.message()).contains("not found, creating new instance");
         });
     }
 
     private ReplaceableProps prepareSubjectAndExtension(SingleProjectFixture fixture, Log log) {
-        fixture.project().getExtensions().add(Props.class, Props.EXTENSION_NAME, new RandomizeIfEmptyProps(new FakeProps()));
+        fixture.project().getExtensions().add(Props.class, Props.name(), new RandomizeIfEmptyProps(new FakeProps()));
         return prepareSubject(fixture, log);
     }
 

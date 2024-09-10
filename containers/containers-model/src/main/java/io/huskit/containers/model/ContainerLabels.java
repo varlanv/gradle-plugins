@@ -1,6 +1,6 @@
 package io.huskit.containers.model;
 
-import io.huskit.containers.model.id.ContainerId;
+import io.huskit.containers.model.id.ContainerKey;
 import lombok.RequiredArgsConstructor;
 
 import java.util.Map;
@@ -8,11 +8,11 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class ContainerLabels {
 
-    private final ContainerId id;
+    private final ContainerKey key;
 
     public Map<String, String> asMap() {
         return Map.of(
-                "huskit_id", id.json(),
+                Constants.KEY_LABEL, key.json(),
                 "huskit_container", "true"
         );
     }

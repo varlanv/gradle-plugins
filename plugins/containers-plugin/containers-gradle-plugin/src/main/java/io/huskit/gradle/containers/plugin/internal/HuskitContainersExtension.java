@@ -59,10 +59,10 @@ public interface HuskitContainersExtension extends ContainersExtension {
     }
 
     private void validateAndAdd(ContainerRequestSpec requested) {
-        var requestedId = requested.id();
+        var requestedId = requested.key();
         boolean hasDuplicates = getContainersRequestedByUser().get().stream()
                 .map(ContainerRequestSpec.class::cast)
-                .map(ContainerRequestSpec::id)
+                .map(ContainerRequestSpec::key)
                 .anyMatch(requestedId::equals);
         if (hasDuplicates) {
             // TODO show diff to user

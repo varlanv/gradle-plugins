@@ -17,7 +17,7 @@ public interface CleanupSpecView {
         } catch (IllegalArgumentException e) {
             throw new IllegalArgumentException(String.format("Unavailable unit value - '%s', consider using one of available values - %s",
                     unit,
-                    CleanupSpec.ALLOWED_UNITS.stream().map(Enum::name).map(String::toLowerCase).collect(Collectors.toList())));
+                    CleanupSpec.ALLOWED_UNITS.stream().map(Enum::name).map(String::toLowerCase).collect(Collectors.toList())), e);
         }
         after(time, chronoUnit);
     }

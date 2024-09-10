@@ -10,11 +10,12 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class DefaultExistingContainer implements ExistingContainer {
 
-    String huskitId;
-    String containerId;
+    String id;
+    String containerKey;
     Long createdAt;
     Map<String, String> labels;
 
+    @Override
     public boolean isExpired(Duration cleanupAfter) {
         var cleanupAfterMillis = cleanupAfter.toMillis();
         return cleanupAfterMillis > 0 && System.currentTimeMillis() - createdAt > cleanupAfterMillis;

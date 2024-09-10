@@ -1,7 +1,7 @@
 package io.huskit.containers.testcontainers.mongo;
 
 import io.huskit.containers.model.ExistingContainer;
-import io.huskit.containers.model.id.ContainerId;
+import io.huskit.containers.model.id.ContainerKey;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.MongoDBContainer;
 
@@ -18,9 +18,9 @@ public interface TestContainersDelegate {
 
     <T extends GenericContainer<?>> void start(T container);
 
-    String getConnectionString(Supplier<MongoDBContainer> mongoDBContainerSupplier);
+    String getConnectionString(Supplier<MongoDBContainer> mongoDbContainerSupplier);
 
-    Optional<ExistingContainer> getExistingContainer(ContainerId id);
+    Optional<ExistingContainer> getExistingContainer(ContainerKey id);
 
     void remove(ExistingContainer existingContainer);
 

@@ -30,7 +30,7 @@ public interface FunctionalTest extends BaseTest {
 
     @BeforeAll
     default void setupFunctionalSpec() {
-        TestUtils.setHuskitProjectRoot(() -> findDirContaining(file -> file.getName().equals("internal-convention-plugin")));
+        TestUtils.setHuskitProjectRoot(() -> findDirContaining(file -> "internal-convention-plugin".equals(file.getName())));
     }
 
     @SneakyThrows
@@ -58,7 +58,9 @@ public interface FunctionalTest extends BaseTest {
         runGradleRunnerFixture(params, List.of(taskName), fixtureConsumer);
     }
 
-    default void runGradleRunnerFixture(DataTable params, List<String> arguments, ThrowingConsumer<RunnerFunctionalFixture> fixtureConsumer) {
+    default void runGradleRunnerFixture(DataTable params,
+                                        List<String> arguments,
+                                        ThrowingConsumer<RunnerFunctionalFixture> fixtureConsumer) {
         runFunctionalFixture(parentFixture -> {
             var args = new ArrayList<>(arguments);
             if (params.configurationCache()) {
@@ -96,7 +98,8 @@ public interface FunctionalTest extends BaseTest {
         System.err.println();
         System.err.println(lineStart);
         System.err.println();
-        System.err.printf("%s STARTING GRADLE FUNCTIONAL TEST BUILD FOR SPEC %s. LOGS BELOW ARE COMMING FROM GRADLE BUILD UNDER TEST %s%n", mark, getClass().getSimpleName(), mark);
+        System.err.printf("%s STARTING GRADLE FUNCTIONAL TEST BUILD FOR SPEC %s. "
+                + "LOGS BELOW ARE COMMING FROM GRADLE BUILD UNDER TEST %s%n", mark, getClass().getSimpleName(), mark);
         System.err.printf("Gradle build args: %s%n", String.join(" ", runner.getArguments()));
         System.err.printf("Java version - %s%n", System.getProperty("java.version"));
         System.err.println();
@@ -170,15 +173,15 @@ public interface FunctionalTest extends BaseTest {
     }
 
     default File useCasesDir() {
-        return findDirContaining(file -> file.getName().equals("use-cases"));
-    }
-
-    default File findDir(String dirName) {
-        return findDir(file -> file.getName().equals(dirName));
+        return findDirContaining(file -> "use-cases".equals(file.getName()));
     }
 
     default File findDirContaining(Predicate<File> predicate) {
         return findDir(file -> Arrays.stream(Objects.requireNonNull(file.listFiles())).anyMatch(predicate));
+    }
+
+    default File findDir(String dirName) {
+        return findDir(file -> file.getName().equals(dirName));
     }
 
     @SneakyThrows

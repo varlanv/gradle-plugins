@@ -60,23 +60,17 @@ public class ConfigureContainers implements Runnable {
     }
 
     private Optional<TaskProvider<Task>> getTaskTaskProviderFromTaskName(AbstractShouldStartBeforeSpec shouldStartBeforeSpec) {
-        var taskName = shouldStartBeforeSpec.getShouldRunBeforeTaskName().getOrNull();
-        if (taskName != null) {
-            log.info("Using task name to find task provider for shouldRunBeforeTask: [{}]", taskName);
-            return Optional.of(tasks.named(taskName));
-        } else {
-            return Optional.empty();
-        }
+        return shouldStartBeforeSpec.getShouldRunBeforeTaskName().map(val -> {
+            log.info("Using task name to find task provider for shouldRunBeforeTask: [{}]", val);
+            return Optional.of(tasks.named(val));
+        }).getOrElse(Optional.empty());
     }
 
     private Optional<TaskProvider<Task>> getShouldRunBeforeTaskProvider(AbstractShouldStartBeforeSpec shouldStartBeforeSpec) {
-        var provider = shouldStartBeforeSpec.getShouldRunBeforeTaskProvider().getOrNull();
-        if (provider != null) {
-            log.info("Found task provider for shouldRunBeforeTask: [{}]", provider.getName());
-            return Optional.of(provider);
-        } else {
-            return Optional.empty();
-        }
+        return shouldStartBeforeSpec.getShouldRunBeforeTaskProvider().map(val -> {
+            log.info("Found task provider for shouldRunBeforeTask: [{}]", val.getName());
+            return Optional.of(val);
+        }).getOrElse(Optional.empty());
     }
 
     private ConfigureContainerDependentTask configureContainerDependentTaskAction(TaskProvider<ContainersTask> containersTask) {

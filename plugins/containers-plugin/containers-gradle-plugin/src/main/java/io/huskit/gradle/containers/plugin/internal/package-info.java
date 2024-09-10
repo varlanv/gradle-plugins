@@ -1,4 +1,5 @@
-@NonNullApi
+@DefaultQualifier(NonNull.class)
 package io.huskit.gradle.containers.plugin.internal;
 
-import org.gradle.api.NonNullApi;
+import org.checkerframework.checker.nullness.qual.NonNull;
+import org.checkerframework.framework.qual.DefaultQualifier;

@@ -19,15 +19,15 @@ public class NewOrExistingExtensionIntegrationTest implements GradleIntegrationT
             var log = new FakeLog();
             var subject = new NewOrExistingExtension(log, project.getExtensions());
 
-            var actual = subject.getOrCreate(Props.class, FakeProps.class, Props.EXTENSION_NAME);
+            var actual = subject.getOrCreate(Props.class, FakeProps.class, Props.name());
 
             assertThat(actual).isNotNull();
-            assertThat(project.getExtensions().findByName(Props.EXTENSION_NAME)).isSameAs(actual);
+            assertThat(project.getExtensions().findByName(Props.name())).isSameAs(actual);
             var loggedMessages = log.loggedMessages();
             assertThat(loggedMessages).hasSize(1);
             var loggedMessage = loggedMessages.get(0);
             assertThat(loggedMessage.args()).hasSize(1);
-            assertThat(loggedMessage.args().get(0)).isEqualTo(Props.EXTENSION_NAME);
+            assertThat(loggedMessage.args().get(0)).isEqualTo(Props.name());
             assertThat(loggedMessage.message()).contains("not found, creating new instance");
         });
     }
@@ -40,16 +40,16 @@ public class NewOrExistingExtensionIntegrationTest implements GradleIntegrationT
             var log = new FakeLog();
             var subject = new NewOrExistingExtension(log, project.getExtensions());
             var expected = new FakeProps();
-            project.getExtensions().add(Props.EXTENSION_NAME, expected);
+            project.getExtensions().add(Props.name(), expected);
 
-            var actual = subject.getOrCreate(Props.class, FakeProps.class, Props.EXTENSION_NAME);
+            var actual = subject.getOrCreate(Props.class, FakeProps.class, Props.name());
 
             assertThat(actual).isSameAs(expected);
             var loggedMessages = log.loggedMessages();
             assertThat(loggedMessages).hasSize(1);
             var loggedMessage = loggedMessages.get(0);
             assertThat(loggedMessage.args()).hasSize(1);
-            assertThat(loggedMessage.args().get(0)).isEqualTo(Props.EXTENSION_NAME);
+            assertThat(loggedMessage.args().get(0)).isEqualTo(Props.name());
             assertThat(loggedMessage.message()).contains("found, using existing instance");
         });
     }

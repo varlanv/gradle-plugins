@@ -27,11 +27,11 @@ public class HuskitPropertiesPluginIntegrationTest implements GradleIntegrationT
     void test_1() {
         runProjectFixture(fixture -> {
             var project = fixture.project();
-            assertThat(project.getExtensions().findByName(Props.EXTENSION_NAME)).isNull();
+            assertThat(project.getExtensions().findByName(Props.name())).isNull();
 
             project.getPlugins().apply(HuskitPropertiesPlugin.class);
 
-            assertThat(project.getExtensions().findByName(Props.EXTENSION_NAME)).isNotNull();
+            assertThat(project.getExtensions().findByName(Props.name())).isNotNull();
         });
     }
 
@@ -41,11 +41,11 @@ public class HuskitPropertiesPluginIntegrationTest implements GradleIntegrationT
         runProjectFixture(fixture -> {
             var project = fixture.project();
             var fakeProps = new FakeProps();
-            project.getExtensions().add(Props.class, Props.EXTENSION_NAME, fakeProps);
+            project.getExtensions().add(Props.class, Props.name(), fakeProps);
 
             project.getPlugins().apply(HuskitPropertiesPlugin.class);
 
-            assertThat(project.getExtensions().findByName(Props.EXTENSION_NAME)).isEqualTo(fakeProps);
+            assertThat(project.getExtensions().findByName(Props.name())).isEqualTo(fakeProps);
         });
     }
 }

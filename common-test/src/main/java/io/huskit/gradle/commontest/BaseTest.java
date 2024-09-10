@@ -34,15 +34,15 @@ public interface BaseTest {
     }
 
     @SneakyThrows
-    default void parallel(int nThreads, ThrowingRunnable runnable) {
-        var executorService = Executors.newFixedThreadPool(nThreads);
+    default void parallel(int threads, ThrowingRunnable runnable) {
+        var executorService = Executors.newFixedThreadPool(threads);
         var exceptionRef = new AtomicReference<Exception>();
         try {
-            var readyToStartLock = new CountDownLatch(nThreads);
+            var readyToStartLock = new CountDownLatch(threads);
             var startLock = new CountDownLatch(1);
-            var finishedLock = new CountDownLatch(nThreads);
+            var finishedLock = new CountDownLatch(threads);
 
-            for (var i = 0; i < nThreads; i++) {
+            for (var i = 0; i < threads; i++) {
                 executorService.submit(() -> {
                     try {
                         readyToStartLock.countDown();
@@ -94,10 +94,6 @@ public interface BaseTest {
                 throw new RuntimeException(Objects.requireNonNullElse(originalException, e));
             }
         }
-    }
-
-    default TestStopWatch stopWatch() {
-        return new TestStopWatch();
     }
 
     interface ThrowingRunnable {

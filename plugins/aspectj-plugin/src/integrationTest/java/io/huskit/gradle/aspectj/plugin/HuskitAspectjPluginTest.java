@@ -6,7 +6,7 @@ import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-public class HuskitAspectJPluginTest implements GradleIntegrationTest {
+public class HuskitAspectjPluginTest implements GradleIntegrationTest {
 
     @Test
     @DisplayName("plugin should be applied")
@@ -14,9 +14,9 @@ public class HuskitAspectJPluginTest implements GradleIntegrationTest {
         runProjectFixture(fixture -> {
             var project = fixture.project();
 
-            project.getPlugins().apply(HuskitAspectJPlugin.class);
+            project.getPlugins().apply(HuskitAspectjPlugin.class);
 
-            assertThat(project.getPlugins().hasPlugin(HuskitAspectJPlugin.class)).isTrue();
+            assertThat(project.getPlugins().hasPlugin(HuskitAspectjPlugin.class)).isTrue();
         });
     }
 }

@@ -5,9 +5,9 @@ import java.util.Map;
 
 public interface ExistingContainer {
 
-    String huskitId();
+    String id();
 
-    String containerId();
+    String containerKey();
 
     Long createdAt();
 

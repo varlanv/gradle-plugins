@@ -117,10 +117,12 @@ public class HuskitContainersPluginIntegrationTest implements GradleIntegrationT
             evaluateProject(project);
 
             // WHEN
-            var buildService = List.copyOf(project.getGradle().getSharedServices().getRegistrations()).get(0).getService().getOrNull();
+            var buildServiceProvider = List.copyOf(
+                    project.getGradle().getSharedServices().getRegistrations()
+            ).get(0).getService();
 
             // THEN
-            assertThat(buildService).isNotNull();
+            assertThat(buildServiceProvider.isPresent()).isTrue();
         });
     }
 
@@ -358,7 +360,9 @@ public class HuskitContainersPluginIntegrationTest implements GradleIntegrationT
             // WHEN
             fixture.containersTask().get().startAndReturnContainers(fixture.testContainersDelegateMock());
             var addContainersEnvironmentAction = fixture.getAddContainersEnvironmentAction();
-            var environment = addContainersEnvironmentAction.executeAndReturn(fixture.testTaskProvider().get(), fixture.testContainersDelegateMock());
+            var environment = addContainersEnvironmentAction.executeAndReturn(
+                    fixture.testTaskProvider().get(),
+                    fixture.testContainersDelegateMock());
 
             // THEN
             assertThat(environment).isNotEmpty();
@@ -421,7 +425,9 @@ public class HuskitContainersPluginIntegrationTest implements GradleIntegrationT
             // WHEN
             fixture.containersTask().get().startAndReturnContainers(fixture.testContainersDelegateMock());
             var addContainersEnvironmentAction = fixture.getAddContainersEnvironmentAction();
-            var environment = addContainersEnvironmentAction.executeAndReturn(fixture.testTaskProvider().get(), fixture.testContainersDelegateMock());
+            var environment = addContainersEnvironmentAction.executeAndReturn(
+                    fixture.testTaskProvider().get(),
+                    fixture.testContainersDelegateMock());
 
             // THEN
             assertThat(environment).isNotEmpty();
@@ -485,7 +491,9 @@ public class HuskitContainersPluginIntegrationTest implements GradleIntegrationT
             // WHEN
             fixture.containersTask().get().startAndReturnContainers(fixture.testContainersDelegateMock());
             var addContainersEnvironmentAction = fixture.getAddContainersEnvironmentAction();
-            var environment = addContainersEnvironmentAction.executeAndReturn(fixture.testTaskProvider().get(), fixture.testContainersDelegateMock());
+            var environment = addContainersEnvironmentAction.executeAndReturn(
+                    fixture.testTaskProvider().get(),
+                    fixture.testContainersDelegateMock());
 
             // THEN
             assertThat(environment).isNotEmpty();
@@ -497,11 +505,6 @@ public class HuskitContainersPluginIntegrationTest implements GradleIntegrationT
                     )
             );
         });
-    }
-
-    @Test
-    void s(){
-        System.out.println(1);
     }
 
     @Test
@@ -534,8 +537,9 @@ public class HuskitContainersPluginIntegrationTest implements GradleIntegrationT
     }
 
     @Test
-    @DisplayName("When mongo spec provided with `reuseBetweenBuilds`, calling `stop` should clear all databases except default ones instead of stopping the container")
-    void when_mongo_spec_provided_with_reuse_between_builds_calling_stop_should_clear_all_databases_except_default_ones_instead_of_stopping_the_container() {
+    @DisplayName("When mongo spec has `reuseBetweenBuilds`, calling `stop` "
+            + "should clear all databases except default ones instead of stopping the container")
+    void when_mongo_spec_provided_with_reuse_between_builds_calling_stop_should_clear_all_databases() {
         runSingleProjectContainerFixture(fixture -> {
             // GIVEN
             var project = fixture.project();
@@ -581,7 +585,9 @@ public class HuskitContainersPluginIntegrationTest implements GradleIntegrationT
             // WHEN
             fixture.containersTask().get().startAndReturnContainers(fixture.testContainersDelegateMock());
             var addContainersEnvironmentAction = fixture.getAddContainersEnvironmentAction();
-            var environment = addContainersEnvironmentAction.executeAndReturn(fixture.testTaskProvider().get(), fixture.testContainersDelegateMock());
+            var environment = addContainersEnvironmentAction.executeAndReturn(
+                    fixture.testTaskProvider().get(),
+                    fixture.testContainersDelegateMock());
             fixture.dockerBuildService().close();
 
             // THEN
@@ -642,7 +648,9 @@ public class HuskitContainersPluginIntegrationTest implements GradleIntegrationT
             // WHEN
             fixture.containersTask().get().startAndReturnContainers(fixture.testContainersDelegateMock());
             var addContainersEnvironmentAction = fixture.getAddContainersEnvironmentAction();
-            var taskEnvironment = addContainersEnvironmentAction.executeAndReturn(fixture.testTaskProvider().get(), fixture.testContainersDelegateMock());
+            var taskEnvironment = addContainersEnvironmentAction.executeAndReturn(
+                    fixture.testTaskProvider().get(),
+                    fixture.testContainersDelegateMock());
             fixture.dockerBuildService().close();
 
             // THEN
@@ -705,7 +713,9 @@ public class HuskitContainersPluginIntegrationTest implements GradleIntegrationT
             // WHEN
             fixture.containersTask().get().startAndReturnContainers(fixture.testContainersDelegateMock());
             var addContainersEnvironmentAction = fixture.getAddContainersEnvironmentAction();
-            var taskEnvironment = addContainersEnvironmentAction.executeAndReturn(fixture.testTaskProvider().get(), fixture.testContainersDelegateMock());
+            var taskEnvironment = addContainersEnvironmentAction.executeAndReturn(
+                    fixture.testTaskProvider().get(),
+                    fixture.testContainersDelegateMock());
 
             // AND
             fixture.dockerBuildService().close();
@@ -728,13 +738,13 @@ public class HuskitContainersPluginIntegrationTest implements GradleIntegrationT
         runSingleProjectContainerFixture(fixture -> {
             // GIVEN
             var project = fixture.project();
-            var containerStopException = new RuntimeException("anyException");
             fixture.containersExtension().shouldStartBefore(spec -> spec.task(JavaPlugin.TEST_TASK_NAME));
             fixture.containersExtension().mongo(mongoSpec -> {
             });
             evaluateProject(project);
             when(fixture.testContainersDelegateMock().getConnectionString(any())).thenReturn(anyConnectionString);
             when(fixture.testContainersDelegateMock().getFirstMappedPort(any())).thenReturn(anyFixedPort);
+            var containerStopException = new RuntimeException("anyException");
             doAnswer(invocation -> {
                 throw containerStopException;
             }).when(fixture.testContainersDelegateMock()).stop(any());
@@ -762,13 +772,13 @@ public class HuskitContainersPluginIntegrationTest implements GradleIntegrationT
         runSingleProjectContainerFixture(fixture -> {
             // GIVEN
             var project = fixture.project();
-            var containerStopException = new RuntimeException("anyException");
             fixture.containersExtension().shouldStartBefore(spec -> spec.task(JavaPlugin.TEST_TASK_NAME));
             fixture.containersExtension().mongo(mongoSpec -> {
             });
             evaluateProject(project);
             when(fixture.testContainersDelegateMock().getConnectionString(any())).thenReturn(anyConnectionString);
             when(fixture.testContainersDelegateMock().getFirstMappedPort(any())).thenReturn(anyFixedPort);
+            var containerStopException = new RuntimeException("anyException");
             doAnswer(invocation -> {
                 throw containerStopException;
             }).when(fixture.testContainersDelegateMock()).stop(any());
@@ -776,7 +786,9 @@ public class HuskitContainersPluginIntegrationTest implements GradleIntegrationT
             // WHEN
             fixture.containersTask().get().startAndReturnContainers(fixture.testContainersDelegateMock());
             var addContainersEnvironmentAction = fixture.getAddContainersEnvironmentAction();
-            var taskEnvironment = addContainersEnvironmentAction.executeAndReturn(fixture.testTaskProvider().get(), fixture.testContainersDelegateMock());
+            var taskEnvironment = addContainersEnvironmentAction.executeAndReturn(
+                    fixture.testTaskProvider().get(),
+                    fixture.testContainersDelegateMock());
             fixture.dockerBuildService().close();
 
             // THEN
@@ -821,18 +833,20 @@ public class HuskitContainersPluginIntegrationTest implements GradleIntegrationT
             // WHEN
             fixture.containersTask(BasePlugin.CLEAN_TASK_NAME).get().startAndReturnContainers(fixture.testContainersDelegateMock());
             var addContainersEnvironmentAction = fixture.getAddContainersEnvironmentAction(BasePlugin.CLEAN_TASK_NAME);
-            var taskEnvironment = addContainersEnvironmentAction.executeAndReturn(project.getTasks().getByName(BasePlugin.CLEAN_TASK_NAME), fixture.testContainersDelegateMock());
+            var taskEnvironment = addContainersEnvironmentAction.executeAndReturn(
+                    project.getTasks().getByName(BasePlugin.CLEAN_TASK_NAME),
+                    fixture.testContainersDelegateMock());
             fixture.dockerBuildService().close();
 
             // THEN
+            assertThat(taskEnvironment).isEmpty();
+            // AND
             verify(fixture.testContainersDelegateMock()).start(any());
             verify(fixture.testContainersDelegateMock()).stop(any());
             verify(fixture.testContainersDelegateMock()).getExistingContainer(any());
             verify(fixture.testContainersDelegateMock()).setReuse();
             verifyNoMoreInteractions(fixture.testContainersDelegateMock());
 
-            // AND
-            assertThat(taskEnvironment).isEmpty();
         });
     }
 
@@ -854,7 +868,7 @@ public class HuskitContainersPluginIntegrationTest implements GradleIntegrationT
             var fixedPortSpec = portSpec.getFixed().get();
             assertThat(fixedPortSpec.getHostValue().get()).isEqualTo(anyHostPort);
             assertThat(fixedPortSpec.getContainerValue().get()).isEqualTo(Constants.Mongo.DEFAULT_PORT);
-            assertThat(fixedPortSpec.getHostRange().getOrNull()).isNull();
+            assertThat(fixedPortSpec.getHostRange().isPresent()).isFalse();
             assertThat(portSpec.getDynamic().getOrNull()).isFalse();
         });
     }
@@ -875,7 +889,7 @@ public class HuskitContainersPluginIntegrationTest implements GradleIntegrationT
             var fixedPortSpec = portSpec.getFixed().get();
             assertThat(fixedPortSpec.getHostValue().getOrNull()).isNull();
             assertThat(fixedPortSpec.getContainerValue().getOrNull()).isNull();
-            assertThat(fixedPortSpec.getHostRange().getOrNull()).isNull();
+            assertThat(fixedPortSpec.getHostRange().isPresent()).isFalse();
             assertThat(portSpec.getDynamic().getOrNull()).isTrue();
         });
     }
@@ -899,8 +913,8 @@ public class HuskitContainersPluginIntegrationTest implements GradleIntegrationT
     }
 
     @Test
-    @DisplayName("Mongo container when `fixed` port is already set to `hostRange` and trying to set `hostValue`, then should throw exception")
-    void mongo_container_when_fixed_port_is_already_set_to_hostRange_and_trying_to_set_hostValue_then_should_throw_exception() {
+    @DisplayName("Mongo container when already set `hostRange` and trying to set `hostValue`, then should throw exception")
+    void mongo_container_when_already_set_hostRange_and_trying_to_set_hostValue_then_should_throw_exception() {
         runSingleProjectContainerFixture(fixture -> {
             // EXPECT
             assertThatThrownBy(() -> fixture.containersExtension().mongo(mongo ->
@@ -921,7 +935,7 @@ public class HuskitContainersPluginIntegrationTest implements GradleIntegrationT
     }
 
     @Test
-    @DisplayName("Mongo container when `fixed` port is already set to `hostValue` and trying to set `hostRange`, then should throw exception")
+    @DisplayName("Mongo container when `fixed` port is already set to `hostValue` and try to set `hostRange` then should throw exception")
     void mongo_container_when_fixed_port_is_already_set_to_hostValue_and_trying_to_set_hostRange_then_should_throw_exception() {
         runSingleProjectContainerFixture(fixture -> {
             // EXPECT
@@ -994,8 +1008,8 @@ public class HuskitContainersPluginIntegrationTest implements GradleIntegrationT
             "1, -1",
             "-1, -1"
     })
-    @DisplayName("Mongo container when `fixed` port is set to negative `hostPortFrom` or `hostPortTo`, should throw exception")
-    void mongo_container_when_fixed_port_is_set_to_negative_hostPortFrom_or_hostPortTo_then_should_throw_exception(Integer hostPortFrom, Integer hostPortTo) {
+    @DisplayName("Mongo container when negative `hostPortFrom` or `hostPortTo`, should throw exception")
+    void mongo_container_when_negative_hostPortFrom_or_hostPortTo_then_should_throw_exception(Integer hostPortFrom, Integer hostPortTo) {
         runSingleProjectContainerFixture(fixture -> {
             // EXPECT
             assertThatThrownBy(() -> fixture.containersExtension().mongo(mongo ->
@@ -1014,8 +1028,8 @@ public class HuskitContainersPluginIntegrationTest implements GradleIntegrationT
 
     @ParameterizedTest
     @ValueSource(ints = {5, 6})
-    @DisplayName("Mongo container when `fixed` port range `hostPortFrom` is equal to or greater than `hostPortTo`, should throw exception")
-    void mongo_container_when_fixed_port_range_hostPortFrom_is_equal_to_or_greater_than_hostPortTo_then_should_throw_exception(int hostPortFrom) {
+    @DisplayName("Mongo container when `hostPortFrom` is equal to or greater than `hostPortTo`, should throw exception")
+    void mongo_container_when_hostPortFrom_is_equal_to_or_greater_than_hostPortTo_then_should_throw_exception(int hostPortFrom) {
         runSingleProjectContainerFixture(fixture -> {
             var hostPortTo = 5;
             assertThatThrownBy(() -> fixture.containersExtension().mongo(mongo ->
@@ -1221,9 +1235,9 @@ public class HuskitContainersPluginIntegrationTest implements GradleIntegrationT
             verifyNoMoreInteractions(fixture.testContainersDelegateMock());
 
             // AND
-            var mongoDBContainer = mongoContainerCaptor.getValue();
-            assertThat(mongoDBContainer.getDockerImageName()).isEqualTo(Constants.Mongo.DEFAULT_IMAGE);
-            assertThat(mongoDBContainer.getExposedPorts()).containsExactly(Constants.Mongo.DEFAULT_PORT);
+            var mongoDbContainer = mongoContainerCaptor.getValue();
+            assertThat(mongoDbContainer.getDockerImageName()).isEqualTo(Constants.Mongo.DEFAULT_IMAGE);
+            assertThat(mongoDbContainer.getExposedPorts()).containsExactly(Constants.Mongo.DEFAULT_PORT);
         });
     }
 
@@ -1245,7 +1259,9 @@ public class HuskitContainersPluginIntegrationTest implements GradleIntegrationT
             // WHEN
             fixture.containersTask().get().startAndReturnContainers(fixture.testContainersDelegateMock());
             var addContainersEnvironmentAction = fixture.getAddContainersEnvironmentAction();
-            var taskEnvironment = addContainersEnvironmentAction.executeAndReturn(fixture.testTaskProvider().get(), fixture.testContainersDelegateMock());
+            var taskEnvironment = addContainersEnvironmentAction.executeAndReturn(
+                    fixture.testTaskProvider().get(),
+                    fixture.testContainersDelegateMock());
 
             // AND
             fixture.dockerBuildService().close();
@@ -1263,12 +1279,11 @@ public class HuskitContainersPluginIntegrationTest implements GradleIntegrationT
     }
 
     protected static AddContainersEnvironment findTaskAction(Task task, Class<AddContainersEnvironment> type) {
-        var aTask = (DefaultTask) task;
-        return aTask.getTaskActions().stream()
+        return ((DefaultTask) task).getTaskActions().stream()
                 .map(actionWrapper -> {
                     try {
                         for (var field : actionWrapper.getClass().getDeclaredFields()) {
-                            if (field.getName().equals("action")) {
+                            if ("action".equals(field.getName())) {
                                 field.setAccessible(true);
                                 var action = field.get(actionWrapper);
                                 if (action.getClass().equals(type)) {
@@ -1283,7 +1298,10 @@ public class HuskitContainersPluginIntegrationTest implements GradleIntegrationT
                 })
                 .filter(Objects::nonNull)
                 .findFirst()
-                .orElseThrow(() -> new NoSuchElementException(String.format("No action of type [%s] found in task [%s]", type, task.getName())));
+                .orElseThrow(() -> new NoSuchElementException(
+                        String.format(
+                                "No action of type [%s] found in task [%s]",
+                                type, task.getName())));
     }
 
     @SuppressWarnings("unchecked")
@@ -1296,11 +1314,16 @@ public class HuskitContainersPluginIntegrationTest implements GradleIntegrationT
             );
             project.getPlugins().apply(JavaPlugin.class);
             project.getPlugins().apply(HuskitContainersPlugin.class);
-            Supplier<ArrayList<BuildServiceRegistration<?, ?>>> buildServiceRegistrations = () -> new ArrayList<>(project.getGradle().getSharedServices().getRegistrations());
-            Supplier<Provider<ContainersBuildService>> dockerBuildServiceProvider = () -> (Provider<ContainersBuildService>) buildServiceRegistrations.get().get(0).getService();
-            Supplier<ContainersBuildService> dockerBuildService = () -> dockerBuildServiceProvider.get().get();
-            Supplier<Provider<Integer>> maxParallelUsages = () -> buildServiceRegistrations.get().get(0).getMaxParallelUsages();
-            Supplier<ContainersBuildServiceParams> dockerBuildServiceParams = () -> dockerBuildService.get().getParameters();
+            Supplier<List<BuildServiceRegistration<?, ?>>> buildServiceRegistrations = () ->
+                    new ArrayList<>(project.getGradle().getSharedServices().getRegistrations());
+            Supplier<Provider<ContainersBuildService>> dockerBuildServiceProvider = () ->
+                    (Provider<ContainersBuildService>) buildServiceRegistrations.get().get(0).getService();
+            Supplier<ContainersBuildService> dockerBuildService = () ->
+                    dockerBuildServiceProvider.get().get();
+            Supplier<Provider<Integer>> maxParallelUsages = () ->
+                    buildServiceRegistrations.get().get(0).getMaxParallelUsages();
+            Supplier<ContainersBuildServiceParams> dockerBuildServiceParams = () ->
+                    dockerBuildService.get().getParameters();
 
             fixtureConsumer.accept(
                     new SingleProjectContainerFixture(

@@ -20,7 +20,9 @@ import org.gradle.api.Action;
 import org.gradle.api.provider.Property;
 import org.jetbrains.annotations.NotNull;
 
+import java.time.Duration;
 import java.util.Map;
+import java.util.Optional;
 
 public interface MongoContainerRequestSpec extends ContainerRequestSpec, MongoContainerRequestSpecView {
 
@@ -31,8 +33,42 @@ public interface MongoContainerRequestSpec extends ContainerRequestSpec, MongoCo
     Property<MongoExposedEnvironmentSpec> getExposedEnvironment();
 
     @Override
+    default MongoRequestedContainer toRequestedContainer() {
+        var containerReuseSpec = getReuse().get();
+        var exposedEnvironmentSpec = getExposedEnvironment().get();
+        var cleanupSpec = containerReuseSpec.getCleanupSpec().get();
+        var port = getPort().get();
+        return new DefaultMongoRequestedContainer(
+                () -> getProjectPath().get(),
+                new MongoExposedEnvironment.Default(
+                        exposedEnvironmentSpec.getConnectionString().get(),
+                        exposedEnvironmentSpec.getDatabaseName().get(),
+                        exposedEnvironmentSpec.getPort().get()
+                ),
+                getDatabaseName().get(),
+                new DefaultContainerImage(getImage().get()),
+                port.resolve(port),
+                key(),
+                DefaultMongoContainerReuseOptions.builder()
+                        .enabled(Boolean.TRUE.equals(containerReuseSpec.getEnabled().getOrNull()))
+                        .reuseBetweenBuilds(Boolean.TRUE.equals(containerReuseSpec.getReuseBetweenBuilds().getOrNull()))
+                        .newDatabaseForEachRequest(Boolean.TRUE.equals(containerReuseSpec.getNewDatabaseForEachTask().getOrNull()))
+                        .cleanup(ContainerCleanupOptions.after(
+                                Optional.ofNullable(cleanupSpec.getCleanupAfter().getOrNull()).orElse(Duration.ZERO)))
+                        .build()
+        );
+    }
+
+    @Override
+    default void reuse(Action<MongoContainerReuseSpecView> action) {
+        var reuse = getReuse().get();
+        reuse.getEnabled().set(true);
+        action.execute(reuse);
+    }
+
+    @Override
     @NotNull
-    default Map<String, Object> idProps() {
+    default Map<String, Object> keyProps() {
         var reuse = getReuse().get();
         var exposedEnv = getExposedEnvironment().get();
         var reuseEnabled = reuse.getEnabled().get();
@@ -51,37 +87,6 @@ public interface MongoContainerRequestSpec extends ContainerRequestSpec, MongoCo
     }
 
     @Override
-    default MongoRequestedContainer toRequestedContainer() {
-        var containerReuseSpec = getReuse().get();
-        var exposedEnvironmentSpec = getExposedEnvironment().get();
-        var cleanupSpec = containerReuseSpec.getCleanupSpec().get();
-        var port = getPort().get();
-        return new DefaultMongoRequestedContainer(
-                () -> getProjectPath().get(),
-                new MongoExposedEnvironment.Default(
-                        exposedEnvironmentSpec.getConnectionString().get(),
-                        exposedEnvironmentSpec.getDatabaseName().get(),
-                        exposedEnvironmentSpec.getPort().get()
-                ),
-                getDatabaseName().get(),
-                new DefaultContainerImage(getImage().get()),
-                port.resolve(port),
-                id(),
-                new DefaultMongoContainerReuseOptions(
-                        Boolean.TRUE.equals(containerReuseSpec.getEnabled().getOrNull()),
-                        Boolean.TRUE.equals(containerReuseSpec.getNewDatabaseForEachTask().getOrNull()),
-                        Boolean.TRUE.equals(containerReuseSpec.getReuseBetweenBuilds().getOrNull()),
-                        ContainerCleanupOptions.after(cleanupSpec.getCleanupAfter().getOrNull())
-                )
-        );
-    }
-
-    default void reuse(Action<MongoContainerReuseSpecView> action) {
-        var reuse = getReuse().get();
-        reuse.getEnabled().set(true);
-        action.execute(reuse);
-    }
-
     default void exposedEnvironment(Action<MongoExposedEnvironmentSpecView> action) {
         var exposedEnvironment = getExposedEnvironment().get();
         action.execute(exposedEnvironment);

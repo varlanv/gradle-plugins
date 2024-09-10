@@ -1,7 +1,7 @@
 package io.huskit.gradle.containers.plugin.internal.spec;
 
 import io.huskit.containers.model.ContainerType;
-import io.huskit.containers.model.id.ContainerId;
+import io.huskit.containers.model.id.ContainerKey;
 import io.huskit.containers.model.request.RequestedContainer;
 import io.huskit.gradle.containers.plugin.api.ContainerPortSpecView;
 import io.huskit.gradle.containers.plugin.api.ContainerRequestSpecView;
@@ -31,7 +31,7 @@ public interface ContainerRequestSpec extends ContainerRequestSpecView, Named {
     Property<ContainerPortSpec> getPort();
 
     @NotNull
-    Map<String, Object> idProps();
+    Map<String, Object> keyProps();
 
     RequestedContainer toRequestedContainer();
 
@@ -46,13 +46,13 @@ public interface ContainerRequestSpec extends ContainerRequestSpecView, Named {
     }
 
     @NotNull
-    default ContainerId id() {
-        return ContainerId.of(idProps());
+    default ContainerKey key() {
+        return ContainerKey.of(keyProps());
     }
 
     @NotNull
     @Override
     default String getName() {
-        return id().json();
+        return key().json();
     }
 }

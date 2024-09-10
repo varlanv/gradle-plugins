@@ -14,16 +14,16 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 @ToString(of = "properties")
 @EqualsAndHashCode(of = "properties")
-class JsonMapContainerId implements ContainerId {
+class JsonMapContainerKey implements ContainerKey {
 
     NavigableMap<String, Object> properties;
-    MemoizedSupplier<String> memoizedSupplier = new MemoizedSupplier<>(this::_json);
+    MemoizedSupplier<String> memoizedSupplier = new MemoizedSupplier<>(this::buildJson);
 
-    JsonMapContainerId() {
+    JsonMapContainerKey() {
         this(Collections.emptyNavigableMap());
     }
 
-    JsonMapContainerId(Map<String, Object> properties) {
+    JsonMapContainerKey(Map<String, Object> properties) {
         this(new TreeMap<>(properties));
     }
 
@@ -32,23 +32,23 @@ class JsonMapContainerId implements ContainerId {
         return memoizedSupplier.get();
     }
 
-    private String _json() {
+    private String buildJson() {
         return properties.entrySet().stream()
                 .map(entry -> String.format("\"%s\": \"%s\"", entry.getKey(), entry.getValue()))
                 .collect(Collectors.joining(", ", "{", "}"));
     }
 
     @Override
-    public JsonMapContainerId with(String key, Object value) {
+    public JsonMapContainerKey with(String key, Object value) {
         var newProperties = new TreeMap<>(properties);
         newProperties.put(key, value);
-        return new JsonMapContainerId(newProperties);
+        return new JsonMapContainerKey(newProperties);
     }
 
     @Override
-    public JsonMapContainerId with(Map<String, Object> map) {
+    public JsonMapContainerKey with(Map<String, Object> map) {
         var newProperties = new TreeMap<>(properties);
         newProperties.putAll(map);
-        return new JsonMapContainerId(newProperties);
+        return new JsonMapContainerKey(newProperties);
     }
 }

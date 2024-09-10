@@ -25,11 +25,11 @@ repositories {
 }
 
 dependencies {
+    compileOnly(libs.checkerframework.qual)
+    compileOnly(libs.jetbrains.annotations)
     compileOnly(libs.lombok)
     implementation(libs.junit.platform.launcher)
     annotationProcessor(libs.lombok)
-//    testImplementation(libs.groovy.all)
-//    testImplementation(libs.spock.core)
 }
 
 gradlePlugin {

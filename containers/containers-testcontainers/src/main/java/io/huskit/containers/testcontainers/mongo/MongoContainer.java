@@ -5,7 +5,7 @@ import com.github.dockerjava.api.model.PortBinding;
 import com.github.dockerjava.api.model.Ports;
 import io.huskit.common.function.MemoizedSupplier;
 import io.huskit.containers.model.*;
-import io.huskit.containers.model.id.ContainerId;
+import io.huskit.containers.model.id.ContainerKey;
 import io.huskit.containers.model.port.ContainerPort;
 import io.huskit.containers.model.port.ResolvedPort;
 import io.huskit.containers.model.request.MongoRequestedContainer;
@@ -30,16 +30,16 @@ public final class MongoContainer implements MongoStartedContainer {
     TestContainersDelegate testContainersDelegate;
     MongoRequestedContainer request;
     AtomicInteger databaseNameCounter = new AtomicInteger();
-    MemoizedSupplier<MongoDBContainer> mongoDBContainerSupplier = new MemoizedSupplier<>(this::getMongoDBContainer);
-    MemoizedSupplier<ContainerPort> portSupplier = new MemoizedSupplier<>(this::_port);
+    MemoizedSupplier<MongoDBContainer> mongoDbContainerSupplier = new MemoizedSupplier<>(this::getMongoDbContainer);
+    MemoizedSupplier<ContainerPort> portSupplier = new MemoizedSupplier<>(this::resolvePort);
     MemoizedSupplier<String> connectionStringBaseSupplier = new MemoizedSupplier<>(this::connectionStringBase);
     MemoizedSupplier<Optional<ExistingContainer>> existingContainerSupplier = new MemoizedSupplier<>(this::existingContainer);
 
     AtomicBoolean isStarted = new AtomicBoolean();
 
     @Override
-    public ContainerId id() {
-        return request.id();
+    public ContainerKey key() {
+        return request.key();
     }
 
     @Override
@@ -51,17 +51,17 @@ public final class MongoContainer implements MongoStartedContainer {
     @SneakyThrows
     public NonStartedContainer stop() {
         synchronized (this) {
-            if (mongoDBContainerSupplier.isInitialized()) {
+            if (mongoDbContainerSupplier.isInitialized()) {
                 if (request.reuseOptions().enabled() && request.reuseOptions().reuseBetweenBuilds()) {
                     // if container is reused - drop all databases except the default ones, instead of stopping the container
-                    testContainersDelegate.execInContainer(mongoDBContainerSupplier, "/bin/sh", "-c", Constants.Mongo.DROP_COMMAND);
-                    log.info("Dropped all databases except the default ones in mongo container [{}]", request.id().json());
+                    testContainersDelegate.execInContainer(mongoDbContainerSupplier, "/bin/sh", "-c", Constants.Mongo.DROP_COMMAND);
+                    log.info("Dropped all databases except the default ones in mongo container [{}]", request.key().json());
                 } else {
                     var before = System.currentTimeMillis();
-                    testContainersDelegate.stop(mongoDBContainerSupplier);
-                    log.info("Stopped mongo container in [{}] ms, key=[{}]", request.id().json(), System.currentTimeMillis() - before);
+                    testContainersDelegate.stop(mongoDbContainerSupplier);
+                    log.info("Stopped mongo container in [{}] ms, key=[{}]", request.key().json(), System.currentTimeMillis() - before);
                 }
-                mongoDBContainerSupplier.reset();
+                mongoDbContainerSupplier.reset();
             }
         }
         return this;
@@ -79,16 +79,17 @@ public final class MongoContainer implements MongoStartedContainer {
             if (!cleanupAfter.isZero()) {
                 existingContainerSupplier.get().ifPresent(existingContainer -> {
                     if (existingContainer.isExpired(cleanupAfter)) {
-                        log.info("Existing mongo container is expired (started at [{}], current time is [{}], timeout is [{}]), stopping it - [{}] ",
+                        log.info("Existing mongo container is expired (started at [{}], current time is [{}], "
+                                        + "timeout is [{}]), stopping it - [{}] ",
                                 Instant.ofEpochMilli(existingContainer.createdAt()),
                                 Instant.now(),
                                 cleanupAfter,
-                                request.id().json());
+                                request.key().json());
                         testContainersDelegate.remove(existingContainer);
                     }
                 });
             }
-            testContainersDelegate.start(mongoDBContainerSupplier.get());
+            testContainersDelegate.start(mongoDbContainerSupplier.get());
         }
         return this;
     }
@@ -118,16 +119,16 @@ public final class MongoContainer implements MongoStartedContainer {
     }
 
     private Optional<ExistingContainer> existingContainer() {
-        return testContainersDelegate.getExistingContainer(request.id());
+        return testContainersDelegate.getExistingContainer(request.key());
     }
 
     private String connectionStringBase() {
-        return testContainersDelegate.getConnectionString(mongoDBContainerSupplier);
+        return testContainersDelegate.getConnectionString(mongoDbContainerSupplier);
     }
 
-    private ContainerPort _port() {
+    private ContainerPort resolvePort() {
         var requestPort = request.port();
-        var firstMappedPort = testContainersDelegate.getFirstMappedPort(mongoDBContainerSupplier);
+        var firstMappedPort = testContainersDelegate.getFirstMappedPort(mongoDbContainerSupplier);
         if (requestPort.isFixed()) {
             return new ResolvedPort(firstMappedPort, requestPort.containerValue().orElseThrow(), true);
         } else {
@@ -135,20 +136,20 @@ public final class MongoContainer implements MongoStartedContainer {
         }
     }
 
-    private MongoDBContainer getMongoDBContainer() {
+    private MongoDBContainer getMongoDbContainer() {
         var port = request.port();
         var hostPort = port.hostValue();
-        var mongoDBContainer = new MongoDBContainer(
+        var mongoDbContainer = new MongoDBContainer(
                 DockerImageName.parse(request.image().id()).asCompatibleSubstituteFor("mongo"))
-                .withLabels(new ContainerLabels(id()).asMap())
+                .withLabels(new ContainerLabels(key()).asMap())
                 .withReuse(true);
         if (port.isFixed()) {
-            return mongoDBContainer.withCreateContainerCmdModifier(cmd ->
+            return mongoDbContainer.withCreateContainerCmdModifier(cmd ->
                     Objects.requireNonNull(cmd.getHostConfig()).withPortBindings(
                             new PortBinding(
                                     Ports.Binding.bindPort(hostPort),
                                     new ExposedPort(port.containerValue().orElseThrow()))));
         }
-        return mongoDBContainer;
+        return mongoDbContainer;
     }
 }

@@ -29,8 +29,7 @@ public class RegisterContainersBuildService {
                 sharedServices.getRegistrations().findByName(containersServiceName)
         );
         var maxParallelUsages = buildServiceRegistration.getMaxParallelUsages();
-        var maxParallelUsagesVal = maxParallelUsages.getOrNull();
-        maxParallelUsages.set(maxParallelUsagesVal == null ? 1 : maxParallelUsagesVal + 1);
+        maxParallelUsages.set(maxParallelUsages.map(val -> val + 1).getOrElse(1));
         return buildServiceProvider;
     }
 }

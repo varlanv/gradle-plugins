@@ -216,7 +216,10 @@ public interface GradleIntegrationTest extends IntegrationTest {
 
         @SneakyThrows
         @SuppressWarnings("unchecked")
-        public <BSP extends BuildServiceParameters, BS extends BuildService<BSP>, BSR extends BuildServiceRegistration<BS, BSP>> ProjectAssertions withBuildServiceRegistration(String name, ThrowingConsumer<BSR> consumer) {
+        public <BSP extends BuildServiceParameters,
+                BS extends BuildService<BSP>,
+                BSR extends BuildServiceRegistration<BS, BSP>
+                > ProjectAssertions withBuildServiceRegistration(String name, ThrowingConsumer<BSR> consumer) {
             var registrations = List.copyOf(project.getGradle().getSharedServices().getRegistrations());
             var maybeBuildServiceRegistration = registrations.stream().filter(reg -> reg.getName().equals(name)).findFirst();
             assertThat(maybeBuildServiceRegistration).isPresent();

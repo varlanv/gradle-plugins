@@ -24,34 +24,34 @@ public interface ContainerPortSpec extends ContainerPortSpecView {
         var fixedContainerPortSpec = getFixed().get();
         action.execute(fixedContainerPortSpec);
         if (!fixedContainerPortSpec.getHostValue().isPresent() && !fixedContainerPortSpec.getHostRange().isPresent()) {
-            throw new IllegalArgumentException("Fixed port must be set to either `hostValue` or `hostRange`. For example, `port { fixed { hostValue(8080) } } or `port { fixed { hostRange(8080, 8081) } }`"); //todo format example
+            //todo format example
+            throw new IllegalArgumentException("Fixed port must be set to either `hostValue` or `hostRange`."
+                    + " For example, `port { fixed { hostValue(8080) } } or `port { fixed { hostRange(8080, 8081) } }`");
         }
         var containerValue = fixedContainerPortSpec.getContainerValue();
-        var containerValueProp = containerValue.getOrNull();
-        if (containerValueProp == null) {
-            var containerDefaultPort = getContainerDefaultPort().getOrNull();
-            if (containerDefaultPort == null) {
-                throw new IllegalArgumentException("Container port must be set to `containerValue`");// todo add example
-            } else {
-                containerValue.set(containerDefaultPort);
-            }
+        if (!containerValue.isPresent()) {
+            Optional.ofNullable(getContainerDefaultPort().getOrNull())
+                    .ifPresentOrElse(containerValue::set, () -> {
+                        // todo add example
+                        throw new IllegalArgumentException("Container port must be set to `containerValue`");
+                    });
         }
         getDynamic().set(false);
     }
 
     default ContainerPort resolve(ContainerPortSpec portSpec) {
         return Optional.ofNullable(portSpec.getFixed().getOrNull())
-                .map(fixedPort -> {
-                    var hostValue = fixedPort.getHostValue().getOrNull();
-                    var hostRange = fixedPort.getHostRange().getOrNull();
-                    if (hostValue != null) {
-                        return new FixedContainerPort(hostValue, fixedPort.getContainerValue().get());
-                    } else if (hostRange != null) {
-                        return new FixedRangePort(hostRange.left(), hostRange.right(), fixedPort.getContainerValue().get());
-                    } else {
-                        return null;
-                    }
-                })
+                .flatMap(fixedPort -> getFixedPort(fixedPort).or(() -> getFixedRangePort(fixedPort)))
                 .orElseGet(DynamicContainerPort::new);
+    }
+
+    private Optional<ContainerPort> getFixedPort(FixedContainerPortSpec fixedPort) {
+        return Optional.ofNullable(fixedPort.getHostValue().getOrNull())
+                .map(hostValue -> new FixedContainerPort(hostValue, fixedPort.getContainerValue().get()));
+    }
+
+    private Optional<ContainerPort> getFixedRangePort(FixedContainerPortSpec fixedPort) {
+        return Optional.ofNullable(fixedPort.getHostRange().getOrNull())
+                .map(hostRange -> new FixedRangePort(hostRange.left(), hostRange.right(), fixedPort.getContainerValue().get()));
     }
 }

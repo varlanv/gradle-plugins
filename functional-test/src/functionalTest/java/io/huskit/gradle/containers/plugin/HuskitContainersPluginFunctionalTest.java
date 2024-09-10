@@ -11,6 +11,7 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
 
 import java.io.File;
+import java.nio.file.Paths;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -139,10 +140,10 @@ public class HuskitContainersPluginFunctionalTest implements DockerFunctionalTes
     }
 
     private File useCaseDir(String useCaseDirName) {
-        return new File(huskitProjectRoot().getAbsolutePath() + File.separator + "use-cases" + File.separator + "plugins" + File.separator + "containers-plugin" + File.separator + useCaseDirName);
+        return huskitProjectRoot().toPath().resolve(Paths.get("use-cases", "plugins", "containers-plugin", useCaseDirName)).toFile();
     }
 
     private File useCasesCommonLogicDir() {
-        return new File(huskitProjectRoot().getAbsolutePath() + File.separator + "use-cases" + File.separator + "common-use-cases-logic");
+        return huskitProjectRoot().toPath().resolve(Paths.get("use-cases", "common-use-cases-logic")).toFile();
     }
 }

@@ -35,11 +35,8 @@ public interface DockerFunctionalTest extends FunctionalTest {
         var listContainersCmd = client.listContainersCmd().withLabelFilter(Map.of("huskit_container", "true"));
         return listContainersCmd.exec().stream()
                 .filter(container -> {
-                    var idJson = container.getLabels().get("huskit_id");
-                    if (idJson == null) {
-                        return false;
-                    }
-                    return getJsonField(idJson, "rootProjectName", String.class).equals(useCase);
+                    var idJson = container.getLabels().get("huskit_key");
+                    return idJson != null && getJsonField(idJson, "rootProjectName", String.class).equals(useCase);
                 })
                 .collect(Collectors.toList());
     }

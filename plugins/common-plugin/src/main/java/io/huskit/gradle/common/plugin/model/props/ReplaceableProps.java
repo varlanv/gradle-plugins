@@ -42,7 +42,7 @@ public class ReplaceableProps implements Props {
             delegate = newOrExistingExtension.getOrCreate(
                     Props.class,
                     DefaultProps.class,
-                    Props.EXTENSION_NAME,
+                    Props.name(),
                     () -> List.of(
                             providers,
                             extraPropertiesExtension
