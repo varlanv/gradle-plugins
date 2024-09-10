@@ -7,7 +7,6 @@ import lombok.RequiredArgsConstructor;
 import org.gradle.api.Plugin;
 import org.gradle.api.Project;
 import org.gradle.api.artifacts.VersionCatalogsExtension;
-import org.gradle.api.provider.ProviderFactory;
 
 import javax.inject.Inject;
 import java.util.Objects;
@@ -15,27 +14,25 @@ import java.util.Objects;
 @RequiredArgsConstructor(onConstructor = @__(@Inject))
 public class InternalConventionPlugin implements Plugin<Project> {
 
-    ProviderFactory providers;
-
     @Override
     public void apply(Project project) {
         var extensions = project.getExtensions();
+        var providers = project.getProviders();
         var environment = (InternalEnvironment) Objects.requireNonNullElseGet(
-                extensions.findByName(InternalEnvironment.EXTENSION_NAME),
+                extensions.findByName(InternalEnvironment.name()),
                 () -> new InternalEnvironment(
                         providers.environmentVariable("CI").isPresent(),
                         false
                 ));
         var properties = (InternalProperties) Objects.requireNonNullElseGet(
-                extensions.findByName(InternalProperties.EXTENSION_NAME),
+                extensions.findByName(InternalProperties.name()),
                 () -> new InternalProperties(((VersionCatalogsExtension) extensions.getByName("versionCatalogs")).named("libs")));
         var huskitConventionExtension = (HuskitInternalConventionExtension) Objects.requireNonNullElseGet(
-                extensions.findByName(HuskitInternalConventionExtension.EXTENSION_NAME),
-                () -> extensions.create(HuskitInternalConventionExtension.EXTENSION_NAME, HuskitInternalConventionExtension.class));
+                extensions.findByName(HuskitInternalConventionExtension.name()),
+                () -> extensions.create(HuskitInternalConventionExtension.name(), HuskitInternalConventionExtension.class));
         huskitConventionExtension.getIntegrationTestName().convention("integrationTest");
         new ApplyInternalPluginLogic(
                 project.getPath(),
-                providers,
                 project.getPluginManager(),
                 project.getRepositories(),
                 project.getDependencies(),
@@ -44,10 +41,13 @@ public class InternalConventionPlugin implements Plugin<Project> {
                 project.getComponents(),
                 project.getTasks(),
                 project.getConfigurations(),
-                providers.provider(() -> project.project(":common-test")),
                 environment,
                 properties,
-                project
+                project.getName(),
+                project.getGradle().getSharedServices(),
+                project.getLayout(),
+                project.getRootDir(),
+                runnable -> project.afterEvaluate(ignore -> runnable.run())
         ).apply();
     }
 }

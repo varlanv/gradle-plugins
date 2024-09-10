@@ -5,7 +5,7 @@ import java.util.Map;
 
 public interface ExistingContainer {
 
-    String huskitId();
+    String id();
 
     String containerKey();
 

@@ -25,7 +25,7 @@ public class HuskitPropertiesPluginFunctionalTest implements FunctionalTest {
 
                     var buildResult = fixture.runner().build();
 
-                    assertThat(buildResult.getOutput()).contains(String.format("Added extension: [%s]", Props.EXTENSION_NAME));
+                    assertThat(buildResult.getOutput()).contains(String.format("Added extension: [%s]", Props.name()));
                 });
     }
 }

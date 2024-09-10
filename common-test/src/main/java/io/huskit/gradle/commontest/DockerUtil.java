@@ -68,7 +68,7 @@ public class DockerUtil {
         var listContainersCmd = client.listContainersCmd().withLabelFilter(
                 Map.of(
                         "huskit_container", "true",
-                        "huskit_id", key
+                        "huskit_key", key
                 )
         );
         return listContainersCmd.exec();
@@ -77,7 +77,7 @@ public class DockerUtil {
     public List<Container> findHuskitContainersWithIds(String... ids) {
         var idSet = new HashSet<>(Arrays.asList(ids));
         return findHuskitContainers().stream()
-                .filter(container -> idSet.contains(container.getLabels().get("huskit_id")))
+                .filter(container -> idSet.contains(container.getLabels().get("huskit_key")))
                 .collect(Collectors.toList());
     }
 }

@@ -1,5 +1,6 @@
 package io.huskit.containers.model.port;
 
+import io.huskit.common.Volatile;
 import io.huskit.common.function.MemoizedSupplier;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
@@ -23,6 +24,7 @@ public class FixedRangePort implements ContainerPort {
         return value.get();
     }
 
+    @Override
     public Optional<Integer> containerValue() {
         return Optional.of(containerValue);
     }
@@ -33,14 +35,18 @@ public class FixedRangePort implements ContainerPort {
     }
 
     private int randomPort() {
-        int maxAttempts = 10;
-        for (int i = 0; i < maxAttempts; i++) {
+        var maxAttempts = 10;
+        var exception = Volatile.<Exception>of();
+        for (var i = 0; i < maxAttempts; i++) {
             try (var socket = new ServerSocket(ThreadLocalRandom.current().nextInt(rangeFrom, rangeTo + 1))) {
                 return socket.getLocalPort();
             } catch (IOException e) {
-                // ignore
+                exception.set(e);
             }
         }
-        throw new IllegalStateException(String.format("Could not find an available port in the range [%s] to [%s]", rangeFrom, rangeTo));
+        var exceptionMessage = String.format("Could not find an available port in the range [%s] to [%s]", rangeFrom, rangeTo);
+        throw exception.maybe()
+                .map(e -> new IllegalStateException(exceptionMessage, e))
+                .orElseGet(() -> new IllegalStateException(exceptionMessage));
     }
 }

@@ -18,7 +18,7 @@ public interface TestContainersDelegate {
 
     <T extends GenericContainer<?>> void start(T container);
 
-    String getConnectionString(Supplier<MongoDBContainer> mongoDBContainerSupplier);
+    String getConnectionString(Supplier<MongoDBContainer> mongoDbContainerSupplier);
 
     Optional<ExistingContainer> getExistingContainer(ContainerKey id);
 

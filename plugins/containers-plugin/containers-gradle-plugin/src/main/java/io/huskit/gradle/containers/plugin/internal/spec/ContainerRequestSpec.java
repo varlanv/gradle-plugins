@@ -31,7 +31,7 @@ public interface ContainerRequestSpec extends ContainerRequestSpecView, Named {
     Property<ContainerPortSpec> getPort();
 
     @NotNull
-    Map<String, Object> idProps();
+    Map<String, Object> keyProps();
 
     RequestedContainer toRequestedContainer();
 
@@ -46,13 +46,13 @@ public interface ContainerRequestSpec extends ContainerRequestSpecView, Named {
     }
 
     @NotNull
-    default ContainerKey id() {
-        return ContainerKey.of(idProps());
+    default ContainerKey key() {
+        return ContainerKey.of(keyProps());
     }
 
     @NotNull
     @Override
     default String getName() {
-        return id().json();
+        return key().json();
     }
 }

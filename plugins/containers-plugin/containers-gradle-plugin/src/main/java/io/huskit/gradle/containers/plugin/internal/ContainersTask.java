@@ -23,10 +23,12 @@ import java.util.stream.Collectors;
 @DisableCachingByDefault(because = "Caching of containers is not supported")
 public abstract class ContainersTask extends DefaultTask {
 
-    private static final String NAME = "startContainers";
+    public static String name() {
+        return "startContainers";
+    }
 
     public static String nameForTask(String taskName) {
-        return ContainersTask.NAME + "For" + CapitalizedString.capitalize(taskName);
+        return name() + "For" + CapitalizedString.capitalize(taskName);
     }
 
     public static String doFirstActionName() {
@@ -84,7 +86,7 @@ public abstract class ContainersTask extends DefaultTask {
             log.info("No containers were started");
         } else {
             log.info("Started [{}] containers: [{}]", startedContainers.size(), startedContainers.stream()
-                    .map(StartedContainer::id)
+                    .map(StartedContainer::key)
                     .collect(Collectors.toList())
             );
         }

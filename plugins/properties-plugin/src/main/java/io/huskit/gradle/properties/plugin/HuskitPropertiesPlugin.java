@@ -6,24 +6,28 @@ import io.huskit.log.GradleLog;
 import org.gradle.api.Plugin;
 import org.gradle.api.Project;
 
+import java.util.Optional;
+
 public class HuskitPropertiesPlugin implements Plugin<Project> {
 
     @Override
     public void apply(Project project) {
         var extensions = project.getExtensions();
         var log = new GradleLog(HuskitPropertiesPlugin.class);
-        if (extensions.findByName(Props.EXTENSION_NAME) == null) {
-            extensions.add(
-                    Props.class,
-                    Props.EXTENSION_NAME,
-                    new DefaultProps(
-                            project.getProviders(),
-                            extensions.getExtraProperties()
-                    )
-            );
-            log.info("Added extension: [{}]", Props.EXTENSION_NAME);
-        } else {
-            log.info("Extension already exists: [{}]. Skipping...", Props.EXTENSION_NAME);
-        }
+        Optional.ofNullable(extensions.findByName(Props.name()))
+                .ifPresentOrElse(
+                        ext -> log.info("Extension already exists: [{}]. Skipping...", Props.name()),
+                        () -> {
+                            extensions.add(
+                                    Props.class,
+                                    Props.name(),
+                                    new DefaultProps(
+                                            project.getProviders(),
+                                            extensions.getExtraProperties()
+                                    )
+                            );
+                            log.info("Added extension: [{}]", Props.name());
+                        }
+                );
     }
 }

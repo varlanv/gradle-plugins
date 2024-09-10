@@ -9,7 +9,7 @@ public interface ContainerCleanupOptions {
     Duration cleanupAfter();
 
     static ContainerCleanupOptions after(Duration duration) {
-        if (duration == null || duration.isZero()) {
+        if (duration.isZero()) {
             return NEVER;
         }
         return () -> duration;

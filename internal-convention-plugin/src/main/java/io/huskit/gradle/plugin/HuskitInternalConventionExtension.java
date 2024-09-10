@@ -4,7 +4,9 @@ import org.gradle.api.provider.Property;
 
 public interface HuskitInternalConventionExtension {
 
-    String EXTENSION_NAME = "huskitConvention";
+    static String name() {
+        return "huskitConvention";
+    }
 
     Property<String> getIntegrationTestName();
 }

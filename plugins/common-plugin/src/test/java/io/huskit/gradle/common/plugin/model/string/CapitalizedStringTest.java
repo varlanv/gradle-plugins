@@ -14,14 +14,14 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 class CapitalizedStringTest implements UnitTest {
 
-    @MethodSource
+    @MethodSource("shouldCapitalizeTheFirstLetterOfString")
     @ParameterizedTest
     @DisplayName("should capitalize the first letter of a string")
-    void test_0(String expected, String actual) {
+    void should_capitalize_the_first_letter_of_a_string(String expected, String actual) {
         assertThat(new CapitalizedString(expected).toString()).isEqualTo(actual);
     }
 
-    static Stream<Arguments> test_0() {
+    static Stream<Arguments> shouldCapitalizeTheFirstLetterOfString() {
         return Stream.of(
                 Arguments.of("hello", "Hello"),
                 Arguments.of("123", "123"),
@@ -32,8 +32,8 @@ class CapitalizedStringTest implements UnitTest {
     }
 
     @Test
-    @DisplayName("null shouldn't be handled")
-    void test_1() {
+    @DisplayName("null should not be handled")
+    void null_should_not_be_handled() {
         assertThatThrownBy(() -> new CapitalizedString(null))
                 .isInstanceOf(NullPointerException.class);
     }

@@ -34,10 +34,10 @@ public class SynchronizingTestListener implements TestExecutionListener {
     @SneakyThrows
     public void executionStarted(TestIdentifier testIdentifier) {
         if (SYNC_FILE != null && testIdentifier.isTest() && testIdentifier.getTags().contains(DOCKER_TEST_TAG_OBJ)) {
-            var raf = new RandomAccessFile(SYNC_FILE, "rw");
-            var channel = raf.getChannel();
+            var syncFile = new RandomAccessFile(SYNC_FILE, "rw");
+            var channel = syncFile.getChannel();
             var lock = channel.lock();
-            syncMap.put(testIdentifier.getUniqueId(), new LockHolder(raf, channel, lock));
+            syncMap.put(testIdentifier.getUniqueId(), new LockHolder(syncFile, channel, lock));
         }
     }
 
@@ -48,8 +48,8 @@ public class SynchronizingTestListener implements TestExecutionListener {
             var uniqueId = testIdentifier.getUniqueId();
             var lockHolder = syncMap.get(uniqueId);
             if (lockHolder != null) {
-                try (var raf = lockHolder.fis;
-                     var channel = lockHolder.channel;
+                try (var ignored = lockHolder.fis;
+                     var ignored1 = lockHolder.channel;
                      var lock = lockHolder.lock) {
                     lock.release();
                 } finally {

@@ -17,7 +17,7 @@ import java.util.stream.Collectors;
 class JsonMapContainerKey implements ContainerKey {
 
     NavigableMap<String, Object> properties;
-    MemoizedSupplier<String> memoizedSupplier = new MemoizedSupplier<>(this::_json);
+    MemoizedSupplier<String> memoizedSupplier = new MemoizedSupplier<>(this::buildJson);
 
     JsonMapContainerKey() {
         this(Collections.emptyNavigableMap());
@@ -32,7 +32,7 @@ class JsonMapContainerKey implements ContainerKey {
         return memoizedSupplier.get();
     }
 
-    private String _json() {
+    private String buildJson() {
         return properties.entrySet().stream()
                 .map(entry -> String.format("\"%s\": \"%s\"", entry.getKey(), entry.getValue()))
                 .collect(Collectors.joining(", ", "{", "}"));

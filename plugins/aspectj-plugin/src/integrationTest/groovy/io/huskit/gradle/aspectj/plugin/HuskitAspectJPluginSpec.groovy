@@ -10,9 +10,9 @@ class HuskitAspectJPluginSpec extends BaseIntegrationSpec {
         Project project = setupProject()
 
         when:
-        project.plugins.apply(HuskitAspectJPlugin)
+        project.plugins.apply(HuskitAspectjPlugin)
 
         then:
-        project.plugins.hasPlugin(HuskitAspectJPlugin)
+        project.plugins.hasPlugin(HuskitAspectjPlugin)
     }
 }

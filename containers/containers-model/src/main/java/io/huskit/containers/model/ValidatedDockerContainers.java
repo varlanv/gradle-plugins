@@ -18,7 +18,7 @@ public final class ValidatedDockerContainers implements Containers {
     public List<StartedContainer> start() {
         var containersIds = new HashSet<>();
         requestedContainers.forEach(requestedContainer -> {
-            var containerId = requestedContainer.id().json();
+            var containerId = requestedContainer.key().json();
             if (!containersIds.add(containerId)) {
                 throw new NonUniqueContainerException(containerId, requestedContainer.containerType());
             }

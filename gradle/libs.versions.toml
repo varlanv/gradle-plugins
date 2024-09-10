@@ -36,6 +36,7 @@ jetbrains-annotations = { group = "org.jetbrains", name = "annotations", version
 mockito-core = { group = "org.mockito", name = "mockito-core", version.ref = "mockito" }
 easymock = { group = "org.easymock", name = "easymock", version.ref = "easymock" }
 checkerframework-qual = { group = "org.checkerframework", name = "checker-qual", version.ref = "checkerframework" }
+checkerframework-checker = { group = "org.checkerframework", name = "checker", version.ref = "checkerframework" }
 
 [bundles]
 testcontainers = ["testcontainers-core", "testcontainers-mongodb", "testcontainers-postgresql", "testcontainers-kafka", "testcontainers-rabbitmq"]

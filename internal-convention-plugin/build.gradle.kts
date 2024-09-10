@@ -30,8 +30,6 @@ dependencies {
     compileOnly(libs.lombok)
     implementation(libs.junit.platform.launcher)
     annotationProcessor(libs.lombok)
-//    testImplementation(libs.groovy.all)
-//    testImplementation(libs.spock.core)
 }
 
 gradlePlugin {

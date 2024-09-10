@@ -56,8 +56,8 @@ public class ActualTestContainersDelegate implements TestContainersDelegate, Ser
     }
 
     @Override
-    public String getConnectionString(Supplier<MongoDBContainer> mongoDBContainerSupplier) {
-        return mongoDBContainerSupplier.get().getConnectionString();
+    public String getConnectionString(Supplier<MongoDBContainer> mongoDbContainerSupplier) {
+        return mongoDbContainerSupplier.get().getConnectionString();
     }
 
     @Override
@@ -139,8 +139,8 @@ public class ActualTestContainersDelegate implements TestContainersDelegate, Ser
         var properties = new File(userHome, ".testcontainers.properties");
         if (!properties.exists()) {
             if (!properties.createNewFile()) {
-                throw new IllegalStateException(String.format("Containers reuse was requested, but could not create file [%s] to" +
-                        " allow testcontainers to reuse containers. see https://java.testcontainers.org/features/reuse/", properties));
+                throw new IllegalStateException(String.format("Containers reuse was requested, but could not create file [%s] to "
+                        + "allow testcontainers to reuse containers. see https://java.testcontainers.org/features/reuse/", properties));
             }
         }
         return properties;

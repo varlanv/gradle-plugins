@@ -12,6 +12,7 @@ public interface MongoRequestedContainer extends RequestedContainer {
 
     String databaseName();
 
+    @Override
     default ContainerType containerType() {
         return ContainerType.MONGO;
     }

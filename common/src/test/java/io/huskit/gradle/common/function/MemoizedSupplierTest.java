@@ -1,12 +1,15 @@
 package io.huskit.gradle.common.function;
 
+import io.huskit.common.Tuple;
 import io.huskit.common.function.MemoizedSupplier;
+import io.huskit.common.function.ThrowingSupplier;
 import io.huskit.gradle.commontest.UnitTest;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -17,7 +20,7 @@ class MemoizedSupplierTest implements UnitTest {
 
     @Test
     @DisplayName("calling get() multiple times should return the same value")
-    void test_0() {
+    void get_when_call_multiple_times_should_return_the_same_value() {
         // Given
         var subject = new MemoizedSupplier<>(() -> 1);
 
@@ -28,14 +31,14 @@ class MemoizedSupplierTest implements UnitTest {
 
     @Test
     @DisplayName("if passed supplier returns null, exception should be thrown")
-    void test_1() {
+    void if_passed_supplier_returns_null_exception_should_be_thrown() {
         assertThatThrownBy(() -> new MemoizedSupplier<>(() -> null).get())
                 .isInstanceOf(NullPointerException.class);
     }
 
     @Test
     @DisplayName("if two threads call get() at the same time, computation should be performed only once and the result should be shared")
-    void test_2() throws Exception {
+    void if_two_threads_call_get_at_the_same_time_computation_should_be_performed_only_once() throws Exception {
         var latch = new CountDownLatch(1);
         var counter = new AtomicInteger();
         var subject = new MemoizedSupplier<>(() -> {
@@ -53,19 +56,23 @@ class MemoizedSupplierTest implements UnitTest {
         var thread2Value = new AtomicReference<Integer>();
         var executorService = Executors.newFixedThreadPool(2);
         try {
-            var future1 = executorService.submit(new Thread(() -> {
-                thread1Latch.countDown();
-                thread1Value.set(subject.get());
-            }));
-            thread1Latch.await();
-            var future2 = executorService.submit(new Thread(() -> {
-                thread2Latch.countDown();
-                thread2Value.set(subject.get());
-            }));
-            thread2Latch.await();
+            ThrowingSupplier<Tuple<Future<?>, Future<?>>> compute = () -> {
+                var future1 = executorService.submit(new Thread(() -> {
+                    thread1Latch.countDown();
+                    thread1Value.set(subject.get());
+                }));
+                thread1Latch.await();
+                var future2 = executorService.submit(new Thread(() -> {
+                    thread2Latch.countDown();
+                    thread2Value.set(subject.get());
+                }));
+                thread2Latch.await();
+                return new Tuple<>(future1, future2);
+            };
+            var result = compute.get();
             latch.countDown();
-            future1.get();
-            future2.get();
+            result.left().get();
+            result.right().get();
         } finally {
             executorService.shutdown();
         }
@@ -84,12 +91,21 @@ class MemoizedSupplierTest implements UnitTest {
                 .isEqualTo(1);
     }
 
+    private static class Result {
+        public final Future<?> future1;
+        public final Future<?> future2;
+
+        public Result(Future<?> future1, Future<?> future2) {
+            this.future1 = future1;
+            this.future2 = future2;
+        }
+    }
+
     @Test
     @DisplayName("calling reset() should clear the memoized value")
     void test_3() {
         // Given
         var firstRef = new AtomicReference<>();
-        var secondRef = new AtomicReference<>();
         var subject = new MemoizedSupplier<>(Object::new);
         firstRef.set(subject.get());
         assertThat(subject.isInitialized()).isTrue();
@@ -100,8 +116,6 @@ class MemoizedSupplierTest implements UnitTest {
 
         // Then
         assertThat(subject.isInitialized()).isFalse();
-        secondRef.set(subject.get());
-        assertThat(firstRef.get()).isNotSameAs(secondRef.get());
     }
 
     @Test

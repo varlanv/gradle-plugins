@@ -1,9 +1,12 @@
 package io.huskit.gradle.commontest;
 
+import lombok.NoArgsConstructor;
+
 import java.io.File;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Supplier;
 
+@NoArgsConstructor(access = lombok.AccessLevel.PRIVATE)
 class TestUtils {
 
     private static final AtomicReference<File> huskitProjectRoot = new AtomicReference<>();

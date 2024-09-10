@@ -11,6 +11,7 @@ import io.huskit.log.Log;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 
+import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Supplier;
@@ -54,7 +55,7 @@ public class ContainersApplication implements AutoCloseable {
     }
 
     @Override
-    public void close() throws Exception {
+    public void close() throws IOException {
         new ParallelFnRunner<StartedContainer, NonStartedContainer>(
                 startedContainersRegistry.all()
                         .map(container -> (Supplier<StartedContainer>) () -> (StartedContainer) container)
@@ -67,7 +68,7 @@ public class ContainersApplication implements AutoCloseable {
             container.stop();
         } catch (Exception e) {
             // TODO add verification for log
-            log.error("Failed to stop container [{}]. Ignoring exception - [{}]", container.id(), e.getMessage());
+            log.error("Failed to stop container [{}]. Ignoring exception - [{}]", container.key(), e.getMessage());
         }
     }
 }

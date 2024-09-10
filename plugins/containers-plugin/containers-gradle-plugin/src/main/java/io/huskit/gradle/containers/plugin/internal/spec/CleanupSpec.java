@@ -13,7 +13,19 @@ import java.util.stream.Collectors;
 
 public interface CleanupSpec extends CleanupSpecView {
 
-    Set<ChronoUnit> ALLOWED_UNITS = Collections.unmodifiableSet(new LinkedHashSet<>(List.of(ChronoUnit.NANOS, ChronoUnit.MICROS, ChronoUnit.MILLIS, ChronoUnit.SECONDS, ChronoUnit.MINUTES, ChronoUnit.HOURS, ChronoUnit.DAYS)));
+    Set<ChronoUnit> ALLOWED_UNITS = Collections.unmodifiableSet(
+            new LinkedHashSet<>(
+                    List.of(
+                            ChronoUnit.NANOS,
+                            ChronoUnit.MICROS,
+                            ChronoUnit.MILLIS,
+                            ChronoUnit.SECONDS,
+                            ChronoUnit.MINUTES,
+                            ChronoUnit.HOURS,
+                            ChronoUnit.DAYS
+                    )
+            )
+    );
 
     Property<Duration> getCleanupAfter();
 

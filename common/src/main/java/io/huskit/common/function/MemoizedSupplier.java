@@ -1,8 +1,8 @@
 package io.huskit.common.function;
 
+import io.huskit.common.Volatile;
+import io.huskit.common.VolatileImpl;
 import lombok.RequiredArgsConstructor;
-import lombok.experimental.NonFinal;
-import org.checkerframework.checker.nullness.qual.Nullable;
 
 import java.util.Objects;
 import java.util.function.Supplier;
@@ -20,19 +20,17 @@ import java.util.function.Supplier;
 public class MemoizedSupplier<T> implements Supplier<T> {
 
     Supplier<T> delegate;
-    @Nullable
-    @NonFinal
-    volatile T value;
+    Volatile<T> volatileValue = new VolatileImpl<>();
 
     @Override
     public T get() {
-        var val = value;
+        var val = volatileValue.get();
         if (val == null) {
             synchronized (this) {
-                val = value;
+                val = volatileValue.get();
                 if (val == null) {
                     val = Objects.requireNonNull(delegate.get());
-                    value = val;
+                    volatileValue.set(val);
                 }
             }
         }
@@ -40,10 +38,10 @@ public class MemoizedSupplier<T> implements Supplier<T> {
     }
 
     public boolean isInitialized() {
-        return value != null;
+        return volatileValue.isPresent();
     }
 
     public void reset() {
-        value = null;
+        volatileValue.reset();
     }
 }

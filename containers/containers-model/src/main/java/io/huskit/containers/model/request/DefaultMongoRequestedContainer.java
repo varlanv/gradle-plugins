@@ -16,6 +16,6 @@ public final class DefaultMongoRequestedContainer implements MongoRequestedConta
     String databaseName;
     ContainerImage image;
     ContainerPort port;
-    ContainerKey id;
+    ContainerKey key;
     MongoContainerReuseOptions reuseOptions;
 }

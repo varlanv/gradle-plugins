@@ -5,7 +5,7 @@ import io.huskit.containers.model.id.ContainerKey;
 
 public interface NonStartedContainer {
 
-    ContainerKey id();
+    ContainerKey key();
 
     ContainerType type();
 

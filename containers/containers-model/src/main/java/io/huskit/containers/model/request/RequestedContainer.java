@@ -14,7 +14,7 @@ public interface RequestedContainer {
 
     ContainerPort port();
 
-    ContainerKey id();
+    ContainerKey key();
 
     ContainerType containerType();
 

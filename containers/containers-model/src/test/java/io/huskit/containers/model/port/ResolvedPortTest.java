@@ -15,19 +15,19 @@ class ResolvedPortTest implements UnitTest {
 
     @Test
     @DisplayName("`hostValue` should return host port")
-    void test_0() {
+    void hostValue_should_return_host_port() {
         assertThat(subject.hostValue()).isEqualTo(hostValue);
     }
 
     @Test
     @DisplayName("`containerValue` should return container port")
-    void test_1() {
+    void containerValue_should_return_container_port() {
         assertThat(subject.containerValue()).contains(containerValue);
     }
 
     @Test
     @DisplayName("`isFixed` should return true")
-    void test_2() {
+    void isFixed_should_return_true() {
         assertThat(subject.isFixed()).isTrue();
     }
 }
