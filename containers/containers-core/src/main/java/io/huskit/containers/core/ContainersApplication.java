@@ -1,4 +1,4 @@
-package io.huskit.gradle.containers.core;
+package io.huskit.containers.core;
 
 import io.huskit.common.concurrent.ParallelFnRunner;
 import io.huskit.containers.model.*;

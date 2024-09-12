@@ -1,9 +1,10 @@
 package io.huskit.common;
 
+import io.huskit.common.function.ThrowingSupplier;
+import io.huskit.common.internal.VolatileImpl;
 import org.checkerframework.checker.nullness.qual.Nullable;
 
 import java.util.Optional;
-import java.util.function.Supplier;
 
 public interface Volatile<T> {
 
@@ -12,7 +13,7 @@ public interface Volatile<T> {
 
     void set(T value);
 
-    T syncSetOrGet(Supplier<T> valueSupplier);
+    T syncSetOrGet(ThrowingSupplier<T> valueSupplier);
 
     void reset();
 

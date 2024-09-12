@@ -1,13 +1,15 @@
-package io.huskit.common;
+package io.huskit.common.internal;
 
+import io.huskit.common.Volatile;
+import io.huskit.common.function.ThrowingSupplier;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.SneakyThrows;
 import lombok.experimental.NonFinal;
 import org.checkerframework.checker.nullness.qual.Nullable;
 
 import java.io.Serializable;
-import java.util.function.Supplier;
 
 @Getter
 @AllArgsConstructor
@@ -29,7 +31,8 @@ public class VolatileImpl<T> implements Volatile<T>, Serializable {
     }
 
     @Override
-    public T syncSetOrGet(Supplier<T> valueSupplier) {
+    @SneakyThrows
+    public T syncSetOrGet(ThrowingSupplier<T> valueSupplier) {
         var val = this.value;
         if (val == null) {
             synchronized (this) {

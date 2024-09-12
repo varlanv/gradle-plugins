@@ -91,19 +91,9 @@ class MemoizedSupplierTest implements UnitTest {
                 .isEqualTo(1);
     }
 
-    private static class Result {
-        public final Future<?> future1;
-        public final Future<?> future2;
-
-        public Result(Future<?> future1, Future<?> future2) {
-            this.future1 = future1;
-            this.future2 = future2;
-        }
-    }
-
     @Test
     @DisplayName("calling reset() should clear the memoized value")
-    void test_3() {
+    void reset_should_clear_memoized_value() {
         // Given
         var firstRef = new AtomicReference<>();
         var subject = new MemoizedSupplier<>(Object::new);
@@ -120,7 +110,7 @@ class MemoizedSupplierTest implements UnitTest {
 
     @Test
     @DisplayName("calling reset() if the value is not memoized should do nothing")
-    void test_4() {
+    void reset_if_value_not_memoized_should_do_nothing() {
         // Given
         var subject = new MemoizedSupplier<>(Object::new);
 
@@ -133,7 +123,7 @@ class MemoizedSupplierTest implements UnitTest {
 
     @Test
     @DisplayName("calling isInitialized() should return true if the value is memoized")
-    void test_5() {
+    void isInitialized_should_return_true_if_value_is_memoized() {
         var subject = new MemoizedSupplier<>(Object::new);
         assertThat(subject.isInitialized()).isFalse();
         subject.get();

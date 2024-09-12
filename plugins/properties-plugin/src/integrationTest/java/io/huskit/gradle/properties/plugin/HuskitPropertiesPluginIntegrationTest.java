@@ -12,7 +12,7 @@ public class HuskitPropertiesPluginIntegrationTest implements GradleIntegrationT
 
     @Test
     @DisplayName("plugin should be applied")
-    void test_0() {
+    void plugin_should_be_applied() {
         runProjectFixture(fixture -> {
             var project = fixture.project();
 
@@ -24,7 +24,7 @@ public class HuskitPropertiesPluginIntegrationTest implements GradleIntegrationT
 
     @Test
     @DisplayName("should add props extension if not already exists")
-    void test_1() {
+    void should_add_props_extension_if_not_already_exists() {
         runProjectFixture(fixture -> {
             var project = fixture.project();
             assertThat(project.getExtensions().findByName(Props.name())).isNull();
@@ -37,7 +37,7 @@ public class HuskitPropertiesPluginIntegrationTest implements GradleIntegrationT
 
     @Test
     @DisplayName("should use existing props extension if already exists")
-    void test_2() {
+    void should_use_existing_props_extension_if_already_exists() {
         runProjectFixture(fixture -> {
             var project = fixture.project();
             var fakeProps = new FakeProps();
