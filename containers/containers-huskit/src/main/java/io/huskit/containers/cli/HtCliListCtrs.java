@@ -2,9 +2,9 @@ package io.huskit.containers.cli;
 
 import io.huskit.containers.IO;
 import io.huskit.containers.api.HtContainer;
-import io.huskit.containers.api.ps.HtPs;
-import io.huskit.containers.api.ps.arg.HtPsArgs;
-import io.huskit.containers.api.ps.arg.HtPsArgsBuilder;
+import io.huskit.containers.api.list.HtListContainers;
+import io.huskit.containers.api.list.arg.HtListContainersArgs;
+import io.huskit.containers.api.list.arg.HtListContainersArgsBuilder;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.With;
@@ -15,14 +15,14 @@ import java.util.stream.Stream;
 
 @With
 @RequiredArgsConstructor
-public class HtCliPs implements HtPs {
+public class HtCliListCtrs implements HtListContainers {
 
     HtCli cli;
-    HtPsArgs psArgs;
+    HtListContainersArgs psArgs;
 
     @Override
-    public HtPs withArgs(Function<HtPsArgsBuilder, HtPsArgs> args) {
-        return this.withPsArgs(Objects.requireNonNull(args.apply(new HtCliPsArgsBuilder())));
+    public HtListContainers withArgs(Function<HtListContainersArgsBuilder, HtListContainersArgs> args) {
+        return this.withPsArgs(Objects.requireNonNull(args.apply(new HtCliListCtrsArgsBuilder())));
     }
 
     @Override
@@ -32,7 +32,7 @@ public class HtCliPs implements HtPs {
         if (requestedIds.isEmpty()) {
             return Stream.empty();
         } else {
-            return new HtFindCliContainersByIds(cli, requestedIds).stream();
+            return new HtFindCliCtrsByIds(cli, requestedIds).stream();
         }
     }
 

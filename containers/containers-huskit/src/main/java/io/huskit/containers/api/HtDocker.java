@@ -1,12 +1,12 @@
 package io.huskit.containers.api;
 
-import io.huskit.containers.cli.HtCliDocker;
-import io.huskit.containers.api.ps.HtPs;
+import io.huskit.containers.api.list.HtListContainers;
 import io.huskit.containers.api.run.HtRun;
+import io.huskit.containers.cli.HtCliDocker;
 
 public interface HtDocker {
 
-    HtPs listContainers();
+    HtListContainers listContainers();
 
     HtLogs logs(CharSequence containerId);
 

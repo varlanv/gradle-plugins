@@ -1,4 +1,4 @@
-package io.huskit.containers.api.ps.arg;
+package io.huskit.containers.api.list.arg;
 
 import io.huskit.containers.api.HtArg;
 import lombok.AccessLevel;
@@ -7,9 +7,9 @@ import lombok.NoArgsConstructor;
 import java.util.stream.Stream;
 
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
-public class HtNoPsArgs implements HtPsArgs {
+public class NoListCtrsArgs implements HtListContainersArgs {
 
-    static final HtNoPsArgs INSTANCE = new HtNoPsArgs();
+    static final NoListCtrsArgs INSTANCE = new NoListCtrsArgs();
 
     @Override
     public boolean isEmpty() {

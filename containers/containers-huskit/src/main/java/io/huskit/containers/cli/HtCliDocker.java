@@ -6,8 +6,8 @@ import io.huskit.containers.api.HtDockerImageName;
 import io.huskit.containers.api.HtLogs;
 import io.huskit.containers.api.logs.HtCliLogs;
 import io.huskit.containers.api.logs.LookFor;
-import io.huskit.containers.api.ps.HtPs;
-import io.huskit.containers.api.ps.arg.HtPsArgs;
+import io.huskit.containers.api.list.HtListContainers;
+import io.huskit.containers.api.list.arg.HtListContainersArgs;
 import io.huskit.containers.api.run.HtRun;
 
 public class HtCliDocker implements HtDocker {
@@ -15,8 +15,8 @@ public class HtCliDocker implements HtDocker {
     HtCli cli = new HtCli();
 
     @Override
-    public HtPs listContainers() {
-        return new HtCliPs(cli, HtPsArgs.empty());
+    public HtListContainers listContainers() {
+        return new HtCliListCtrs(cli, HtListContainersArgs.empty());
     }
 
     @Override

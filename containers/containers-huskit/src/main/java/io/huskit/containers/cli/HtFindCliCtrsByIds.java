@@ -14,7 +14,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 @RequiredArgsConstructor
-public class HtFindCliContainersByIds {
+public class HtFindCliCtrsByIds {
 
     HtCli cli;
     Set<String> ids;

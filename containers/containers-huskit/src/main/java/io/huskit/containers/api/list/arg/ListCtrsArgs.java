@@ -1,4 +1,4 @@
-package io.huskit.containers.api.ps.arg;
+package io.huskit.containers.api.list.arg;
 
 import io.huskit.containers.api.HtArg;
 import lombok.RequiredArgsConstructor;
@@ -7,7 +7,7 @@ import java.util.List;
 import java.util.stream.Stream;
 
 @RequiredArgsConstructor
-public class HtListPsArgs implements HtPsArgs {
+public class ListCtrsArgs implements HtListContainersArgs {
 
     List<HtArg> list;
 
