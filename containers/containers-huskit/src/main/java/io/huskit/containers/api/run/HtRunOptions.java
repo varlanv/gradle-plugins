@@ -8,6 +8,8 @@ public interface HtRunOptions {
 
     HtRunOptions withCommand(CharSequence command);
 
+    HtRunOptions withRemove();
+
     Map<HtOptionType, HtOption> asMap();
 
     int size();

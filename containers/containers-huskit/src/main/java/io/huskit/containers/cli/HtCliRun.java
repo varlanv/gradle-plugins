@@ -64,6 +64,9 @@ public class HtCliRun implements HtRun {
         command.add("run");
         command.add("-d");
         var optionMap = opts.asMap();
+        if (optionMap.containsKey(HtOptionType.REMOVE)) {
+            command.add("--rm");
+        }
         Optional.ofNullable(optionMap.get(HtOptionType.LABELS))
                 .ifPresent(labelOpt -> labelOpt.map().forEach((k, v) -> {
                     command.add("--label");

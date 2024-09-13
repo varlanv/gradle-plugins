@@ -29,7 +29,7 @@ public class HtCli {
     MemoizedSupplier<DockerShellProcess> process = new MemoizedSupplier<>(this::createProcess);
 
     @SneakyThrows
-    public <T> T sendCommand(HtCommand command, Function<CommandResult, T> resultConsumer) {
+    public synchronized <T> T sendCommand(HtCommand command, Function<CommandResult, T> resultConsumer) {
         var dockerShellProcess = process.get();
         return dockerShellProcess.sendCommand(command, resultConsumer);
     }
