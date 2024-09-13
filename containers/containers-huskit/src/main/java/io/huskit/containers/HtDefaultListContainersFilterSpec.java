@@ -2,12 +2,12 @@ package io.huskit.containers;
 
 import io.huskit.containers.cli.HtCliListCtrsFilter;
 import io.huskit.containers.api.list.HtListContainersFilter;
-import io.huskit.containers.api.list.HtListContainersFilterBuilder;
+import io.huskit.containers.api.list.HtListContainersFilterSpec;
 import io.huskit.containers.api.list.HtListContainersFilterType;
 
 import java.util.Map;
 
-public class HtDefaultListContainersFilterBuilder implements HtListContainersFilterBuilder {
+public class HtDefaultListContainersFilterSpec implements HtListContainersFilterSpec {
 
     @Override
     public HtListContainersFilter id(CharSequence id) {

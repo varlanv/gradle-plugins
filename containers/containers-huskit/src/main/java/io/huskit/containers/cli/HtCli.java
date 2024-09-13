@@ -99,7 +99,7 @@ public class HtCli {
             }));
             do {
                 previousOutLine = readOutLine();
-            } while (previousOutLine != null && !previousOutLine.isEmpty());
+            } while (!previousOutLine.isEmpty());
         }
 
         public <T> T sendCommand(HtCommand command, Function<CommandResult, T> resultTFunction) throws IOException {
@@ -150,7 +150,7 @@ public class HtCli {
             commandWriter.write("echo " + CLEAR_LINE_MARKER);
             commandWriter.newLine();
             commandWriter.flush();
-            String line = readOutLine();
+            var line = readOutLine();
             while (!line.equals(CLEAR_LINE_MARKER)) {
                 line = readOutLine();
             }

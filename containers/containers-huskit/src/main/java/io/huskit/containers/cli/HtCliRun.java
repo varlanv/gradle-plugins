@@ -12,6 +12,7 @@ import lombok.With;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.function.Function;
 import java.util.function.Predicate;
@@ -21,8 +22,8 @@ import java.util.function.Predicate;
 public class HtCliRun implements HtRun {
 
     HtCli cli;
-    HtDockerImageName imageName;
-    HtRunOptions options;
+    HtDockerImageName imgName;
+    HtRunOptions opts;
 
     @Override
     public HtRun withImage(String image) {
@@ -31,16 +32,16 @@ public class HtCliRun implements HtRun {
 
     @Override
     public HtRun withImage(HtDockerImageName dockerImageName) {
-        return this.withImageName(dockerImageName);
+        return this.withImgName(dockerImageName);
     }
 
     @Override
-    public HtRun withOptions(Function<HtRunOptionsBuilder, HtRunOptions> options) {
-        throw new UnsupportedOperationException("Not implemented yet");
+    public HtRun withOptions(Function<HtRunOptions, HtRunOptions> options) {
+        return this.withOpts(options.apply(this.opts));
     }
 
     @Override
-    public HtRun withCommand(Function<HtRunCommandBuilder, HtRunCommand> command) {
+    public HtRun withCommand(Function<HtRunCommandSpec, HtRunCommand> command) {
         throw new UnsupportedOperationException("Not implemented yet");
     }
 
@@ -58,11 +59,17 @@ public class HtCliRun implements HtRun {
     }
 
     private List<String> buildCommand() {
-        var command = new ArrayList<String>();
+        var command = new ArrayList<String>(4 + opts.size());
         command.add("docker");
         command.add("run");
         command.add("-d");
-        command.add(imageName.fullName());
+        var optionMap = opts.asMap();
+        Optional.ofNullable(optionMap.get(HtOptionType.LABELS))
+                .ifPresent(labelOpt -> labelOpt.map().forEach((k, v) -> {
+                    command.add("--label");
+                    command.add(k + "=" + v);
+                }));
+        command.add(imgName.fullName());
         return command;
     }
 }

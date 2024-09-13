@@ -1,6 +1,6 @@
 package io.huskit.containers.api.list;
 
-public interface HtListContainersFilterBuilder {
+public interface HtListContainersFilterSpec {
 
     HtListContainersFilter id(CharSequence id);
 

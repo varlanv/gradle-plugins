@@ -10,5 +10,6 @@ dependencies {
     implementation(projects.logging.loggingApi)
     implementation(libs.apache.commons.lang)
     implementation(libs.apache.commons.io)
+    implementation(libs.bundles.testcontainers)
     implementation("org.json:json:20240303")
 }

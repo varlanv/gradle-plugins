@@ -1,7 +1,7 @@
 package io.huskit.containers.api.run;
 
-import io.huskit.containers.api.HtDockerImageName;
 import io.huskit.containers.api.HtContainer;
+import io.huskit.containers.api.HtDockerImageName;
 
 import java.util.function.Function;
 
@@ -11,9 +11,9 @@ public interface HtRun {
 
     HtRun withImage(HtDockerImageName dockerImageName);
 
-    HtRun withOptions(Function<HtRunOptionsBuilder, HtRunOptions> options);
+    HtRun withOptions(Function<HtRunOptions, HtRunOptions> options);
 
-    HtRun withCommand(Function<HtRunCommandBuilder, HtRunCommand> command);
+    HtRun withCommand(Function<HtRunCommandSpec, HtRunCommand> command);
 
     HtContainer exec();
 }

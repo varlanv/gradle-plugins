@@ -4,7 +4,7 @@ import io.huskit.containers.IO;
 import io.huskit.containers.api.HtContainer;
 import io.huskit.containers.api.list.HtListContainers;
 import io.huskit.containers.api.list.arg.HtListContainersArgs;
-import io.huskit.containers.api.list.arg.HtListContainersArgsBuilder;
+import io.huskit.containers.api.list.arg.HtListContainersArgsSpec;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.With;
@@ -21,13 +21,13 @@ public class HtCliListCtrs implements HtListContainers {
     HtListContainersArgs psArgs;
 
     @Override
-    public HtListContainers withArgs(Function<HtListContainersArgsBuilder, HtListContainersArgs> args) {
-        return this.withPsArgs(Objects.requireNonNull(args.apply(new HtCliListCtrsArgsBuilder())));
+    public HtListContainers withArgs(Function<HtListContainersArgsSpec, HtListContainersArgs> args) {
+        return this.withPsArgs(Objects.requireNonNull(args.apply(new HtCliListCtrsArgsSpec())));
     }
 
     @Override
     @SneakyThrows
-    public Stream<HtContainer> stream() {
+    public Stream<HtContainer> asStream() {
         var requestedIds = findIds();
         if (requestedIds.isEmpty()) {
             return Stream.empty();

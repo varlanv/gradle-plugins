@@ -7,16 +7,14 @@ import lombok.With;
 import java.util.List;
 import java.util.function.Predicate;
 
+@Getter
 @RequiredArgsConstructor
 public class CliCommand implements HtCommand {
 
-    @Getter
     List<String> value;
     @With
-    @Getter
     Predicate<String> terminatePredicate;
     @With
-    @Getter
     Predicate<String> linePredicate;
 
     public CliCommand(List<String> value) {

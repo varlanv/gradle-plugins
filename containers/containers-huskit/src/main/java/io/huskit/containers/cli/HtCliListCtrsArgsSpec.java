@@ -1,12 +1,12 @@
 package io.huskit.containers.cli;
 
 import io.huskit.containers.api.HtArg;
-import io.huskit.containers.HtDefaultListContainersFilterBuilder;
+import io.huskit.containers.HtDefaultListContainersFilterSpec;
 import io.huskit.containers.api.list.HtListContainersFilter;
-import io.huskit.containers.api.list.HtListContainersFilterBuilder;
+import io.huskit.containers.api.list.HtListContainersFilterSpec;
 import io.huskit.containers.api.list.arg.ListCtrsArgs;
 import io.huskit.containers.api.list.arg.HtListContainersArgs;
-import io.huskit.containers.api.list.arg.HtListContainersArgsBuilder;
+import io.huskit.containers.api.list.arg.HtListContainersArgsSpec;
 import lombok.RequiredArgsConstructor;
 import lombok.With;
 
@@ -17,12 +17,12 @@ import java.util.function.Function;
 
 @With
 @RequiredArgsConstructor
-public class HtCliListCtrsArgsBuilder implements HtListContainersArgsBuilder {
+public class HtCliListCtrsArgsSpec implements HtListContainersArgsSpec {
 
     boolean all;
     List<HtListContainersFilter> filters;
 
-    public HtCliListCtrsArgsBuilder() {
+    public HtCliListCtrsArgsSpec() {
         this.all = false;
         this.filters = new ArrayList<>(3);
     }
@@ -42,14 +42,14 @@ public class HtCliListCtrsArgsBuilder implements HtListContainersArgsBuilder {
     }
 
     @Override
-    public HtListContainersArgsBuilder all() {
+    public HtListContainersArgsSpec withAll() {
         return this.withAll(true);
     }
 
     @Override
-    public HtListContainersArgsBuilder filter(Function<HtListContainersFilterBuilder, HtListContainersFilter> filter) {
+    public HtListContainersArgsSpec withFilter(Function<HtListContainersFilterSpec, HtListContainersFilter> filter) {
         var newFilter = new ArrayList<>(this.filters);
-        newFilter.add(filter.apply(new HtDefaultListContainersFilterBuilder()));
+        newFilter.add(filter.apply(new HtDefaultListContainersFilterSpec()));
         return this.withFilters(newFilter);
     }
 }

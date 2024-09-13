@@ -1,4 +1,4 @@
 package io.huskit.containers.api.run;
 
-public interface HtRunCommandBuilder {
+public interface HtRunCommandSpec {
 }
