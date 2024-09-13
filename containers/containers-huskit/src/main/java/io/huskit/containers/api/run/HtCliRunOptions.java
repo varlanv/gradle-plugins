@@ -24,6 +24,13 @@ public class HtCliRunOptions implements HtRunOptions {
     }
 
     @Override
+    public HtRunOptions withCommand(CharSequence command) {
+        var newOptionMap = new EnumMap<>(optionMap);
+        newOptionMap.put(HtOptionType.COMMAND, new CmdHtOpt(command));
+        return new HtCliRunOptions(newOptionMap, size + 1);
+    }
+
+    @Override
     public Map<HtOptionType, HtOption> asMap() {
         return Collections.unmodifiableMap(optionMap);
     }

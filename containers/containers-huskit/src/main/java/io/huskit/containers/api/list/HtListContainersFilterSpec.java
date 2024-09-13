@@ -6,5 +6,5 @@ public interface HtListContainersFilterSpec {
 
     HtListContainersFilter name(CharSequence name);
 
-    HtListContainersFilter label(CharSequence label);
+    HtListContainersFilter label(CharSequence label, CharSequence value);
 }

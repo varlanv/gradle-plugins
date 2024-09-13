@@ -49,7 +49,7 @@ public class HtCliRun implements HtRun {
     @SneakyThrows
     public HtContainer exec() {
         var id = cli.sendCommand(
-                new CliCommand(buildCommand()).withLinePredicate(Predicate.not(String::isBlank)),
+                new CliCommand(CommandType.RUN, buildCommand()).withLinePredicate(Predicate.not(String::isBlank)),
                 CommandResult::singleLine
         );
         return new HtLazyContainer(
@@ -67,9 +67,11 @@ public class HtCliRun implements HtRun {
         Optional.ofNullable(optionMap.get(HtOptionType.LABELS))
                 .ifPresent(labelOpt -> labelOpt.map().forEach((k, v) -> {
                     command.add("--label");
-                    command.add(k + "=" + v);
+                    command.add("\"" + k + "=" + v + "\"");
                 }));
         command.add(imgName.fullName());
+        Optional.ofNullable(optionMap.get(HtOptionType.COMMAND))
+                .ifPresent(commandOpt -> command.add(commandOpt.singleValue()));
         return command;
     }
 }

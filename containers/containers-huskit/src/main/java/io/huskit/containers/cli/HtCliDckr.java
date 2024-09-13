@@ -1,26 +1,24 @@
 package io.huskit.containers.cli;
 
 import io.huskit.containers.HtDefaultDockerImageName;
-import io.huskit.containers.api.HtDocker;
-import io.huskit.containers.api.HtDockerImageName;
-import io.huskit.containers.api.HtLogs;
-import io.huskit.containers.api.HtRm;
+import io.huskit.containers.api.*;
 import io.huskit.containers.api.list.HtListContainers;
 import io.huskit.containers.api.list.arg.HtListContainersArgs;
 import io.huskit.containers.api.logs.HtCliLogs;
-import io.huskit.containers.api.logs.LookFor;
 import io.huskit.containers.api.run.HtCliRunOptions;
 import io.huskit.containers.api.run.HtRun;
 import lombok.RequiredArgsConstructor;
 
 import java.util.List;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 @RequiredArgsConstructor
-public class HtCliDocker implements HtDocker {
+public class HtCliDckr implements HtCliDocker {
 
     HtCli cli;
+    HtCliDockerSpec spec;
 
     @Override
     public HtListContainers listContainers() {
@@ -29,7 +27,7 @@ public class HtCliDocker implements HtDocker {
 
     @Override
     public HtLogs logs(CharSequence containerId) {
-        return new HtCliLogs(cli, containerId.toString(), LookFor.nothing());
+        return new HtCliLogs(cli, containerId.toString());
     }
 
     @Override
@@ -50,5 +48,19 @@ public class HtCliDocker implements HtDocker {
     @Override
     public <T extends CharSequence> HtRm remove(List<T> containerIds) {
         return new HtCliRm(cli, containerIds.stream().map(CharSequence::toString).collect(Collectors.toList()), false, false);
+    }
+
+    @Override
+    public HtCliDocker configure(Function<HtCliDockerSpec, HtCliDockerSpec> configurer) {
+        var newSpec = configurer.apply(spec);
+        return new HtCliDckr(
+                cli.withRecorder(newSpec.recorder()),
+                newSpec
+        );
+    }
+
+    @Override
+    public void close() {
+        cli.close();
     }
 }

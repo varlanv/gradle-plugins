@@ -1,9 +1,9 @@
 package io.huskit.containers;
 
-import io.huskit.containers.cli.HtCliListCtrsFilter;
 import io.huskit.containers.api.list.HtListContainersFilter;
 import io.huskit.containers.api.list.HtListContainersFilterSpec;
 import io.huskit.containers.api.list.HtListContainersFilterType;
+import io.huskit.containers.cli.HtCliListCtrsFilter;
 
 import java.util.Map;
 
@@ -20,7 +20,7 @@ public class HtDefaultListContainersFilterSpec implements HtListContainersFilter
     }
 
     @Override
-    public HtListContainersFilter label(CharSequence label) {
-        return new HtCliListCtrsFilter(Map.entry("label", label.toString()), HtListContainersFilterType.LABEL);
+    public HtListContainersFilter label(CharSequence label, CharSequence value) {
+        return new HtCliListCtrsFilter(Map.entry("label", label + "=" + value), HtListContainersFilterType.LABEL);
     }
 }

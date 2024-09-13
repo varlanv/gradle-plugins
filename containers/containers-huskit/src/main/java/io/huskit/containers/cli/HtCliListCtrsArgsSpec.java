@@ -36,7 +36,7 @@ public class HtCliListCtrsArgsSpec implements HtListContainersArgsSpec {
         result.add(HtArg.of("--format", "\"{{json .}}\""));
         for (var psFilter : filters) {
             var filter = psFilter.value();
-            result.add(HtArg.of("--filter", filter.getKey() + "=" + filter.getValue()));
+            result.add(HtArg.of("--filter", "\"" + filter.getKey() + "=" + filter.getValue() + "\""));
         }
         return new ListCtrsArgs(Collections.unmodifiableList(result));
     }

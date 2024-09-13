@@ -11,4 +11,9 @@ public class MapHtOption implements HtOption {
 
     HtOptionType type;
     Map<String, String> map;
+
+    @Override
+    public String singleValue() {
+        throw new UnsupportedOperationException();
+    }
 }

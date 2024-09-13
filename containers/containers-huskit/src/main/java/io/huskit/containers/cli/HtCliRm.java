@@ -40,6 +40,6 @@ public class HtCliRm implements HtRm {
             command.add("--volumes");
         }
         command.addAll(containerIds);
-        cli.sendCommand(new CliCommand(command), Function.identity());
+        cli.sendCommand(new CliCommand(CommandType.REMOVE_CONTAINERS, command), Function.identity());
     }
 }

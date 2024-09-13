@@ -22,7 +22,7 @@ public class HtFindCliCtrsByIds {
     @SneakyThrows
     public Stream<HtContainer> stream() {
         var containers = cli.sendCommand(
-                new CliCommand(buildListContainersCommand(ids)).withLinePredicate(Predicate.not(String::isBlank)),
+                new CliCommand(CommandType.INSPECT, buildListContainersCommand(ids)).withLinePredicate(Predicate.not(String::isBlank)),
                 result -> {
                     return result.lines().stream()
                             .map(JSONObject::new)
@@ -34,7 +34,8 @@ public class HtFindCliCtrsByIds {
     }
 
     private List<String> buildListContainersCommand(Set<String> ids) {
-        var command = new ArrayList<String>(4 + ids.size());
+        var staticArgsSize = 4;
+        var command = new ArrayList<String>(staticArgsSize + ids.size());
         command.add("docker");
         command.add("inspect");
         command.add("--format");

@@ -5,6 +5,8 @@ import java.util.function.Predicate;
 
 public interface HtCommand {
 
+    CommandType type();
+
     List<String> value();
 
     Predicate<String> terminatePredicate();

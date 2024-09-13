@@ -11,13 +11,14 @@ import java.util.function.Predicate;
 @RequiredArgsConstructor
 public class CliCommand implements HtCommand {
 
+    CommandType type;
     List<String> value;
     @With
     Predicate<String> terminatePredicate;
     @With
     Predicate<String> linePredicate;
 
-    public CliCommand(List<String> value) {
-        this(value, (line) -> false, (line) -> true);
+    public CliCommand(CommandType type, List<String> value) {
+        this(type, value, (line) -> false, (line) -> true);
     }
 }

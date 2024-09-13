@@ -7,4 +7,6 @@ public interface HtOption {
     HtOptionType type();
 
     Map<String, String> map();
+
+    String singleValue();
 }

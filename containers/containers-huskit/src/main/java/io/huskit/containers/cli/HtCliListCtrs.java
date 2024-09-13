@@ -1,6 +1,5 @@
 package io.huskit.containers.cli;
 
-import io.huskit.containers.Io;
 import io.huskit.containers.api.HtContainer;
 import io.huskit.containers.api.list.HtListContainers;
 import io.huskit.containers.api.list.arg.HtListContainersArgs;
@@ -18,11 +17,11 @@ import java.util.stream.Stream;
 public class HtCliListCtrs implements HtListContainers {
 
     HtCli cli;
-    HtListContainersArgs psArgs;
+    HtListContainersArgs cmdArgs;
 
     @Override
     public HtListContainers withArgs(Function<HtListContainersArgsSpec, HtListContainersArgs> args) {
-        return this.withPsArgs(Objects.requireNonNull(args.apply(new HtCliListCtrsArgsSpec())));
+        return this.withCmdArgs(Objects.requireNonNull(args.apply(new HtCliListCtrsArgsSpec())));
     }
 
     @Override
@@ -32,29 +31,35 @@ public class HtCliListCtrs implements HtListContainers {
         if (requestedIds.isEmpty()) {
             return Stream.empty();
         } else {
-            return new HtFindCliCtrsByIds(cli, requestedIds).stream();
+            return new HtFindCliCtrsByIds(
+                    cli,
+                    requestedIds
+            ).stream();
         }
     }
 
     @SneakyThrows
     private Set<String> findIds() {
         var findIdsCommand = buildFindIdsCommand();
-        var process = new ProcessBuilder(findIdsCommand).start();
-        var ids = new LinkedHashSet<String>();
-        new Io().readLines(process.getInputStream(), ids::add);
-        return ids;
+        return new LinkedHashSet<>(
+                cli.sendCommand(
+                        new CliCommand(CommandType.LIST_CONTAINERS, findIdsCommand),
+                        CommandResult::lines
+                )
+        );
     }
 
     private List<String> buildFindIdsCommand() {
-        var command = new ArrayList<String>(4 + psArgs.size());
+        var staticArgsAmount = 4;
+        var command = new ArrayList<String>(staticArgsAmount + cmdArgs.size());
         command.add("docker");
         command.add("ps");
-        psArgs.stream().forEach(arg -> {
+        cmdArgs.stream().forEach(arg -> {
             command.add(arg.name());
             command.addAll(arg.values());
         });
         command.add("--format");
-        command.add("{{.ID}}");
+        command.add("\"{{.ID}}\"");
         return command;
     }
 }
