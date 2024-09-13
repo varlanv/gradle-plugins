@@ -21,13 +21,14 @@ public class HtCliLogs implements HtLogs {
 
     @Override
     public Stream<String> stream() {
-        return cli.sendCommand(
-                new CliCommand(
-                        CommandType.LOGS,
-                        List.of("docker", "logs", id)
-                ),
-                CommandResult::lines
-        ).stream();
+        return Stream.of("")
+                .flatMap(ignore -> cli.sendCommand(
+                        new CliCommand(
+                                CommandType.LOGS,
+                                List.of("docker", "logs", id)
+                        ),
+                        CommandResult::lines
+                ).stream());
     }
 
     @Override

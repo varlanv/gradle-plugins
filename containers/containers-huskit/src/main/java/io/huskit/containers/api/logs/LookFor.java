@@ -1,5 +1,8 @@
 package io.huskit.containers.api.logs;
 
+import java.time.Duration;
+import java.util.function.Predicate;
+
 public interface LookFor {
 
     static LookFor nothing() {
@@ -7,8 +10,16 @@ public interface LookFor {
     }
 
     static LookFor word(String word) {
-        return () -> word;
+        return new PredicatedLookFor(line -> line.contains(word), Duration.ZERO);
     }
 
-    String value();
+    static LookFor lineMatching(Predicate<String> predicate) {
+        return new PredicatedLookFor(predicate, Duration.ZERO);
+    }
+
+    LookFor withTimeout(Duration timeout);
+
+    Duration timeout();
+
+    Predicate<String> predicate();
 }

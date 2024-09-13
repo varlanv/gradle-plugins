@@ -15,7 +15,9 @@ import java.util.ArrayList;
 import java.util.Objects;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
@@ -67,7 +69,7 @@ public class HtCli {
         @NonFinal
         @Nullable
         private String previousErrLine;
-        private ExecutorService executor = Executors.newSingleThreadExecutor();
+        private ExecutorService executor = Executors.newFixedThreadPool(1);
 
         public DockerShellProcess(CliRecorder recorder) throws IOException {
             this.recorder = recorder;
@@ -109,10 +111,13 @@ public class HtCli {
         @SneakyThrows
         private <T> T sendFollowLogs(HtCommand command, Function<CommandResult, T> resultFunction) {
             recorder.record(command);
+            var processRef = new AtomicReference<Process>();
             var task = executor.submit(() -> {
-                var lines = new ArrayList<String>();
+                Process process = null;
                 try {
-                    var process = new ProcessBuilder(command.value()).start();
+                    var lines = new ArrayList<String>();
+                    process = new ProcessBuilder(command.value()).start();
+                    processRef.set(process);
                     try (var reader = new BufferedReader(new InputStreamReader(process.getInputStream()))) {
                         String line;
                         while ((line = reader.readLine()) != null) {
@@ -123,12 +128,28 @@ public class HtCli {
                             }
                         }
                     }
-                } catch (IOException e) {
-                    throw new RuntimeException(e);
+                    return lines;
+                } catch (Exception e) {
+                    if (process != null && process.isAlive()) {
+                        process.destroyForcibly();
+                    }
+                    throw e;
                 }
-                return lines;
             });
-            return resultFunction.apply(new CommandResult(task.get()));
+            try {
+                if (command.timeout().isZero()) {
+                    return resultFunction.apply(new CommandResult(task.get()));
+                } else {
+                    return resultFunction.apply(new CommandResult(task.get(command.timeout().toMillis(), TimeUnit.MILLISECONDS)));
+                }
+            } catch (Exception e) {
+                var process = processRef.get();
+                if (process != null && process.isAlive()) {
+                    process.destroyForcibly();
+                }
+                task.cancel(true);
+                throw e;
+            }
         }
 
         @SneakyThrows

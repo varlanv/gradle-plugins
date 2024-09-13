@@ -1,5 +1,6 @@
 package io.huskit.containers.cli;
 
+import java.time.Duration;
 import java.util.List;
 import java.util.function.Predicate;
 
@@ -9,6 +10,8 @@ public interface HtCommand {
 
     List<String> value();
 
+    Duration timeout();
+
     Predicate<String> terminatePredicate();
 
     Predicate<String> linePredicate();
@@ -16,4 +19,6 @@ public interface HtCommand {
     HtCommand withTerminatePredicate(Predicate<String> predicate);
 
     HtCommand withLinePredicate(Predicate<String> predicate);
+
+    HtCommand withTimeout(Duration timeout);
 }

@@ -26,7 +26,8 @@ public class HtCliFollowedLogs implements HtFollowedLogs {
                 new CliCommand(
                         CommandType.LOGS_FOLLOW,
                         List.of("docker", "logs", "-f", id)
-                ).withTerminatePredicate(line -> !Objects.equals(lookFor, LookFor.nothing()) && line.contains(lookFor.value())),
+                ).withTerminatePredicate(line -> !Objects.equals(lookFor, LookFor.nothing()) && lookFor.predicate().test(line))
+                        .withTimeout(lookFor.timeout()),
                 CommandResult::lines
         ).stream();
     }

@@ -4,6 +4,7 @@ import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.With;
 
+import java.time.Duration;
 import java.util.List;
 import java.util.function.Predicate;
 
@@ -17,8 +18,10 @@ public class CliCommand implements HtCommand {
     Predicate<String> terminatePredicate;
     @With
     Predicate<String> linePredicate;
+    @With
+    Duration timeout;
 
     public CliCommand(CommandType type, List<String> value) {
-        this(type, value, (line) -> false, (line) -> true);
+        this(type, value, (line) -> false, (line) -> true, Duration.ZERO);
     }
 }

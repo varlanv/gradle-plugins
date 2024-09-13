@@ -1,6 +1,7 @@
 package io.huskit.containers.cli;
 
 import com.github.dockerjava.api.DockerClient;
+import io.huskit.containers.HtDefaultDockerImageName;
 import io.huskit.containers.api.*;
 import io.huskit.containers.api.logs.LookFor;
 import io.huskit.gradle.commontest.DockerAvailableCondition;
@@ -11,13 +12,16 @@ import org.junit.jupiter.api.*;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.testcontainers.DockerClientFactory;
 
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ThreadLocalRandom;
+import java.util.concurrent.TimeoutException;
 import java.util.stream.Collectors;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 @Slf4j
 @ExtendWith(DockerAvailableCondition.class)
@@ -191,6 +195,31 @@ public class HtCliDckrIntegrationTest implements IntegrationTest {
     }
 
     @Test
+    void logs__should_create_correct_command() {
+        runOneContainerFixture(fixture -> {
+            subject.logs(fixture.containerId())
+                    .stream()
+                    .collect(Collectors.toList());
+
+            assertThat(commands).hasSize(1);
+            assertThat(commands.get(0).value())
+                    .isEqualTo(List.of("docker", "logs", fixture.containerId()));
+        });
+    }
+
+    @Test
+    void logs__if_didnt_consume_stream__should_not_run_command() {
+        runOneContainerFixture(fixture -> {
+            subject.logs(fixture.containerId())
+                    .stream()
+                    .map(String::length)
+                    .filter(i -> i > 0);
+
+            assertThat(commands).isEmpty();
+        });
+    }
+
+    @RepeatedTest(2)
     void logs__withFollow_lookFor__should_return_first_log_message() {
         runOneContainerFixture(fixture -> {
             var logs = subject.logs(fixture.containerId()).follow().lookFor(LookFor.word("Hello"));
@@ -201,25 +230,159 @@ public class HtCliDckrIntegrationTest implements IntegrationTest {
         });
     }
 
-    @Disabled
-    @RepeatedTest(1)
-    void tst_github() {
-        DockerClient dockerClient = DockerClientFactory.instance().client();
-        var labels = Map.of("someLabelKey", "someLabelVal");
-        var container = dockerClient.createContainerCmd(helloWorldImage)
-                .withLabels(labels)
-                .exec();
-        dockerClient.startContainerCmd(container.getId()).exec();
-        var inspectContainerResponse = dockerClient.inspectContainerCmd(container.getId()).exec();
+    @Test
+    void logs__withFollow_lookFor__should_return_all_log_messages_up_to_first_match() {
+        runOneContainerFixture(fixture -> {
+            var logs = subject.logs(fixture.containerId())
+                    .follow()
+                    .lookFor(LookFor.word("Hello World 2"));
 
-        try {
-            assertThat(container).isNotNull();
-            assertThat(container.getId()).isNotBlank();
-            assertThat(inspectContainerResponse.getConfig().getLabels()).isEqualTo(labels);
-        } finally {
-            dockerClient.removeContainerCmd(container.getId()).withForce(true).exec();
-        }
+            var logsList = logs.stream().collect(Collectors.toList());
+
+            assertThat(logsList).containsExactly("Hello World 1", "Hello World 2");
+        });
     }
+
+    @Test
+    void logs__withFollow_lookFor__should_create_correct_command() {
+        runOneContainerFixture(fixture -> {
+            subject.logs(fixture.containerId())
+                    .follow()
+                    .lookFor(LookFor.word("Hello"))
+                    .stream()
+                    .collect(Collectors.toList());
+
+            assertThat(commands).hasSize(1);
+            assertThat(commands.get(0).value())
+                    .isEqualTo(List.of("docker", "logs", "-f", fixture.containerId()));
+        });
+    }
+
+    @Test
+    void run__should_create_correct_command() {
+        // given
+        subject.run(helloWorldImage).exec();
+
+        // then
+        assertThat(commands).hasSize(1);
+        assertThat(commands.get(0).value())
+                .containsExactly("docker", "run", "-d", helloWorldImage);
+    }
+
+    @Test
+    void run__when_not_called_exec__should_not_run_command() {
+        // given
+        subject.run(helloWorldImage);
+
+        // then
+        assertThat(commands).isEmpty();
+    }
+
+    @Test
+    void run__with_object_image__should_create_correct_command() {
+        // given
+        subject.run(new HtDefaultDockerImageName(helloWorldImage)).exec();
+
+        // then
+        assertThat(commands).hasSize(1);
+        assertThat(commands.get(0).value())
+                .containsExactly("docker", "run", "-d", helloWorldImage);
+    }
+
+    @Test
+    void remove__should_create_correct_command() {
+        // given
+        var id = subject.run(helloWorldImage).exec().id();
+
+        // when
+        subject.remove(id).exec();
+
+        // then
+        assertThat(commands).hasSize(2);
+        assertThat(commands.get(0).value())
+                .containsExactly("docker", "run", "-d", helloWorldImage);
+        assertThat(commands.get(1).value())
+                .containsExactly("docker", "rm", id);
+    }
+
+    @Test
+    void remove__withForce_should_create_correct_command() {
+        // given
+        var id = subject.run(helloWorldImage).exec().id();
+
+        // when
+        subject.remove(id).withForce().exec();
+
+        // then
+        assertThat(commands).hasSize(2);
+        assertThat(commands.get(0).value())
+                .containsExactly("docker", "run", "-d", helloWorldImage);
+        assertThat(commands.get(1).value())
+                .containsExactly("docker", "rm", "--force", id);
+    }
+
+    @Test
+    void remove__withVolumes_should_create_correct_command() {
+        // given
+        var id = subject.run(helloWorldImage).exec().id();
+
+        // when
+        subject.remove(id).withVolumes().exec();
+
+        // then
+        assertThat(commands).hasSize(2);
+        assertThat(commands.get(0).value())
+                .containsExactly("docker", "run", "-d", helloWorldImage);
+        assertThat(commands.get(1).value())
+                .containsExactly("docker", "rm", "--volumes", id);
+    }
+
+    @Test
+    void remove__withForce_withVolumes_should_create_correct_command() {
+        // given
+        var id = subject.run(helloWorldImage).exec().id();
+
+        // when
+        subject.remove(id).withForce().withVolumes().exec();
+
+        // then
+        assertThat(commands).hasSize(2);
+        assertThat(commands.get(0).value())
+                .containsExactly("docker", "run", "-d", helloWorldImage);
+        assertThat(commands.get(1).value())
+                .containsExactly("docker", "rm", "--force", "--volumes", id);
+    }
+
+    @RepeatedTest(2)
+    void logs__withFollow_lookFor_withTimout_cant_find__should_throw_exception() {
+        runOneContainerFixture(fixture -> {
+            assertThatThrownBy(() -> subject.logs(fixture.containerId()).follow()
+                    .lookFor(LookFor.word("nonExistentWord").withTimeout(Duration.ofMillis(20)))
+                    .stream()
+                    .collect(Collectors.toList()))
+                    .isInstanceOf(TimeoutException.class);
+        });
+    }
+
+//    @Disabled
+//    @RepeatedTest(1)
+//    void tst_github() {
+//        DockerClient dockerClient = DockerClientFactory.instance().client();
+//        var labels = Map.of("someLabelKey", "someLabelVal");
+//        var container = dockerClient.createContainerCmd(helloWorldImage)
+//                .withLabels(labels)
+//                .exec();
+//        dockerClient.startContainerCmd(container.getId()).exec();
+//        var inspectContainerResponse = dockerClient.inspectContainerCmd(container.getId()).exec();
+//
+//        try {
+//            assertThat(container).isNotNull();
+//            assertThat(container.getId()).isNotBlank();
+//            assertThat(inspectContainerResponse.getConfig().getLabels()).isEqualTo(labels);
+//        } finally {
+//            dockerClient.removeContainerCmd(container.getId()).withForce(true).exec();
+//        }
+//    }
 
     @SneakyThrows
     private void runOneContainerFixture(ThrowingConsumer<OneContainerFixture> fixtureConsumer) {
