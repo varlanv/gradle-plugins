@@ -10,6 +10,7 @@ import org.checkerframework.checker.nullness.qual.Nullable;
 
 import java.io.*;
 import java.util.ArrayList;
+import java.util.Objects;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
@@ -38,31 +39,6 @@ public class HtCli {
     }
 
     static class DockerShellProcess {
-
-        public static void main(String[] args) throws Exception {
-            Process process = null;
-            try {
-                process = new ProcessBuilder("cmd").start();
-                BufferedWriter commandWriter;
-                BufferedReader commandOutputReader;
-                commandWriter = new BufferedWriter(new OutputStreamWriter(process.getOutputStream()));
-                commandOutputReader = new BufferedReader(new InputStreamReader(process.getInputStream()));
-
-                commandWriter.write("docker logs -f 6bf7e253c7d7");
-                commandWriter.newLine();
-                commandWriter.flush();
-
-                String line;
-                while ((line = commandOutputReader.readLine()) != null) {
-                    System.out.println(line);
-                }
-
-            } finally {
-                if (process != null) {
-                    process.destroyForcibly();
-                }
-            }
-        }
 
         private static final String RUN_LINE_MARKER = "__HUSKIT_RUN_MARKER__";
         private static final String CLEAR_LINE_MARKER = "__HUSKIT_CLEAR_MARKER__";
@@ -102,12 +78,12 @@ public class HtCli {
             } while (!previousOutLine.isEmpty());
         }
 
-        public <T> T sendCommand(HtCommand command, Function<CommandResult, T> resultTFunction) throws IOException {
+        public <T> T sendCommand(HtCommand command, Function<CommandResult, T> resultFunction) throws IOException {
             doSendCommand(command);
             commandWriter.write("echo " + RUN_LINE_MARKER);
             commandWriter.newLine();
             commandWriter.flush();
-            return read(command, resultTFunction);
+            return read(command, resultFunction);
         }
 
         @SneakyThrows
@@ -151,7 +127,7 @@ public class HtCli {
             commandWriter.newLine();
             commandWriter.flush();
             var line = readOutLine();
-            while (!line.equals(CLEAR_LINE_MARKER)) {
+            while (Objects.equals(line, CLEAR_LINE_MARKER)) {
                 line = readOutLine();
             }
             previousOutLine = line;

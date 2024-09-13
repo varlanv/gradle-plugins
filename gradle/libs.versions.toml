@@ -14,6 +14,8 @@ jetbrains-annotations = "24.1.0"
 mockito = "5.13.0"
 easymock = "5.4.0"
 checkerframework = "3.47.0"
+github-docker = "3.4.0"
+json = "20240303"
 
 [libraries]
 testcontainers-core = { group = "org.testcontainers", name = "testcontainers", version.ref = "testContainers" }
@@ -37,6 +39,9 @@ mockito-core = { group = "org.mockito", name = "mockito-core", version.ref = "mo
 easymock = { group = "org.easymock", name = "easymock", version.ref = "easymock" }
 checkerframework-qual = { group = "org.checkerframework", name = "checker-qual", version.ref = "checkerframework" }
 checkerframework-checker = { group = "org.checkerframework", name = "checker", version.ref = "checkerframework" }
+github-docker-java = { group = "com.github.docker-java", name = "docker-java", version.ref = "github-docker" }
+github-docker-transport = { group = "com.github.docker-java", name = "docker-java-transport-httpclient5", version.ref = "github-docker" }
+json = { group = "org.json", name = "json", version.ref = "json" }
 
 [bundles]
 testcontainers = ["testcontainers-core", "testcontainers-mongodb", "testcontainers-postgresql", "testcontainers-kafka", "testcontainers-rabbitmq"]

@@ -1,6 +1,6 @@
 package io.huskit.containers.cli;
 
-import io.huskit.containers.IO;
+import io.huskit.containers.Io;
 import io.huskit.containers.api.HtContainer;
 import io.huskit.containers.api.list.HtListContainers;
 import io.huskit.containers.api.list.arg.HtListContainersArgs;
@@ -41,7 +41,7 @@ public class HtCliListCtrs implements HtListContainers {
         var findIdsCommand = buildFindIdsCommand();
         var process = new ProcessBuilder(findIdsCommand).start();
         var ids = new LinkedHashSet<String>();
-        new IO().readLines(process.getInputStream(), ids::add);
+        new Io().readLines(process.getInputStream(), ids::add);
         return ids;
     }
 

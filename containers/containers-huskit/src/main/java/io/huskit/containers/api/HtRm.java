@@ -4,11 +4,11 @@ public interface HtRm {
 
     HtRm withForce(Boolean force);
 
-    HtRm withVolumes(Boolean volumes);
-
     default HtRm withForce() {
         return withForce(true);
     }
+
+    HtRm withVolumes(Boolean volumes);
 
     default HtRm withVolumes() {
         return withVolumes(true);

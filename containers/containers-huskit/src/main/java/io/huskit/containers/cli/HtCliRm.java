@@ -18,7 +18,6 @@ public class HtCliRm implements HtRm {
     @With
     Boolean vlm;
 
-
     @Override
     public HtRm withForce(Boolean force) {
         return withFrc(force);

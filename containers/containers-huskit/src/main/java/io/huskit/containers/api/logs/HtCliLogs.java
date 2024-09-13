@@ -8,6 +8,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.With;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Stream;
 
 @With
@@ -22,7 +23,7 @@ public class HtCliLogs implements HtLogs {
     public Stream<String> stream() {
         return cli.sendCommand(
                 new CliCommand(List.of("docker", "logs", "-f", id))
-                        .withTerminatePredicate(line -> lookFor != LookFor.nothing() && line.contains(lookFor.value())),
+                        .withTerminatePredicate(line -> !Objects.equals(lookFor, LookFor.nothing()) && line.contains(lookFor.value())),
                 CommandResult::lines
         ).stream();
     }

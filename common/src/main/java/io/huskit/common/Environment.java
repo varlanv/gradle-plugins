@@ -14,7 +14,7 @@ public enum Environment {
 
     Supplier<Boolean> predicate;
 
-    private static final EnumMap<Environment, Boolean> IS_CACHE = new EnumMap<>(Map.of(
+    private static final Map<Environment, Boolean> IS_CACHE = new EnumMap<>(Map.of(
             WINDOWS, WINDOWS.predicate.get(),
             LINUX, LINUX.predicate.get()
     ));

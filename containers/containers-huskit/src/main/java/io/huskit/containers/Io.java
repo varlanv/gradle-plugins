@@ -8,7 +8,7 @@ import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 import java.util.function.Consumer;
 
-public class IO {
+public class Io {
 
     @SneakyThrows
     public void readLines(InputStream stream, Consumer<String> lineReader) {
