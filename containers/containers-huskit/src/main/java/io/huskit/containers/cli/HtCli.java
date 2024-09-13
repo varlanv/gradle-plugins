@@ -13,6 +13,8 @@ import org.checkerframework.checker.nullness.qual.Nullable;
 import java.io.*;
 import java.util.ArrayList;
 import java.util.Objects;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -65,6 +67,7 @@ public class HtCli {
         @NonFinal
         @Nullable
         private String previousErrLine;
+        private ExecutorService executor = Executors.newSingleThreadExecutor();
 
         public DockerShellProcess(CliRecorder recorder) throws IOException {
             this.recorder = recorder;
@@ -93,11 +96,39 @@ public class HtCli {
         }
 
         public <T> T sendCommand(HtCommand command, Function<CommandResult, T> resultFunction) throws IOException {
+            if (command.type() == CommandType.LOGS_FOLLOW) {
+                return sendFollowLogs(command, resultFunction);
+            }
             doSendCommand(command);
             commandWriter.write("echo " + RUN_LINE_MARKER);
             commandWriter.newLine();
             commandWriter.flush();
             return read(command, resultFunction);
+        }
+
+        @SneakyThrows
+        private <T> T sendFollowLogs(HtCommand command, Function<CommandResult, T> resultFunction) {
+            recorder.record(command);
+            var task = executor.submit(() -> {
+                var lines = new ArrayList<String>();
+                try {
+                    var process = new ProcessBuilder(command.value()).start();
+                    try (var reader = new BufferedReader(new InputStreamReader(process.getInputStream()))) {
+                        String line;
+                        while ((line = reader.readLine()) != null) {
+                            lines.add(line);
+                            if (command.terminatePredicate().test(line)) {
+                                process.destroyForcibly();
+                                break;
+                            }
+                        }
+                    }
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
+                return lines;
+            });
+            return resultFunction.apply(new CommandResult(task.get()));
         }
 
         @SneakyThrows
@@ -119,13 +150,12 @@ public class HtCli {
             while (!line.endsWith(RUN_LINE_MARKER)) {
                 if (!line.isEmpty()) {
                     if (command.terminatePredicate().test(line)) {
-                        throw new UnsupportedOperationException();
 //                        commandWriter.write("\003"); // ASCII code for "Ctrl+C"
 //                        commandWriter.flush();
-//                        var ctrlc = Runtime.getRuntime().exec("powershell kill " + dockerProcess.pid());
-//                        ctrlc.waitFor();
-//                        lines.add(line);
-//                        break;
+                        var ctrlc = Runtime.getRuntime().exec("powershell kill -SIGINT " + dockerProcess.pid());
+                        ctrlc.waitFor();
+                        lines.add(line);
+                        break;
                     }
                     if (!line.endsWith(commandString) && command.linePredicate().test(line)) {
                         lines.add(line);

@@ -191,7 +191,6 @@ public class HtCliDckrIntegrationTest implements IntegrationTest {
     }
 
     @Test
-    @Disabled
     void logs__withFollow_lookFor__should_return_first_log_message() {
         runOneContainerFixture(fixture -> {
             var logs = subject.logs(fixture.containerId()).follow().lookFor(LookFor.word("Hello"));
