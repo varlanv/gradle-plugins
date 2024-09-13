@@ -166,7 +166,7 @@ public class ApplyInternalPluginLogic {
                                         )
                                 );
                                 test.setSystemProperties(sysProps);
-                                test.getOutputs().upToDateWhen(task -> false);
+//                                test.getOutputs().upToDateWhen(task -> false);
                                 test.testLogging(logging -> {
                                     logging.setShowStandardStreams(true);
                                 });
@@ -250,6 +250,11 @@ public class ApplyInternalPluginLogic {
                 task.setGroup("static analysis");
                 task.setDescription("Run static analysis on all sources");
                 task.dependsOn(staticAnalyseMain, staticAnalyseTest);
+            });
+
+            tasks.named("check", task -> {
+                task.dependsOn(staticAnalyseMain);
+                task.dependsOn(staticAnalyseTest);
             });
 
             // Configure pmd

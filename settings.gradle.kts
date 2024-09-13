@@ -48,6 +48,3 @@ include(
         "containers:containers-huskit",
         "plugins:containers-plugin:containers-gradle-plugin",
 )
-
-// increment this to change checksum when circleci cache needs to be invalidated
-val cacheInvalidationKey = 1
