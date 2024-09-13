@@ -1,7 +1,7 @@
 plugins {
     `maven-publish`
     `java-library`
-    id("io.huskit.gradle.internal-gradle-convention-plugin")
+    alias(libs.plugins.huskitInternalConvention)
 }
 
 dependencies {

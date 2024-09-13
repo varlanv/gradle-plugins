@@ -10,7 +10,7 @@ public class HuskitAspectjPluginTest implements GradleIntegrationTest {
 
     @Test
     @DisplayName("plugin should be applied")
-    void test_0() {
+    void plugin_should_be_applied() {
         runProjectFixture(fixture -> {
             var project = fixture.project();
 

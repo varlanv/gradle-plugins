@@ -16,7 +16,7 @@ public class HuskitPropertiesPluginFunctionalTest implements FunctionalTest {
     @ParameterizedTest
     @MethodSource("defaultDataTables")
     @DisplayName("if extension didn't exist before, then should add extension")
-    void test_0(DataTable dataTable) {
+    void if_extension_didnt_exist_before_then_should_add_extension(DataTable dataTable) {
         runGradleRunnerFixture(
                 dataTable,
                 List.of("help"),

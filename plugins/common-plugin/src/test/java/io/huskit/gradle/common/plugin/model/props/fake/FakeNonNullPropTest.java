@@ -15,25 +15,25 @@ public class FakeNonNullPropTest implements UnitTest {
 
     @Test
     @DisplayName("'name' should return param")
-    void test_0() {
+    void name_should_return_param() {
         assertThat(new FakeNonNullProp(propName, propValue).name()).isEqualTo(propName);
     }
 
     @Test
     @DisplayName("'value' if value non null should return param")
-    void test_1() {
+    void value_if_value_non_null_should_return_param() {
         assertThat(new FakeNonNullProp(propName, propValue).value()).isEqualTo(propValue);
     }
 
     @Test
     @DisplayName("'stringValue' if value non null should return param")
-    void test_2() {
+    void stringValue_if_value_non_null_should_return_param() {
         assertThat(new FakeNonNullProp(propName, propValue).stringValue()).isEqualTo(propValue);
     }
 
     @Test
     @DisplayName("'value' if value null then throw exception")
-    void test_3() {
+    void value_if_value_null_then_throw_exception() {
         assertThatThrownBy(() -> new FakeNonNullProp(propName, null).value())
                 .isInstanceOf(NonNullPropertyException.class)
                 .hasMessageContaining(propName);
@@ -41,7 +41,7 @@ public class FakeNonNullPropTest implements UnitTest {
 
     @Test
     @DisplayName("'stringValue' if value null then throw exception")
-    void test_4() {
+    void stringValue_if_value_null_then_throw_exception() {
         assertThatThrownBy(() -> new FakeNonNullProp(propName, null).stringValue())
                 .isInstanceOf(NonNullPropertyException.class)
                 .hasMessageContaining(propName);

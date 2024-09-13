@@ -14,7 +14,7 @@ public class RandomizeIfEmptyPropsTest implements UnitTest {
 
     @Test
     @DisplayName("if non null property not exists, then should return random value")
-    void test_0() {
+    void if_non_null_property_not_exists_then_should_return_random_value() {
         var fakeProps = new FakeProps();
         var subject = new RandomizeIfEmptyProps(fakeProps);
 
@@ -28,7 +28,7 @@ public class RandomizeIfEmptyPropsTest implements UnitTest {
 
     @Test
     @DisplayName("if nullable property not exists, then should return random value")
-    void test_1() {
+    void if_nullable_property_not_exists_then_should_return_random_value() {
         var fakeProps = new FakeProps();
         var subject = new RandomizeIfEmptyProps(fakeProps);
 
@@ -42,7 +42,7 @@ public class RandomizeIfEmptyPropsTest implements UnitTest {
 
     @Test
     @DisplayName("if system environment property not exists, then should return random value")
-    void test_2() {
+    void if_system_environment_property_not_exists_then_should_return_random_value() {
         var fakeProps = new FakeProps();
         var subject = new RandomizeIfEmptyProps(fakeProps);
 
@@ -56,7 +56,7 @@ public class RandomizeIfEmptyPropsTest implements UnitTest {
 
     @Test
     @DisplayName("if non null property exists, then should return it")
-    void test_3() {
+    void if_non_null_property_exists_then_should_return_it() {
         var fakeProps = new FakeProps();
         var subject = new RandomizeIfEmptyProps(fakeProps);
         fakeProps.add(existingPropName, existingPropValue);
@@ -71,7 +71,7 @@ public class RandomizeIfEmptyPropsTest implements UnitTest {
 
     @Test
     @DisplayName("if nullable property exists, then should return it")
-    void test_4() {
+    void if_nullable_property_exists_then_should_return_it() {
         var fakeProps = new FakeProps();
         var subject = new RandomizeIfEmptyProps(fakeProps);
         fakeProps.add(existingPropName, existingPropValue);
@@ -86,7 +86,7 @@ public class RandomizeIfEmptyPropsTest implements UnitTest {
 
     @Test
     @DisplayName("if system environment property exists, then should return it")
-    void test_5() {
+    void if_system_environment_property_exists_then_should_return_it() {
         var fakeProps = new FakeProps();
         var subject = new RandomizeIfEmptyProps(fakeProps);
         fakeProps.addEnv(existingPropName, existingPropValue);

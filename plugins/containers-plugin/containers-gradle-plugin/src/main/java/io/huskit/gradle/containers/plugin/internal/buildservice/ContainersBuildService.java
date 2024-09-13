@@ -5,7 +5,7 @@ import io.huskit.containers.model.ContainersRequest;
 import io.huskit.containers.model.started.StartedContainer;
 import io.huskit.containers.testcontainers.mongo.ActualTestContainersDelegate;
 import io.huskit.gradle.common.plugin.model.DefaultInternalExtensionName;
-import io.huskit.gradle.containers.core.ContainersApplication;
+import io.huskit.containers.core.ContainersApplication;
 import io.huskit.gradle.containers.plugin.internal.ContainersBuildServiceParams;
 import io.huskit.gradle.containers.plugin.internal.ContainersServiceRequest;
 import io.huskit.gradle.containers.plugin.internal.spec.ContainerRequestSpec;

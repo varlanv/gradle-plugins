@@ -13,7 +13,7 @@ public class NewOrExistingExtensionIntegrationTest implements GradleIntegrationT
 
     @Test
     @DisplayName("if extension not exists, then should create")
-    void test_0() {
+    void if_extension_not_exists_then_should_create() {
         runProjectFixture(fixture -> {
             var project = fixture.project();
             var log = new FakeLog();
@@ -34,7 +34,7 @@ public class NewOrExistingExtensionIntegrationTest implements GradleIntegrationT
 
     @Test
     @DisplayName("if extension exists, then should return existing")
-    void test_1() {
+    void if_extension_exists_then_should_return_existing() {
         runProjectFixture(fixture -> {
             var project = fixture.project();
             var log = new FakeLog();

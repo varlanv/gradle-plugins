@@ -1,7 +1,7 @@
 package io.huskit.common.function;
 
 import io.huskit.common.Volatile;
-import io.huskit.common.VolatileImpl;
+import io.huskit.common.internal.VolatileImpl;
 import lombok.RequiredArgsConstructor;
 
 import java.util.Objects;
@@ -17,7 +17,7 @@ import java.util.function.Supplier;
  * @param <T> the type of results supplied by this supplier
  */
 @RequiredArgsConstructor
-public class MemoizedSupplier<T> implements Supplier<T> {
+public class MemoizedSupplier<T> implements Supplier<T>, ThrowingSupplier<T> {
 
     Supplier<T> delegate;
     Volatile<T> volatileValue = new VolatileImpl<>();

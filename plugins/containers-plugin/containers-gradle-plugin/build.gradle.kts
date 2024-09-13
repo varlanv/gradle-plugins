@@ -1,5 +1,5 @@
 plugins {
-    id("io.huskit.gradle.internal-gradle-convention-plugin")
+    alias(libs.plugins.huskitInternalConvention)
 }
 
 gradlePlugin {

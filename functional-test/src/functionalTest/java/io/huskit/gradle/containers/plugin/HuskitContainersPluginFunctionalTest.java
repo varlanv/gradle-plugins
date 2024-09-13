@@ -22,7 +22,7 @@ public class HuskitContainersPluginFunctionalTest implements DockerFunctionalTes
     @ParameterizedTest
     @MethodSource("defaultDataTables")
     @DisplayName("should add 'serviceContainers' extension")
-    void test_0(DataTable dataTable) {
+    void should_add_service_containers_extension(DataTable dataTable) {
         runGradleRunnerFixture(
                 dataTable,
                 List.of("help"),
@@ -36,7 +36,7 @@ public class HuskitContainersPluginFunctionalTest implements DockerFunctionalTes
     @ParameterizedTest
     @MethodSource("defaultDataTables")
     @DisplayName("apply-plugin-to-single-java-project should work correctly")
-    void test_1(DataTable dataTable) {
+    void apply_plugin_to_single_java_project_should_work_correctly(DataTable dataTable) {
         var useCaseName = "apply-plugin-to-single-java-project-gradle8";
         runUseCaseFixture(
                 useCaseName,
@@ -52,7 +52,7 @@ public class HuskitContainersPluginFunctionalTest implements DockerFunctionalTes
     @ParameterizedTest
     @MethodSource("defaultDataTables")
     @DisplayName("apply-plugin-to-multiple-java-projects-all-not-reusable should work correctly")
-    void test_2(DataTable dataTable) {
+    void apply_plugin_to_multiple_java_projects_all_not_reusable_should_work_correctly(DataTable dataTable) {
         var useCaseName = "apply-plugin-to-multiple-java-projects-all-not-reusable-gradle8";
         runUseCaseFixture(
                 useCaseName,
@@ -68,7 +68,7 @@ public class HuskitContainersPluginFunctionalTest implements DockerFunctionalTes
     @ParameterizedTest
     @MethodSource("defaultDataTables")
     @DisplayName("apply-plugin-to-multiple-java-projects all reusable should work correctly")
-    void test_3(DataTable dataTable) {
+    void apply_plugin_to_multiple_java_projects_all_reusable_should_work_correctly(DataTable dataTable) {
         var useCaseName = "apply-plugin-to-multiple-java-projects-gradle8";
         runUseCaseFixture(
                 useCaseName,
@@ -93,7 +93,7 @@ public class HuskitContainersPluginFunctionalTest implements DockerFunctionalTes
     @ParameterizedTest
     @MethodSource("defaultDataTables")
     @DisplayName("apply-plugin-to-multiple-java-projects-with-and-without-reuse should work correctly")
-    void test_4(DataTable dataTable) {
+    void apply_plugin_to_multiple_java_projects_with_and_without_reuse_should_work_correctly(DataTable dataTable) {
         var useCaseName = "apply-plugin-to-multiple-java-projects-with-and-without-reuse-gradle8";
         runUseCaseFixture(
                 useCaseName,
