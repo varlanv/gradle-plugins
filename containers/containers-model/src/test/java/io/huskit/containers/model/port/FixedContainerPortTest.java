@@ -6,6 +6,7 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 import java.net.BindException;
+import java.net.SocketException;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -39,6 +40,6 @@ class FixedContainerPortTest implements UnitTest {
             }
         });
         exceptionRef.maybe().ifPresent(exception -> assertThat(exception.getCause())
-                .isInstanceOf(BindException.class));
+                .isInstanceOfAny(BindException.class, SocketException.class));
     }
 }

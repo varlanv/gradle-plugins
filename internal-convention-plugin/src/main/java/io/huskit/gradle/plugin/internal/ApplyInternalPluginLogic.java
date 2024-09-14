@@ -21,7 +21,6 @@ import org.gradle.api.publish.maven.MavenPublication;
 import org.gradle.api.publish.maven.plugins.MavenPublishPlugin;
 import org.gradle.api.services.BuildServiceRegistry;
 import org.gradle.api.tasks.TaskContainer;
-import org.gradle.api.tasks.testing.Test;
 import org.gradle.jvm.toolchain.JavaLanguageVersion;
 import org.gradle.jvm.toolchain.JavaToolchainService;
 import org.gradle.jvm.toolchain.JvmVendorSpec;
@@ -162,6 +161,7 @@ public class ApplyInternalPluginLogic {
                                 test.testLogging(logging -> {
                                     logging.setShowStandardStreams(true);
                                 });
+                                test.setFailFast(environment.isCi());
                                 test.usesService(syncBuildService);
                                 test.doFirst(new ConfigureOnBeforeTestStart(syncBuildService));
                                 var environment = new HashMap<>(test.getEnvironment());
@@ -187,16 +187,6 @@ public class ApplyInternalPluginLogic {
                     }
                 });
                 tasks.named("check", task -> task.dependsOn(integrationTestSuite));
-
-                // configure fast tests task
-                tasks.register("fastTests", Test.class, test -> {
-                    test.setGroup("verification");
-                    test.setDescription("Runs only fast tests, which includes unit tests and some integration tests");
-                    test.dependsOn("test");
-                    if (!integrationTestTaskName.equals("functionalTest")) {
-                        test.dependsOn(integrationTestTaskName);
-                    }
-                });
 
                 // configure integration test configurations
                 configurations.named(integrationTestTaskName + "Implementation", configuration -> {
