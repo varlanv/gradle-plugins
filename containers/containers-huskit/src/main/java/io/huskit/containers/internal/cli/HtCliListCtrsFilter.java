@@ -1,4 +1,4 @@
-package io.huskit.containers.cli;
+package io.huskit.containers.internal.cli;
 
 import io.huskit.containers.api.list.HtListContainersFilter;
 import io.huskit.containers.api.list.HtListContainersFilterType;

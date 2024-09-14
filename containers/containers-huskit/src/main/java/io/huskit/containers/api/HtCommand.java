@@ -1,4 +1,4 @@
-package io.huskit.containers.cli;
+package io.huskit.containers.api;
 
 import java.time.Duration;
 import java.util.List;

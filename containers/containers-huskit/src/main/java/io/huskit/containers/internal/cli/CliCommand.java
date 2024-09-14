@@ -1,5 +1,7 @@
-package io.huskit.containers.cli;
+package io.huskit.containers.internal.cli;
 
+import io.huskit.containers.api.CommandType;
+import io.huskit.containers.api.HtCommand;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.With;

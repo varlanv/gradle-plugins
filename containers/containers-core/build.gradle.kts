@@ -4,10 +4,6 @@ plugins {
     alias(libs.plugins.huskitInternalConvention)
 }
 
-java {
-    modularity.inferModulePath = true
-}
-
 dependencies {
     implementation(projects.common)
     implementation(projects.logging.loggingApi)

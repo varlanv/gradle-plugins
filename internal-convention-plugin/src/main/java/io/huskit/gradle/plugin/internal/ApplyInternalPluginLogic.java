@@ -158,14 +158,6 @@ public class ApplyInternalPluginLogic {
                         });
                         jvmTestSuite.getTargets().all(target -> {
                             target.getTestTask().configure(test -> {
-                                var sysProps = new HashMap<>(test.getSystemProperties());
-                                sysProps.putAll(
-                                        Map.of(
-                                                "junit.jupiter.execution.parallel.enabled", "true",
-                                                "junit.jupiter.execution.parallel.mode.default", "SAME_THREAD"
-                                        )
-                                );
-                                test.setSystemProperties(sysProps);
 //                                test.getOutputs().upToDateWhen(task -> false);
                                 test.testLogging(logging -> {
                                     logging.setShowStandardStreams(true);

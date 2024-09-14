@@ -1,6 +1,6 @@
 package io.huskit.containers.api;
 
-import io.huskit.containers.HtDefaultArg;
+import io.huskit.containers.internal.HtDefaultArg;
 
 import java.util.Arrays;
 import java.util.Collections;

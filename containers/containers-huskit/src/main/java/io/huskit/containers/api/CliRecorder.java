@@ -1,7 +1,5 @@
 package io.huskit.containers.api;
 
-import io.huskit.containers.cli.HtCommand;
-
 import java.util.Collection;
 
 public interface CliRecorder {

@@ -16,6 +16,7 @@ easymock = "5.4.0"
 checkerframework = "3.47.0"
 github-docker = "3.4.0"
 json = "20240303"
+gradle-shadow-plugin = "8.3.1"
 
 [libraries]
 testcontainers-core = { group = "org.testcontainers", name = "testcontainers", version.ref = "testContainers" }
@@ -48,4 +49,5 @@ testcontainers = ["testcontainers-core", "testcontainers-mongodb", "testcontaine
 
 [plugins]
 huskitInternalConvention = { id = "io.huskit.gradle.internal-gradle-convention-plugin" }
+shadow = { id = "com.gradleup.shadow", version.ref = "gradle-shadow-plugin" }
 #foojay-convention = { id = "org.gradle.toolchains.foojay-resolver-convention", version.ref = "foojayToolchainPlugin" }

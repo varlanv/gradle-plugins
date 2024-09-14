@@ -1,7 +1,7 @@
-package io.huskit.containers.cli;
+package io.huskit.containers.internal.cli;
 
 import io.huskit.containers.api.HtArg;
-import io.huskit.containers.HtDefaultListContainersFilterSpec;
+import io.huskit.containers.internal.HtDefaultListContainersFilterSpec;
 import io.huskit.containers.api.list.HtListContainersFilter;
 import io.huskit.containers.api.list.HtListContainersFilterSpec;
 import io.huskit.containers.api.list.arg.ListCtrsArgs;

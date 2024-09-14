@@ -1,6 +1,7 @@
-package io.huskit.containers.cli;
+package io.huskit.containers.internal.cli;
 
-import io.huskit.containers.HtContainerFromMap;
+import io.huskit.containers.api.CommandType;
+import io.huskit.containers.internal.HtContainerFromMap;
 import io.huskit.containers.api.HtContainer;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;

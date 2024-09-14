@@ -1,9 +1,9 @@
-package io.huskit.containers;
+package io.huskit.containers.internal;
 
 import io.huskit.containers.api.list.HtListContainersFilter;
 import io.huskit.containers.api.list.HtListContainersFilterSpec;
 import io.huskit.containers.api.list.HtListContainersFilterType;
-import io.huskit.containers.cli.HtCliListCtrsFilter;
+import io.huskit.containers.internal.cli.HtCliListCtrsFilter;
 
 import java.util.Map;
 

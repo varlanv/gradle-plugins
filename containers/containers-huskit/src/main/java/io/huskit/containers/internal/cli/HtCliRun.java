@@ -1,8 +1,9 @@
-package io.huskit.containers.cli;
+package io.huskit.containers.internal.cli;
 
 import io.huskit.common.function.MemoizedSupplier;
-import io.huskit.containers.HtDefaultDockerImageName;
-import io.huskit.containers.HtLazyContainer;
+import io.huskit.containers.api.CommandType;
+import io.huskit.containers.internal.HtDefaultDockerImageName;
+import io.huskit.containers.internal.HtLazyContainer;
 import io.huskit.containers.api.HtContainer;
 import io.huskit.containers.api.HtDockerImageName;
 import io.huskit.containers.api.run.*;

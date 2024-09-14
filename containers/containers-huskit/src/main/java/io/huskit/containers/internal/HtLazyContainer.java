@@ -1,4 +1,4 @@
-package io.huskit.containers;
+package io.huskit.containers.internal;
 
 import io.huskit.containers.api.HtContainer;
 import lombok.Getter;

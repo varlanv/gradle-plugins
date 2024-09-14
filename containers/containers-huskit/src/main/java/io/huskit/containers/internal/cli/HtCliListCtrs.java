@@ -1,5 +1,6 @@
-package io.huskit.containers.cli;
+package io.huskit.containers.internal.cli;
 
+import io.huskit.containers.api.CommandType;
 import io.huskit.containers.api.HtContainer;
 import io.huskit.containers.api.list.HtListContainers;
 import io.huskit.containers.api.list.arg.HtListContainersArgs;

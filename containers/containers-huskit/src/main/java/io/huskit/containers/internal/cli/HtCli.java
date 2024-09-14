@@ -1,9 +1,11 @@
-package io.huskit.containers.cli;
+package io.huskit.containers.internal.cli;
 
 import io.huskit.common.Environment;
 import io.huskit.common.Nothing;
 import io.huskit.common.function.MemoizedSupplier;
 import io.huskit.containers.api.CliRecorder;
+import io.huskit.containers.api.CommandType;
+import io.huskit.containers.api.HtCommand;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.With;

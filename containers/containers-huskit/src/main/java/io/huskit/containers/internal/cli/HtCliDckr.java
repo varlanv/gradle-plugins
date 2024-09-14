@@ -1,6 +1,6 @@
-package io.huskit.containers.cli;
+package io.huskit.containers.internal.cli;
 
-import io.huskit.containers.HtDefaultDockerImageName;
+import io.huskit.containers.internal.HtDefaultDockerImageName;
 import io.huskit.containers.api.*;
 import io.huskit.containers.api.list.HtListContainers;
 import io.huskit.containers.api.list.arg.HtListContainersArgs;
