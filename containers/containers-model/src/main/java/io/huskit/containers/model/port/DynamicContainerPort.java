@@ -2,8 +2,8 @@ package io.huskit.containers.model.port;
 
 import io.huskit.common.function.MemoizedSupplier;
 import lombok.RequiredArgsConstructor;
+import lombok.SneakyThrows;
 
-import java.io.IOException;
 import java.net.ServerSocket;
 import java.util.Optional;
 
@@ -27,11 +27,10 @@ public final class DynamicContainerPort implements ContainerPort {
         return false;
     }
 
+    @SneakyThrows
     private int randomPort() {
         try (var socket = new ServerSocket(0)) {
             return socket.getLocalPort();
-        } catch (IOException e) {
-            throw new RuntimeException(e);
         }
     }
 }

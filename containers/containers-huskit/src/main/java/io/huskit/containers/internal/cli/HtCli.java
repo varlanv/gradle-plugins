@@ -2,6 +2,7 @@ package io.huskit.containers.internal.cli;
 
 import io.huskit.common.Environment;
 import io.huskit.common.Nothing;
+import io.huskit.common.Sneaky;
 import io.huskit.common.function.MemoizedSupplier;
 import io.huskit.containers.api.*;
 import lombok.RequiredArgsConstructor;
@@ -153,7 +154,7 @@ public class HtCli {
                     if (process != null && process.isAlive()) {
                         process.destroyForcibly();
                     }
-                    throw new RuntimeException(e);
+                    throw Sneaky.rethrow(e);
                 }
             });
             try {

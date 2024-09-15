@@ -18,13 +18,13 @@ import java.util.Optional;
 @Getter
 @AllArgsConstructor
 @NoArgsConstructor
-public class VolatileImpl<T> implements Volatile<T>, Serializable {
+public class DfVolatile<T> implements Volatile<T>, Serializable {
 
     @Nullable
     @NonFinal
     private volatile T value;
 
-    public VolatileImpl(Volatile<T> another) {
+    public DfVolatile(Volatile<T> another) {
         another.ifPresent(this::set);
     }
 

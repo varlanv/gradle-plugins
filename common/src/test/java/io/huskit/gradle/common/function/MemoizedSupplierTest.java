@@ -4,6 +4,7 @@ import io.huskit.common.Tuple;
 import io.huskit.common.function.MemoizedSupplier;
 import io.huskit.common.function.ThrowingSupplier;
 import io.huskit.gradle.commontest.UnitTest;
+import lombok.Lombok;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
@@ -45,7 +46,7 @@ class MemoizedSupplierTest implements UnitTest {
             try {
                 latch.await();
             } catch (InterruptedException e) {
-                throw new RuntimeException(e);
+                throw Lombok.sneakyThrow(e);
             }
             return counter.incrementAndGet();
         });

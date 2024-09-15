@@ -1,6 +1,6 @@
 package io.huskit.common.function;
 
-import io.huskit.common.internal.VolatileImpl;
+import io.huskit.common.internal.DfVolatile;
 import lombok.RequiredArgsConstructor;
 
 import java.util.Objects;
@@ -19,7 +19,7 @@ import java.util.function.Supplier;
 public class MemoizedSupplier<T> implements Supplier<T>, ThrowingSupplier<T> {
 
     Supplier<T> delegate;
-    VolatileImpl<T> volatileValue = new VolatileImpl<>();
+    DfVolatile<T> volatileValue = new DfVolatile<>();
 
     @Override
     public T get() {

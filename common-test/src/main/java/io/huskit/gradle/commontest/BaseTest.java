@@ -88,12 +88,21 @@ public interface BaseTest {
             try {
                 FileDeleteStrategy.FORCE.delete(file);
                 if (originalException != null) {
-                    throw new RuntimeException(originalException);
+                    rethrow(originalException);
                 }
             } catch (IOException e) {
-                throw new RuntimeException(Objects.requireNonNullElse(originalException, e));
+                rethrow(Objects.requireNonNullElse(originalException, e));
             }
         }
+    }
+
+    private <T extends Throwable> void rethrow(Throwable t) {
+        throw hide(t);
+    }
+
+    @SuppressWarnings("unchecked")
+    private <T extends Throwable> T hide(Throwable t) throws T {
+        throw (T) t;
     }
 
     interface ThrowingRunnable {

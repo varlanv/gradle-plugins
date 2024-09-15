@@ -7,6 +7,9 @@ import java.util.function.Consumer;
 
 @RequiredArgsConstructor
 class Some<T> implements Opt<T> {
+    {
+        System.out.println();
+    }
 
     @NonNull
     T value;

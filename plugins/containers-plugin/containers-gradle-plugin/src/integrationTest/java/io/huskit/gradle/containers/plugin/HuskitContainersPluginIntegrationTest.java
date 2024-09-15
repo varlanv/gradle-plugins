@@ -1,5 +1,6 @@
 package io.huskit.gradle.containers.plugin;
 
+import io.huskit.common.Sneaky;
 import io.huskit.containers.model.Constants;
 import io.huskit.containers.model.exception.NonUniqueContainerException;
 import io.huskit.containers.testcontainers.mongo.TestContainersDelegate;
@@ -1368,7 +1369,7 @@ public class HuskitContainersPluginIntegrationTest implements GradleIntegrationT
                                 dockerBuildServiceParams
                         ));
             } catch (Exception e) {
-                throw new RuntimeException(e);
+                Sneaky.rethrow(e);
             }
         });
     }

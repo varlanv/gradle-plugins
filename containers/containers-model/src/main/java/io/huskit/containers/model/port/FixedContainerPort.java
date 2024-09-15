@@ -4,8 +4,8 @@ import io.huskit.common.function.MemoizedSupplier;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import lombok.SneakyThrows;
 
-import java.io.IOException;
 import java.net.ServerSocket;
 import java.util.Optional;
 
@@ -28,11 +28,10 @@ public final class FixedContainerPort implements ContainerPort {
         return Optional.of(containerValue);
     }
 
+    @SneakyThrows
     private Integer portValue() {
         try (var socket = new ServerSocket(hostValue)) {
             return socket.getLocalPort();
-        } catch (IOException e) {
-            throw new RuntimeException(e);
         }
     }
 
