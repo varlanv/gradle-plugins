@@ -39,7 +39,7 @@ class FixedContainerPortTest implements UnitTest {
                 exceptionRef.set(e);
             }
         });
-        exceptionRef.maybe().ifPresent(exception -> assertThat(exception.getCause())
+        exceptionRef.maybe().ifPresent(exception -> assertThat(exception)
                 .isInstanceOfAny(BindException.class, SocketException.class));
     }
 }
