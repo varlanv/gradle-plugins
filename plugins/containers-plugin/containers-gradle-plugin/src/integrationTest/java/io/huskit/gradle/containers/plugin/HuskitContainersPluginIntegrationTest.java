@@ -235,8 +235,8 @@ public class HuskitContainersPluginIntegrationTest implements GradleIntegrationT
             var fixedPortSpec = portSpec.getFixed().get();
             assertThat(fixedPortSpec.getHostValue().get()).isEqualTo(anyHostPort);
             assertThat(fixedPortSpec.getContainerValue().get()).isEqualTo(Constants.Mongo.DEFAULT_PORT);
-            assertThat(fixedPortSpec.getHostRange().getOrNull()).isNull();
-            assertThat(portSpec.getDynamic().getOrNull()).isFalse();
+            assertThat(fixedPortSpec.getHostRange().isPresent()).isFalse();
+            assertThat(portSpec.getDynamic().get()).isFalse();
         });
     }
 

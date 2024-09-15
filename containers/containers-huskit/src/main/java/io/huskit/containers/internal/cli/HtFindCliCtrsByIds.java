@@ -1,8 +1,8 @@
 package io.huskit.containers.internal.cli;
 
 import io.huskit.containers.api.CommandType;
-import io.huskit.containers.internal.HtContainerFromMap;
 import io.huskit.containers.api.HtContainer;
+import io.huskit.containers.internal.HtContainerFromMap;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import org.json.JSONObject;
@@ -22,16 +22,20 @@ public class HtFindCliCtrsByIds {
 
     @SneakyThrows
     public Stream<HtContainer> stream() {
-        var containers = cli.sendCommand(
-                new CliCommand(CommandType.INSPECT, buildListContainersCommand(ids)).withLinePredicate(Predicate.not(String::isBlank)),
-                result -> {
-                    return result.lines().stream()
-                            .map(JSONObject::new)
-                            .map(JSONObject::toMap)
-                            .map(map -> (HtContainer) new HtContainerFromMap(map))
-                            .collect(Collectors.toList());
-                });
-        return containers.stream();
+        try {
+            var containers = cli.sendCommand(
+                    new CliCommand(CommandType.INSPECT, buildListContainersCommand(ids)).withLinePredicate(Predicate.not(String::isBlank)),
+                    result -> {
+                        return result.lines().stream()
+                                .map(JSONObject::new)
+                                .map(JSONObject::toMap)
+                                .map(map -> (HtContainer) new HtContainerFromMap(map))
+                                .collect(Collectors.toList());
+                    });
+            return containers.stream();
+        } catch (Exception e) {
+            throw new IllegalStateException("Failed to find containers by ids", e);
+        }
     }
 
     private List<String> buildListContainersCommand(Set<String> ids) {

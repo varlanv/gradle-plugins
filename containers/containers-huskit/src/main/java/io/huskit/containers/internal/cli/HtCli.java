@@ -3,9 +3,7 @@ package io.huskit.containers.internal.cli;
 import io.huskit.common.Environment;
 import io.huskit.common.Nothing;
 import io.huskit.common.function.MemoizedSupplier;
-import io.huskit.containers.api.CliRecorder;
-import io.huskit.containers.api.CommandType;
-import io.huskit.containers.api.HtCommand;
+import io.huskit.containers.api.*;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.With;
@@ -13,10 +11,13 @@ import lombok.experimental.NonFinal;
 import org.checkerframework.checker.nullness.qual.Nullable;
 
 import java.io.*;
+import java.time.Duration;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
+import java.util.Queue;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
@@ -27,7 +28,7 @@ import java.util.function.Function;
 public class HtCli {
 
     @With
-    CliRecorder recorder;
+    HtCliDckrSpec dockerSpec;
     MemoizedSupplier<DockerShellProcess> process = new MemoizedSupplier<>(this::createProcess);
 
     @SneakyThrows
@@ -45,7 +46,7 @@ public class HtCli {
 
     @SneakyThrows
     private DockerShellProcess createProcess() {
-        return new DockerShellProcess(recorder);
+        return new DockerShellProcess(dockerSpec);
     }
 
     @SneakyThrows
@@ -71,17 +72,31 @@ public class HtCli {
         @NonFinal
         @Nullable
         private String previousErrLine;
-        private ExecutorService executor = Executors.newFixedThreadPool(1);
+        private Queue<String> containerIdsForCleanup;
+        private Boolean cleanupOnClose;
+        private Shell shell;
 
-        public DockerShellProcess(CliRecorder recorder) throws IOException {
-            this.recorder = recorder;
+        public DockerShellProcess(HtCliDckrSpec dockerSpec) throws IOException {
+            this.recorder = dockerSpec.recorder();
+            this.cleanupOnClose = dockerSpec.cleanOnClose();
+            this.shell = dockerSpec.shell();
             var builder = new ProcessBuilder().redirectErrorStream(true);
-            if (Environment.is(Environment.WINDOWS)) {
+            var shell = dockerSpec.shell();
+            if (shell == Shell.DEFAULT) {
+                if (Environment.is(Environment.WINDOWS)) {
+                    builder.command("powershell");
+                } else {
+                    builder.command("/bin/sh");
+                }
+            } else if (shell == Shell.GITBASH) {
+                builder.command("C:\\Program Files\\Git\\bin\\bash.exe");
+            } else if (shell == Shell.POWERSHELL) {
                 builder.command("powershell");
             } else {
-                builder.command("/bin/sh");
+                throw new IllegalArgumentException("Unsupported shell: " + shell);
             }
 
+            containerIdsForCleanup = new ConcurrentLinkedQueue<>();
             dockerProcess = builder.start();
             // Set up writers and readers for the process
             commandWriter = new BufferedWriter(new OutputStreamWriter(dockerProcess.getOutputStream()));
@@ -94,14 +109,14 @@ public class HtCli {
                     e.printStackTrace();
                 }
             }));
-            do {
-                previousOutLine = readOutLine();
-            } while (!previousOutLine.isEmpty());
+//            do {
+//                previousOutLine = readOutLine();
+//            } while (!previousOutLine.isEmpty());
         }
 
         public <T> T sendCommand(HtCommand command, Function<CommandResult, T> resultFunction) throws IOException {
             if (command.type() == CommandType.LOGS_FOLLOW) {
-                return sendFollowLogs(command, resultFunction);
+                return sendFollow(command, resultFunction);
             }
             doSendCommand(command);
             commandWriter.write("echo " + RUN_LINE_MARKER);
@@ -111,10 +126,10 @@ public class HtCli {
         }
 
         @SneakyThrows
-        private <T> T sendFollowLogs(HtCommand command, Function<CommandResult, T> resultFunction) {
+        private <T> T sendFollow(HtCommand command, Function<CommandResult, T> resultFunction) {
             recorder.record(command);
             var processRef = new AtomicReference<Process>();
-            var task = executor.submit(() -> {
+            var task = CompletableFuture.supplyAsync(() -> {
                 Process process = null;
                 try {
                     var lines = new ArrayList<String>();
@@ -126,6 +141,9 @@ public class HtCli {
                             lines.add(line);
                             if (command.terminatePredicate().test(line)) {
                                 process.destroyForcibly();
+                                if (command.type() == CommandType.RUN) {
+                                    containerIdsForCleanup.add(lines.get(0));
+                                }
                                 break;
                             }
                         }
@@ -135,7 +153,7 @@ public class HtCli {
                     if (process != null && process.isAlive()) {
                         process.destroyForcibly();
                     }
-                    throw e;
+                    throw new RuntimeException(e);
                 }
             });
             try {
@@ -169,7 +187,9 @@ public class HtCli {
             var commandString = String.join(" ", command.value());
             var lines = new ArrayList<String>();
             var line = readOutLine();
-            line = readOutLine();
+            if (shell != Shell.GITBASH) {
+                line = readOutLine();
+            }
             while (!line.endsWith(RUN_LINE_MARKER)) {
                 if (!line.isEmpty()) {
                     if (command.terminatePredicate().test(line)) {
@@ -187,14 +207,60 @@ public class HtCli {
                 line = readOutLine();
             }
             previousOutLine = line;
-            return resultConsumer.apply(new CommandResult(lines));
+            if (command.type() == CommandType.RUN_FOLLOW) {
+                var containerId = lines.get(0);
+                containerIdsForCleanup.add(containerId);
+                sendCommand(
+                        new CliCommand(
+                                CommandType.LOGS_FOLLOW,
+                                List.of("docker", "logs", "-f", containerId),
+                                l -> command.terminatePredicate().test(l),
+                                l -> true,
+                                Duration.ZERO
+                        ),
+                        Function.identity());
+                return resultConsumer.apply(new CommandResult(List.of(containerId)));
+            } else {
+                if (command.type() == CommandType.RUN) {
+                    containerIdsForCleanup.add(lines.get(0));
+                }
+                return resultConsumer.apply(new CommandResult(lines));
+            }
         }
 
         public void stop() throws IOException {
             if (isStopped.compareAndSet(false, true)) {
-                dockerProcess.destroyForcibly();
-                commandWriter.close();
-                commandOutputReader.close();
+                if (cleanupOnClose) {
+                    if (!containerIdsForCleanup.isEmpty()) {
+                        try {
+                            var cmd = new ArrayList<String>(5);
+                            cmd.add("docker");
+                            cmd.add("rm");
+                            cmd.add("-f");
+                            cmd.add("-v");
+                            cmd.addAll(containerIdsForCleanup);
+                            sendCommand(
+                                    new CliCommand(
+                                            CommandType.REMOVE_CONTAINERS,
+                                            cmd,
+                                            l -> false,
+                                            l -> true,
+                                            Duration.ofSeconds(20)
+                                    ),
+                                    Function.identity()
+                            );
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
+                    }
+                }
+                try {
+                    dockerProcess.destroyForcibly();
+                    commandWriter.close();
+                    commandOutputReader.close();
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
             }
         }
 

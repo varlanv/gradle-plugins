@@ -9,6 +9,4 @@ public interface HtContainer {
     String name();
 
     Map<String, String> labels();
-
-
 }

@@ -1,60 +1,23 @@
 package io.huskit.containers.internal.cli;
 
-import io.huskit.containers.internal.HtDefaultDockerImageName;
 import io.huskit.containers.api.*;
-import io.huskit.containers.api.list.HtListContainers;
-import io.huskit.containers.api.list.arg.HtListContainersArgs;
-import io.huskit.containers.api.logs.HtCliLogs;
-import io.huskit.containers.api.run.HtCliRunOptions;
-import io.huskit.containers.api.run.HtRun;
 import lombok.RequiredArgsConstructor;
 
-import java.util.List;
-import java.util.function.Function;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
+import java.util.function.Consumer;
 
 @RequiredArgsConstructor
 public class HtCliDckr implements HtCliDocker {
 
     HtCli cli;
-    HtCliDockerSpec spec;
+    HtCliDckrSpec spec;
 
     @Override
-    public HtListContainers listContainers() {
-        return new HtCliListCtrs(cli, HtListContainersArgs.empty());
-    }
-
-    @Override
-    public HtLogs logs(CharSequence containerId) {
-        return new HtCliLogs(cli, containerId.toString());
-    }
-
-    @Override
-    public HtRun run(HtDockerImageName dockerImageName) {
-        return new HtCliRun(cli, dockerImageName, new HtCliRunOptions());
-    }
-
-    @Override
-    public HtRun run(CharSequence dockerImageName) {
-        return new HtCliRun(cli, new HtDefaultDockerImageName(dockerImageName.toString()), new HtCliRunOptions());
-    }
-
-    @Override
-    public HtRm remove(CharSequence... containerIds) {
-        return new HtCliRm(cli, Stream.of(containerIds).map(CharSequence::toString).collect(Collectors.toList()), false, false);
-    }
-
-    @Override
-    public <T extends CharSequence> HtRm remove(List<T> containerIds) {
-        return new HtCliRm(cli, containerIds.stream().map(CharSequence::toString).collect(Collectors.toList()), false, false);
-    }
-
-    @Override
-    public HtCliDocker configure(Function<HtCliDockerSpec, HtCliDockerSpec> configurer) {
-        var newSpec = configurer.apply(spec);
+    public HtCliDocker configure(Consumer<HtCliDockerSpec> configurer) {
+        var spec = new HtCliDckrSpec(this.spec);
+        configurer.accept(spec);
+        var newSpec = new HtCliDckrSpec(spec);
         return new HtCliDckr(
-                cli.withRecorder(newSpec.recorder()),
+                cli.withDockerSpec(newSpec),
                 newSpec
         );
     }
@@ -62,5 +25,10 @@ public class HtCliDckr implements HtCliDocker {
     @Override
     public void close() {
         cli.close();
+    }
+
+    @Override
+    public HtContainers containers() {
+        return new HtCliContainers(cli, spec);
     }
 }

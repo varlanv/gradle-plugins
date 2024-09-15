@@ -1,10 +1,10 @@
 package io.huskit.containers.api;
 
-import java.util.function.Function;
+import java.util.function.Consumer;
 
 public interface HtCliDocker extends HtDocker {
 
-    HtCliDocker configure(Function<HtCliDockerSpec, HtCliDockerSpec> configurer);
+    HtCliDocker configure(Consumer<HtCliDockerSpec> configurer);
 
     void close();
 }

@@ -1,21 +1,17 @@
 package io.huskit.containers.internal.cli;
 
 import io.huskit.common.function.MemoizedSupplier;
-import io.huskit.containers.api.CommandType;
-import io.huskit.containers.internal.HtDefaultDockerImageName;
+import io.huskit.containers.api.*;
+import io.huskit.containers.api.run.HtRun;
 import io.huskit.containers.internal.HtLazyContainer;
-import io.huskit.containers.api.HtContainer;
-import io.huskit.containers.api.HtDockerImageName;
-import io.huskit.containers.api.run.*;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.With;
 
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 import java.util.Set;
-import java.util.function.Function;
 import java.util.function.Predicate;
 
 @With
@@ -24,33 +20,20 @@ public class HtCliRun implements HtRun {
 
     HtCli cli;
     HtDockerImageName imgName;
-    HtRunOptions opts;
-
-    @Override
-    public HtRun withImage(String image) {
-        return this.withImage(new HtDefaultDockerImageName(image));
-    }
-
-    @Override
-    public HtRun withImage(HtDockerImageName dockerImageName) {
-        return this.withImgName(dockerImageName);
-    }
-
-    @Override
-    public HtRun withOptions(Function<HtRunOptions, HtRunOptions> options) {
-        return this.withOpts(options.apply(this.opts));
-    }
-
-    @Override
-    public HtRun withCommand(Function<HtRunCommandSpec, HtRunCommand> command) {
-        throw new UnsupportedOperationException("Not implemented yet");
-    }
+    HtRunSpecImpl runSpec;
+    HtCliDckrSpec dockerSpec;
 
     @Override
     @SneakyThrows
     public HtContainer exec() {
         var id = cli.sendCommand(
-                new CliCommand(CommandType.RUN, buildCommand()).withLinePredicate(Predicate.not(String::isBlank)),
+                new CliCommand(
+                        runSpec.lookFor().isPresent() ? CommandType.RUN_FOLLOW : CommandType.RUN,
+                        buildCommand(),
+                        line -> runSpec.lookFor().isPresent() && line.contains(runSpec.lookFor().require()),
+                        Predicate.not(String::isBlank),
+                        runSpec.timeout().isPresent() ? runSpec.timeout().require() : Duration.ZERO
+                ),
                 CommandResult::singleLine
         );
         return new HtLazyContainer(
@@ -60,22 +43,29 @@ public class HtCliRun implements HtRun {
     }
 
     private List<String> buildCommand() {
-        var command = new ArrayList<String>(4 + opts.size());
-        command.add("docker");
-        command.add("run");
-        command.add("-d");
-        var optionMap = opts.asMap();
-        if (optionMap.containsKey(HtOptionType.REMOVE)) {
-            command.add("--rm");
-        }
-        Optional.ofNullable(optionMap.get(HtOptionType.LABELS))
-                .ifPresent(labelOpt -> labelOpt.map().forEach((k, v) -> {
-                    command.add("--label");
-                    command.add("\"" + k + "=" + v + "\"");
-                }));
-        command.add(imgName.fullName());
-        Optional.ofNullable(optionMap.get(HtOptionType.COMMAND))
-                .ifPresent(commandOpt -> command.add(commandOpt.singleValue()));
-        return command;
+        var processCmd = new ArrayList<String>(4);
+        processCmd.add("docker");
+        processCmd.add("run");
+        processCmd.add("-d");
+        runSpec.remove().ifPresent(rm -> {
+            if (rm) {
+                processCmd.add("--rm");
+            }
+        });
+        runSpec.labels().ifPresent(labelMap -> labelMap.forEach((k, v) -> {
+            processCmd.add("--label");
+            processCmd.add("\"" + k + "=" + v + "\"");
+        }));
+        runSpec.env().ifPresent(envMap -> envMap.forEach((k, v) -> {
+            processCmd.add("-e");
+            processCmd.add("\"" + k.toUpperCase() + "=" + v + "\"");
+        }));
+
+        processCmd.add(imgName.fullName());
+        runSpec.command().ifPresent(runCmd -> {
+            processCmd.add(runCmd.command());
+            processCmd.addAll(runCmd.args());
+        });
+        return processCmd;
     }
 }
