@@ -10,7 +10,7 @@ import java.util.function.Supplier;
 public enum Environment {
 
     WINDOWS(() -> System.getProperty("os.name").toLowerCase().contains("win")),
-    LINUX(() -> System.getProperty("os.name").toLowerCase().contains("win"));
+    LINUX(() -> !System.getProperty("os.name").toLowerCase().contains("win"));
 
     Supplier<Boolean> predicate;
 

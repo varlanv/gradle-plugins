@@ -53,7 +53,7 @@ public interface FixedContainerPortSpec extends FixedContainerPortSpecView {
                             hostPortFrom, hostPortTo
                     ));
         }
-        getHostRange().set(new Tuple<>(hostPortFrom, hostPortTo));
+        getHostRange().set(Tuple.of(hostPortFrom, hostPortTo));
     }
 
     @Override

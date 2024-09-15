@@ -30,7 +30,7 @@ public class DfVolatile<T> implements Volatile<T>, Serializable {
 
     @Override
     public void set(T value) {
-        this.value = Objects.requireNonNull(value);
+        this.value = Objects.requireNonNull(value, "value");
     }
 
     @Override

@@ -68,7 +68,7 @@ class MemoizedSupplierTest implements UnitTest {
                     thread2Value.set(subject.get());
                 }));
                 thread2Latch.await();
-                return new Tuple<>(future1, future2);
+                return Tuple.of(future1, future2);
             };
             var result = compute.get();
             latch.countDown();

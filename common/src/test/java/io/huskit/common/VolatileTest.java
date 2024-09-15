@@ -1,12 +1,12 @@
 package io.huskit.common;
 
 import io.huskit.common.internal.DfVolatile;
-import io.huskit.gradle.commontest.BaseTest;
+import io.huskit.gradle.commontest.UnitTest;
 import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-class VolatileTest implements BaseTest {
+class VolatileTest implements UnitTest {
 
     @Test
     void of__no_args__returns_empty_volatile() {

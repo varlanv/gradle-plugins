@@ -1378,7 +1378,6 @@ public class HuskitContainersPluginIntegrationTest implements GradleIntegrationT
     @RequiredArgsConstructor
     private static class MultiProjectContainerFixture {
 
-
         Project project;
         Project parentProject;
         File projectDir;

@@ -96,12 +96,12 @@ public interface BaseTest {
         }
     }
 
-    private <T extends Throwable> void rethrow(Throwable t) {
+    default <T extends Throwable> void rethrow(Throwable t) {
         throw hide(t);
     }
 
     @SuppressWarnings("unchecked")
-    private <T extends Throwable> T hide(Throwable t) throws T {
+    default <T extends Throwable> T hide(Throwable t) throws T {
         throw (T) t;
     }
 
