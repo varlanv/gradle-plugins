@@ -1,8 +1,6 @@
 package io.huskit.containers.internal.cli;
 
 import io.huskit.common.Nothing;
-import io.huskit.common.Sneaky;
-import io.huskit.common.Volatile;
 import io.huskit.common.function.MemoizedSupplier;
 import io.huskit.containers.api.CliRecorder;
 import io.huskit.containers.api.CommandType;
@@ -13,16 +11,11 @@ import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.With;
 
-import java.io.BufferedReader;
-import java.io.InputStreamReader;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 import java.util.Queue;
-import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentLinkedQueue;
-import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -33,7 +26,7 @@ public class HtCli {
     @With
     HtCliDckrSpec dockerSpec;
     Shells shells;
-    MemoizedSupplier<DockerShellProcess> process = new MemoizedSupplier<>(this::createProcess);
+    MemoizedSupplier<DockerShell> process = new MemoizedSupplier<>(this::createProcess);
 
     @Locked
     public <T> T sendCommand(HtCommand command, Function<CommandResult, T> resultConsumer) {
@@ -49,8 +42,8 @@ public class HtCli {
         });
     }
 
-    private DockerShellProcess createProcess() {
-        return new DockerShellProcess(dockerSpec, shells);
+    private DockerShell createProcess() {
+        return new DockerShell(this, dockerSpec, shells);
     }
 
     public void close() {
@@ -59,17 +52,19 @@ public class HtCli {
         }
     }
 
-    static class DockerShellProcess {
+    static class DockerShell {
 
         private static final String RUN_LINE_MARKER = "__HUSKIT_RUN_MARKER__";
         private static final String CLEAR_LINE_MARKER = "__HUSKIT_CLEAR_MARKER__";
         AtomicBoolean isStopped = new AtomicBoolean();
+        HtCli parent;
         CliRecorder recorder;
         Queue<String> containerIdsForCleanup;
         Boolean cleanupOnClose;
         Shell shell;
 
-        public DockerShellProcess(HtCliDckrSpec dockerSpec, Shells shells) {
+        public DockerShell(HtCli parent, HtCliDckrSpec dockerSpec, Shells shells) {
+            this.parent = parent;
             this.recorder = dockerSpec.recorder();
             this.cleanupOnClose = dockerSpec.cleanOnClose();
             this.containerIdsForCleanup = new ConcurrentLinkedQueue<>();
@@ -79,72 +74,24 @@ public class HtCli {
 
         public <T> T sendCommand(HtCommand command, Function<CommandResult, T> resultFunction) {
             if (command.type() == CommandType.LOGS_FOLLOW) {
-                return sendFollow(command, resultFunction);
+                return new LogFollow(recorder, containerIdsForCleanup).send(command, resultFunction);
             }
             doSendCommand(command);
             shell.echo(RUN_LINE_MARKER);
             return read(command, resultFunction);
         }
 
-        private <T> T sendFollow(HtCommand command, Function<CommandResult, T> resultFunction) {
-            recorder.record(command);
-            var process = Volatile.<Process>of();
-            var task = CompletableFuture.supplyAsync(() -> {
-                try {
-                    var lines = new ArrayList<String>();
-                    process.set(new ProcessBuilder(command.value()).start());
-                    try (var reader = new BufferedReader(new InputStreamReader(process.require().getInputStream()))) {
-                        String line;
-                        while ((line = reader.readLine()) != null) {
-                            lines.add(line);
-                            if (command.terminatePredicate().test(line)) {
-                                process.require().destroyForcibly();
-                                if (command.type() == CommandType.RUN) {
-                                    containerIdsForCleanup.add(lines.get(0));
-                                }
-                                break;
-                            }
-                        }
-                    }
-                    return lines;
-                } catch (Exception e) {
-                    process.ifPresent(p -> {
-                        if (p.isAlive()) {
-                            p.destroyForcibly();
-                        }
-                    });
-                    throw Sneaky.rethrow(e);
-                }
-            });
-            try {
-                if (command.timeout().isZero()) {
-                    return resultFunction.apply(new CommandResult(task.get()));
-                } else {
-                    return resultFunction.apply(new CommandResult(task.get(command.timeout().toMillis(), TimeUnit.MILLISECONDS)));
-                }
-            } catch (Exception e) {
-                process.ifPresent(p -> {
-                    if (p.isAlive()) {
-                        p.destroyForcibly();
-                    }
-                });
-                task.cancel(true);
-                throw Sneaky.rethrow(e);
-            }
-        }
-
         private void doSendCommand(HtCommand command) {
             recorder.record(command);
-            clearBuffer();
+            shell.clearBuffer(CLEAR_LINE_MARKER);
             shell.write(String.join(" ", command.value()));
         }
 
         @SneakyThrows
-        private <T> T read(HtCommand command,
-                           Function<CommandResult, T> resultConsumer) {
+        private <T> T read(HtCommand command, Function<CommandResult, T> resultConsumer) {
             var commandString = String.join(" ", command.value());
             var lines = new ArrayList<String>();
-            var line = readOutLine();
+            var line = shell.outLine();
             while (!line.endsWith(RUN_LINE_MARKER)) {
                 if (!line.isEmpty()) {
                     if (command.terminatePredicate().test(line)) {
@@ -156,7 +103,7 @@ public class HtCli {
                         lines.add(line);
                     }
                 }
-                line = readOutLine();
+                line = shell.outLine();
             }
             if (command.type() == CommandType.RUN_FOLLOW) {
                 var containerId = lines.get(0);
@@ -181,40 +128,11 @@ public class HtCli {
 
         private void stop() {
             if (isStopped.compareAndSet(false, true)) {
-                if (cleanupOnClose) {
-                    if (!containerIdsForCleanup.isEmpty()) {
-                        var cmd = new ArrayList<String>(5);
-                        cmd.add("docker");
-                        cmd.add("rm");
-                        cmd.add("-f");
-                        cmd.add("-v");
-                        cmd.addAll(containerIdsForCleanup);
-                        sendCommand(
-                                new CliCommand(
-                                        CommandType.REMOVE_CONTAINERS,
-                                        cmd,
-                                        l -> false,
-                                        l -> true,
-                                        Duration.ofSeconds(20)
-                                ),
-                                Function.identity()
-                        );
-                    }
+                if (cleanupOnClose && !containerIdsForCleanup.isEmpty()) {
+                    new HtCliRm(parent, new ArrayList<>(containerIdsForCleanup), true, true).exec();
                 }
                 shell.close();
             }
-        }
-
-        private void clearBuffer() {
-            shell.echo(CLEAR_LINE_MARKER);
-            var line = readOutLine();
-            while (!Objects.equals(line, CLEAR_LINE_MARKER)) {
-                line = readOutLine();
-            }
-        }
-
-        private String readOutLine() {
-            return shell.outLine();
         }
     }
 }

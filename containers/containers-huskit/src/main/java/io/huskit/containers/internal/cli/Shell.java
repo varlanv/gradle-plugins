@@ -2,6 +2,8 @@ package io.huskit.containers.internal.cli;
 
 import io.huskit.containers.api.ShellType;
 
+import java.util.Objects;
+
 public interface Shell {
 
     String path();
@@ -18,5 +20,13 @@ public interface Shell {
 
     default void echo(String message) {
         write("echo " + message);
+    }
+
+    default void clearBuffer(String clearMarker) {
+        echo(clearMarker);
+        var line = outLine();
+        while (!Objects.equals(line, clearMarker)) {
+            line = outLine();
+        }
     }
 }
