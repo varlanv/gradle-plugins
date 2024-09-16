@@ -5,6 +5,7 @@ import lombok.RequiredArgsConstructor;
 
 import java.util.Collections;
 import java.util.Map;
+import java.util.Optional;
 
 @RequiredArgsConstructor
 public class HtContainerFromMap implements HtContainer {
@@ -13,19 +14,25 @@ public class HtContainerFromMap implements HtContainer {
 
     @Override
     public String id() {
-        return source.get("Id").toString();
+        return getFromMap("Id", source);
     }
 
     @Override
     public String name() {
-        return source.get("Name").toString();
+        return getFromMap("Name", source);
     }
 
     @Override
-    @SuppressWarnings({"unchecked", "rawtypes"})
     public Map<String, String> labels() {
-        var config = (Map) source.get("Config");
-        var labels = (Map) config.get("Labels");
+        Map<String, Object> config = getFromMap("Config", source);
+        Map<String, String> labels = getFromMap("Labels", config);
         return Collections.unmodifiableMap(labels);
+    }
+
+    @SuppressWarnings({"unchecked"})
+    private <T> T getFromMap(String key, Map<String, Object> map) {
+        return (T) Optional.ofNullable(map.get(key))
+                .orElseThrow(() ->
+                        new IllegalStateException(String.format("Could not find key [%s] in container map %s", key, map)));
     }
 }
