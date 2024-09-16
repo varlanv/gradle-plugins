@@ -6,5 +6,5 @@ public interface HtCliDockerSpec {
 
     HtCliDockerSpec withCleanOnClose(Boolean cleanOnClose);
 
-    HtCliDockerSpec withShell(Shell shell);
+    HtCliDockerSpec withShell(ShellType shell);
 }

@@ -12,7 +12,7 @@ public interface HtDocker {
         var dockerSpec = new HtCliDckrSpec(
                 Volatile.of(CliRecorder.noop()),
                 Volatile.of(false),
-                Volatile.of(Shell.DEFAULT)
+                Volatile.of(ShellType.DEFAULT)
         );
         return new HtCliDckr(
                 new HtCli(dockerSpec),

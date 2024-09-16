@@ -8,7 +8,7 @@ public class HtCliDckrSpec implements HtCliDockerSpec {
 
     Volatile<CliRecorder> recorder;
     Volatile<Boolean> cleanOnClose;
-    Volatile<Shell> shell;
+    Volatile<ShellType> shell;
 
     public HtCliDckrSpec(HtCliDckrSpec another) {
         this(
@@ -31,7 +31,7 @@ public class HtCliDckrSpec implements HtCliDockerSpec {
     }
 
     @Override
-    public HtCliDockerSpec withShell(Shell shell) {
+    public HtCliDockerSpec withShell(ShellType shell) {
         this.shell.set(shell);
         return this;
     }
@@ -44,7 +44,7 @@ public class HtCliDckrSpec implements HtCliDockerSpec {
         return cleanOnClose.require();
     }
 
-    public Shell shell() {
+    public ShellType shell() {
         return shell.require();
     }
 }

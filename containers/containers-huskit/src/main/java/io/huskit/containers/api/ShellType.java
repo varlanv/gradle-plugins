@@ -1,6 +1,6 @@
 package io.huskit.containers.api;
 
-public enum Shell {
+public enum ShellType {
 
     SH,
     POWERSHELL,

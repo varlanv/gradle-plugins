@@ -2,7 +2,7 @@ package io.huskit.containers.integration.mongo;
 
 import io.huskit.containers.api.HtDocker;
 import io.huskit.containers.api.HtDockerImageName;
-import io.huskit.containers.api.Shell;
+import io.huskit.containers.api.ShellType;
 import lombok.RequiredArgsConstructor;
 
 import java.time.Duration;
@@ -51,7 +51,7 @@ public class HtMongo implements HtContainer {
 //        int count = 0;
 //        System.out.println(count);
         var id = HtDocker.cli()
-                .configure(spec -> spec.withCleanOnClose(true).withShell(Shell.GITBASH))
+                .configure(spec -> spec.withCleanOnClose(true).withShell(ShellType.GITBASH))
                 .containers()
                 .run("mongo:4.4.8")
                 .exec().id();

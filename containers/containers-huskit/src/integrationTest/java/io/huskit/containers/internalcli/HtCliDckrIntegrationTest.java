@@ -39,7 +39,7 @@ public class HtCliDckrIntegrationTest implements DockerIntegrationTest {
     @BeforeAll
     void setupAll() {
         recorder = new ThreadLocalCliRecorder();
-        subject = HtDocker.cli().configure(spec -> spec.withCliRecorder(recorder).withShell(Shell.POWERSHELL));
+        subject = HtDocker.cli().configure(spec -> spec.withCliRecorder(recorder).withShell(ShellType.POWERSHELL));
     }
 
     @AfterAll

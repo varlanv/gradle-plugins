@@ -1,6 +1,5 @@
 package io.huskit.containers.internal.cli;
 
-import io.huskit.common.Environment;
 import io.huskit.common.Nothing;
 import io.huskit.common.Sneaky;
 import io.huskit.common.Volatile;
@@ -10,10 +9,10 @@ import lombok.Locked;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.With;
-import lombok.experimental.NonFinal;
-import org.checkerframework.checker.nullness.qual.Nullable;
 
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
@@ -64,45 +63,19 @@ public class HtCli {
 
         private static final String RUN_LINE_MARKER = "__HUSKIT_RUN_MARKER__";
         private static final String CLEAR_LINE_MARKER = "__HUSKIT_CLEAR_MARKER__";
-        private AtomicBoolean isStopped = new AtomicBoolean();
-        private Process dockerProcess;
-        private BufferedWriter commandWriter;
-        private BufferedReader commandOutputReader;
-        private BufferedReader commandErrorReader;
-        private CliRecorder recorder;
-        @NonFinal
-        @Nullable
-        private String previousErrLine;
-        private Queue<String> containerIdsForCleanup;
-        private Boolean cleanupOnClose;
-        private Shell shell;
+        AtomicBoolean isStopped = new AtomicBoolean();
+        CliRecorder recorder;
+        Queue<String> containerIdsForCleanup;
+        Boolean cleanupOnClose;
+        ShellType shell;
+        CliShell cliShell;
 
         public DockerShellProcess(HtCliDckrSpec dockerSpec) throws IOException {
             this.recorder = dockerSpec.recorder();
             this.cleanupOnClose = dockerSpec.cleanOnClose();
+            this.containerIdsForCleanup = new ConcurrentLinkedQueue<>();
+            this.cliShell = new CliShell(dockerSpec);
             this.shell = dockerSpec.shell();
-            var builder = new ProcessBuilder();
-            var shell = dockerSpec.shell();
-            if (shell == Shell.DEFAULT) {
-                if (Environment.is(Environment.WINDOWS)) {
-                    builder.command("powershell");
-                } else {
-                    builder.command("/bin/sh");
-                }
-            } else if (shell == Shell.GITBASH) {
-                builder.command("C:\\Program Files\\Git\\bin\\bash.exe");
-            } else if (shell == Shell.POWERSHELL) {
-                builder.command("powershell");
-            } else {
-                throw new IllegalArgumentException("Unsupported shell: " + shell);
-            }
-
-            containerIdsForCleanup = new ConcurrentLinkedQueue<>();
-            dockerProcess = builder.start();
-            // Set up writers and readers for the process
-            commandWriter = new BufferedWriter(new OutputStreamWriter(dockerProcess.getOutputStream()));
-            commandOutputReader = new BufferedReader(new InputStreamReader(dockerProcess.getInputStream()));
-            commandErrorReader = new BufferedReader(new InputStreamReader(dockerProcess.getErrorStream()));
             Runtime.getRuntime().addShutdownHook(new Thread(() -> {
                 try {
                     stop();
@@ -117,9 +90,7 @@ public class HtCli {
                 return sendFollow(command, resultFunction);
             }
             doSendCommand(command);
-            commandWriter.write("echo " + RUN_LINE_MARKER);
-            commandWriter.newLine();
-            commandWriter.flush();
+            cliShell.write("echo " + RUN_LINE_MARKER);
             return read(command, resultFunction);
         }
 
@@ -175,9 +146,7 @@ public class HtCli {
         private void doSendCommand(HtCommand command) {
             recorder.record(command);
             clearBuffer();
-            commandWriter.write(String.join(" ", command.value()));
-            commandWriter.newLine();
-            commandWriter.flush();
+            cliShell.write(String.join(" ", command.value()));
         }
 
         @SneakyThrows
@@ -186,13 +155,13 @@ public class HtCli {
             var commandString = String.join(" ", command.value());
             var lines = new ArrayList<String>();
             var line = readOutLine();
-            if (shell != Shell.GITBASH) {
+            if (shell != ShellType.GITBASH) {
                 line = readOutLine();
             }
             while (!line.endsWith(RUN_LINE_MARKER)) {
                 if (!line.isEmpty()) {
                     if (command.terminatePredicate().test(line)) {
-                        var ctrlc = Runtime.getRuntime().exec("powershell kill -SIGINT " + dockerProcess.pid());
+                        var ctrlc = Runtime.getRuntime().exec("powershell kill -SIGINT " + cliShell.pid());
                         ctrlc.waitFor();
                         lines.add(line);
                         break;
@@ -224,7 +193,7 @@ public class HtCli {
             }
         }
 
-        public void stop() throws IOException {
+        public void stop() {
             if (isStopped.compareAndSet(false, true)) {
                 if (cleanupOnClose) {
                     if (!containerIdsForCleanup.isEmpty()) {
@@ -250,31 +219,20 @@ public class HtCli {
                         }
                     }
                 }
-                try {
-                    dockerProcess.destroyForcibly();
-                    commandWriter.close();
-                    commandOutputReader.close();
-                } catch (Exception e) {
-                    Sneaky.rethrow(e);
-                }
+                cliShell.close();
             }
         }
 
-        private void clearBuffer() throws IOException {
-            commandWriter.write("echo " + CLEAR_LINE_MARKER);
-            commandWriter.newLine();
-            commandWriter.flush();
+        private void clearBuffer() {
+            cliShell.write("echo " + CLEAR_LINE_MARKER);
             var line = readOutLine();
             while (!Objects.equals(line, CLEAR_LINE_MARKER)) {
                 line = readOutLine();
             }
-            while (previousErrLine != null && !previousErrLine.isEmpty()) {
-                previousErrLine = commandErrorReader.readLine();
-            }
         }
 
-        private String readOutLine() throws IOException {
-            return commandOutputReader.readLine();
+        private String readOutLine() {
+            return cliShell.nextLine();
         }
     }
 }
