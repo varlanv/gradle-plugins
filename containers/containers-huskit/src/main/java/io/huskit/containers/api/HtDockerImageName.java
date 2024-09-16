@@ -1,16 +1,16 @@
 package io.huskit.containers.api;
 
-import io.huskit.containers.internal.HtDefaultDockerImageName;
+import io.huskit.containers.internal.HtDefDockerImageName;
 
 public interface HtDockerImageName {
 
-    String fullName();
-
     String id();
 
-    String version();
+    String name();
+
+    String tag();
 
     static HtDockerImageName of(CharSequence fullName) {
-        return new HtDefaultDockerImageName(fullName.toString());
+        return new HtDefDockerImageName(fullName.toString());
     }
 }

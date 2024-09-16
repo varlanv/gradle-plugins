@@ -30,7 +30,7 @@ public class HtMongo implements HtContainer {
                         containerSpec.withCleanOnClose(true))
                 .containers()
                 .run(
-                        imageName.fullName(),
+                        imageName.id(),
                         runSpec -> {
                             var envSpec = containerSpec.envSpec();
                             envSpec.envMap().ifPresent(runSpec::withEnv);

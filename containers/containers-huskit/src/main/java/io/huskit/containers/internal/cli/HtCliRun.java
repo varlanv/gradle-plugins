@@ -61,7 +61,7 @@ public class HtCliRun implements HtRun {
             processCmd.add("\"" + k.toUpperCase() + "=" + v + "\"");
         }));
 
-        processCmd.add(imgName.fullName());
+        processCmd.add(imgName.id());
         runSpec.command().ifPresent(runCmd -> {
             processCmd.add(runCmd.command());
             processCmd.addAll(runCmd.args());

@@ -5,6 +5,7 @@ import io.huskit.common.Nothing;
 import io.huskit.common.Sneaky;
 import io.huskit.common.function.MemoizedSupplier;
 import io.huskit.containers.api.*;
+import lombok.Locked;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.With;
@@ -32,12 +33,14 @@ public class HtCli {
     HtCliDckrSpec dockerSpec;
     MemoizedSupplier<DockerShellProcess> process = new MemoizedSupplier<>(this::createProcess);
 
+    @Locked
     @SneakyThrows
-    public synchronized <T> T sendCommand(HtCommand command, Function<CommandResult, T> resultConsumer) {
+    public <T> T sendCommand(HtCommand command, Function<CommandResult, T> resultConsumer) {
         var dockerShellProcess = process.get();
         return dockerShellProcess.sendCommand(command, resultConsumer);
     }
 
+    @Locked
     public void sendCommand(HtCommand command, Consumer<CommandResult> resultConsumer) {
         sendCommand(command, result -> {
             resultConsumer.accept(result);

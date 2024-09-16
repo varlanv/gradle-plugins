@@ -6,17 +6,17 @@ import lombok.RequiredArgsConstructor;
 
 @Getter
 @RequiredArgsConstructor
-public class HtDefaultDockerImageName implements HtDockerImageName {
+public class HtDefDockerImageName implements HtDockerImageName {
 
-    String fullName;
+    String id;
 
     @Override
-    public String id() {
+    public String name() {
         throw new UnsupportedOperationException();
     }
 
     @Override
-    public String version() {
+    public String tag() {
         throw new UnsupportedOperationException();
     }
 }
