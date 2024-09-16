@@ -11,7 +11,6 @@ import lombok.SneakyThrows;
 import lombok.With;
 
 import java.io.BufferedReader;
-import java.io.IOException;
 import java.io.InputStreamReader;
 import java.time.Duration;
 import java.util.ArrayList;
@@ -33,7 +32,6 @@ public class HtCli {
     MemoizedSupplier<DockerShellProcess> process = new MemoizedSupplier<>(this::createProcess);
 
     @Locked
-    @SneakyThrows
     public <T> T sendCommand(HtCommand command, Function<CommandResult, T> resultConsumer) {
         var dockerShellProcess = process.get();
         return dockerShellProcess.sendCommand(command, resultConsumer);
@@ -47,12 +45,10 @@ public class HtCli {
         });
     }
 
-    @SneakyThrows
     private DockerShellProcess createProcess() {
         return new DockerShellProcess(dockerSpec);
     }
 
-    @SneakyThrows
     public void close() {
         if (process.isInitialized()) {
             process.get().stop();
@@ -70,22 +66,16 @@ public class HtCli {
         ShellType shell;
         CliShell cliShell;
 
-        public DockerShellProcess(HtCliDckrSpec dockerSpec) throws IOException {
+        public DockerShellProcess(HtCliDckrSpec dockerSpec) {
             this.recorder = dockerSpec.recorder();
             this.cleanupOnClose = dockerSpec.cleanOnClose();
             this.containerIdsForCleanup = new ConcurrentLinkedQueue<>();
             this.cliShell = new CliShell(dockerSpec);
             this.shell = dockerSpec.shell();
-            Runtime.getRuntime().addShutdownHook(new Thread(() -> {
-                try {
-                    stop();
-                } catch (Exception e) {
-                    Sneaky.rethrow(e);
-                }
-            }));
+            Runtime.getRuntime().addShutdownHook(new Thread(this::stop));
         }
 
-        public <T> T sendCommand(HtCommand command, Function<CommandResult, T> resultFunction) throws IOException {
+        public <T> T sendCommand(HtCommand command, Function<CommandResult, T> resultFunction) {
             if (command.type() == CommandType.LOGS_FOLLOW) {
                 return sendFollow(command, resultFunction);
             }
@@ -94,7 +84,6 @@ public class HtCli {
             return read(command, resultFunction);
         }
 
-        @SneakyThrows
         private <T> T sendFollow(HtCommand command, Function<CommandResult, T> resultFunction) {
             recorder.record(command);
             var process = Volatile.<Process>of();
@@ -138,11 +127,10 @@ public class HtCli {
                     }
                 });
                 task.cancel(true);
-                throw e;
+                throw Sneaky.rethrow(e);
             }
         }
 
-        @SneakyThrows
         private void doSendCommand(HtCommand command) {
             recorder.record(command);
             clearBuffer();
@@ -197,26 +185,22 @@ public class HtCli {
             if (isStopped.compareAndSet(false, true)) {
                 if (cleanupOnClose) {
                     if (!containerIdsForCleanup.isEmpty()) {
-                        try {
-                            var cmd = new ArrayList<String>(5);
-                            cmd.add("docker");
-                            cmd.add("rm");
-                            cmd.add("-f");
-                            cmd.add("-v");
-                            cmd.addAll(containerIdsForCleanup);
-                            sendCommand(
-                                    new CliCommand(
-                                            CommandType.REMOVE_CONTAINERS,
-                                            cmd,
-                                            l -> false,
-                                            l -> true,
-                                            Duration.ofSeconds(20)
-                                    ),
-                                    Function.identity()
-                            );
-                        } catch (Exception e) {
-                            Sneaky.rethrow(e);
-                        }
+                        var cmd = new ArrayList<String>(5);
+                        cmd.add("docker");
+                        cmd.add("rm");
+                        cmd.add("-f");
+                        cmd.add("-v");
+                        cmd.addAll(containerIdsForCleanup);
+                        sendCommand(
+                                new CliCommand(
+                                        CommandType.REMOVE_CONTAINERS,
+                                        cmd,
+                                        l -> false,
+                                        l -> true,
+                                        Duration.ofSeconds(20)
+                                ),
+                                Function.identity()
+                        );
                     }
                 }
                 cliShell.close();
