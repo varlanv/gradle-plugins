@@ -1,9 +1,9 @@
 package io.huskit.containers.api.logs;
 
+import io.huskit.containers.api.CommandType;
 import io.huskit.containers.api.HtFollowedLogs;
 import io.huskit.containers.internal.cli.CliCommand;
 import io.huskit.containers.internal.cli.CommandResult;
-import io.huskit.containers.api.CommandType;
 import io.huskit.containers.internal.cli.HtCli;
 import lombok.RequiredArgsConstructor;
 import lombok.With;

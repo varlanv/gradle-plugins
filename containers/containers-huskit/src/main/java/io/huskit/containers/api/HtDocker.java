@@ -3,6 +3,7 @@ package io.huskit.containers.api;
 import io.huskit.common.Volatile;
 import io.huskit.containers.internal.cli.HtCli;
 import io.huskit.containers.internal.cli.HtCliDckr;
+import io.huskit.containers.internal.cli.Shells;
 
 public interface HtDocker {
 
@@ -15,7 +16,7 @@ public interface HtDocker {
                 Volatile.of(ShellType.DEFAULT)
         );
         return new HtCliDckr(
-                new HtCli(dockerSpec),
+                new HtCli(dockerSpec, new Shells()),
                 dockerSpec
         );
     }

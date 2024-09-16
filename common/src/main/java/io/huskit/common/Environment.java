@@ -10,13 +10,13 @@ import java.util.function.Supplier;
 public enum Environment {
 
     WINDOWS(() -> System.getProperty("os.name").toLowerCase().contains("win")),
-    LINUX(() -> !System.getProperty("os.name").toLowerCase().contains("win"));
+    UNIX(() -> !System.getProperty("os.name").toLowerCase().contains("win"));
 
     Supplier<Boolean> predicate;
 
     private static final Map<Environment, Boolean> IS_CACHE = new EnumMap<>(Map.of(
             WINDOWS, WINDOWS.predicate.get(),
-            LINUX, LINUX.predicate.get()
+            UNIX, UNIX.predicate.get()
     ));
 
     public static boolean is(Environment environment) {

@@ -9,10 +9,10 @@ class EnvironmentTest implements UnitTest {
 
     @Test
     void if_linux__then_not_windows() {
-        if (Environment.is(Environment.LINUX)) {
+        if (Environment.is(Environment.UNIX)) {
             assertThat(Environment.is(Environment.WINDOWS)).isFalse();
         } else if (Environment.is(Environment.WINDOWS)) {
-            assertThat(Environment.is(Environment.LINUX)).isFalse();
+            assertThat(Environment.is(Environment.UNIX)).isFalse();
         }
     }
 }

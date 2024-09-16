@@ -1,8 +1,5 @@
 package io.huskit.containers.internal.cli;
 
-import io.huskit.common.Environment;
-import io.huskit.containers.api.HtCliDckrSpec;
-import io.huskit.containers.api.ShellType;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 
@@ -19,23 +16,9 @@ public class CliShell {
     BufferedReader commandOutputReader;
 
     @SneakyThrows
-    public CliShell(HtCliDckrSpec dockerSpec) {
-        var builder = new ProcessBuilder();
-        var shell = dockerSpec.shell();
-        if (shell == ShellType.DEFAULT) {
-            if (Environment.is(Environment.WINDOWS)) {
-                builder.command("powershell");
-            } else {
-                builder.command("/bin/sh");
-            }
-        } else if (shell == ShellType.GITBASH) {
-            builder.command("C:\\Program Files\\Git\\bin\\bash.exe");
-        } else if (shell == ShellType.POWERSHELL) {
-            builder.command("powershell");
-        } else {
-            throw new IllegalArgumentException("Unsupported shell: " + shell);
-        }
-        dockerProcess = builder.start();
+    public CliShell(String shellPath) {
+        dockerProcess = new ProcessBuilder(shellPath).start();
+
         commandWriter = new BufferedWriter(new OutputStreamWriter(dockerProcess.getOutputStream()));
         commandOutputReader = new BufferedReader(new InputStreamReader(dockerProcess.getInputStream()));
     }

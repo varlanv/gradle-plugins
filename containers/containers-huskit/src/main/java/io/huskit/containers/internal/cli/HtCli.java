@@ -4,7 +4,10 @@ import io.huskit.common.Nothing;
 import io.huskit.common.Sneaky;
 import io.huskit.common.Volatile;
 import io.huskit.common.function.MemoizedSupplier;
-import io.huskit.containers.api.*;
+import io.huskit.containers.api.CliRecorder;
+import io.huskit.containers.api.CommandType;
+import io.huskit.containers.api.HtCliDckrSpec;
+import io.huskit.containers.api.HtCommand;
 import lombok.Locked;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
@@ -29,6 +32,7 @@ public class HtCli {
 
     @With
     HtCliDckrSpec dockerSpec;
+    Shells shells;
     MemoizedSupplier<DockerShellProcess> process = new MemoizedSupplier<>(this::createProcess);
 
     @Locked
@@ -46,7 +50,7 @@ public class HtCli {
     }
 
     private DockerShellProcess createProcess() {
-        return new DockerShellProcess(dockerSpec);
+        return new DockerShellProcess(dockerSpec, shells);
     }
 
     public void close() {
@@ -63,15 +67,13 @@ public class HtCli {
         CliRecorder recorder;
         Queue<String> containerIdsForCleanup;
         Boolean cleanupOnClose;
-        ShellType shell;
-        CliShell cliShell;
+        Shell shell;
 
-        public DockerShellProcess(HtCliDckrSpec dockerSpec) {
+        public DockerShellProcess(HtCliDckrSpec dockerSpec, Shells shells) {
             this.recorder = dockerSpec.recorder();
             this.cleanupOnClose = dockerSpec.cleanOnClose();
             this.containerIdsForCleanup = new ConcurrentLinkedQueue<>();
-            this.cliShell = new CliShell(dockerSpec);
-            this.shell = dockerSpec.shell();
+            this.shell = shells.take(dockerSpec.shell());
             Runtime.getRuntime().addShutdownHook(new Thread(this::stop));
         }
 
@@ -80,7 +82,7 @@ public class HtCli {
                 return sendFollow(command, resultFunction);
             }
             doSendCommand(command);
-            cliShell.write("echo " + RUN_LINE_MARKER);
+            shell.echo(RUN_LINE_MARKER);
             return read(command, resultFunction);
         }
 
@@ -134,7 +136,7 @@ public class HtCli {
         private void doSendCommand(HtCommand command) {
             recorder.record(command);
             clearBuffer();
-            cliShell.write(String.join(" ", command.value()));
+            shell.write(String.join(" ", command.value()));
         }
 
         @SneakyThrows
@@ -143,19 +145,10 @@ public class HtCli {
             var commandString = String.join(" ", command.value());
             var lines = new ArrayList<String>();
             var line = readOutLine();
-            if (shell != ShellType.GITBASH) {
-                line = readOutLine();
-            }
             while (!line.endsWith(RUN_LINE_MARKER)) {
                 if (!line.isEmpty()) {
                     if (command.terminatePredicate().test(line)) {
-                        if (shell == ShellType.POWERSHELL) {
-                            var killProcess = Runtime.getRuntime().exec("powershell kill -SIGINT " + cliShell.pid());
-                            killProcess.waitFor();
-                        } else if (shell == ShellType.GITBASH) {
-                            var killProcess = Runtime.getRuntime().exec("C:\\Program Files\\Git\\bin\\bash.exe kill " + cliShell.pid());
-                            killProcess.waitFor();
-                        }
+                        shell.close();
                         lines.add(line);
                         break;
                     }
@@ -208,12 +201,12 @@ public class HtCli {
                         );
                     }
                 }
-                cliShell.close();
+                shell.close();
             }
         }
 
         private void clearBuffer() {
-            cliShell.write("echo " + CLEAR_LINE_MARKER);
+            shell.echo(CLEAR_LINE_MARKER);
             var line = readOutLine();
             while (!Objects.equals(line, CLEAR_LINE_MARKER)) {
                 line = readOutLine();
@@ -221,7 +214,7 @@ public class HtCli {
         }
 
         private String readOutLine() {
-            return cliShell.outLine();
+            return shell.outLine();
         }
     }
 }
