@@ -17,7 +17,6 @@ public class CliShell {
     Process dockerProcess;
     BufferedWriter commandWriter;
     BufferedReader commandOutputReader;
-    BufferedReader commandErrorReader;
 
     @SneakyThrows
     public CliShell(HtCliDckrSpec dockerSpec) {
@@ -39,11 +38,10 @@ public class CliShell {
         dockerProcess = builder.start();
         commandWriter = new BufferedWriter(new OutputStreamWriter(dockerProcess.getOutputStream()));
         commandOutputReader = new BufferedReader(new InputStreamReader(dockerProcess.getInputStream()));
-        commandErrorReader = new BufferedReader(new InputStreamReader(dockerProcess.getErrorStream()));
     }
 
     @SneakyThrows
-    public String nextLine() {
+    public String outLine() {
         return commandOutputReader.readLine();
     }
 

@@ -138,8 +138,8 @@ public class HtCli {
         }
 
         @SneakyThrows
-        public <T> T read(HtCommand command,
-                          Function<CommandResult, T> resultConsumer) {
+        private <T> T read(HtCommand command,
+                           Function<CommandResult, T> resultConsumer) {
             var commandString = String.join(" ", command.value());
             var lines = new ArrayList<String>();
             var line = readOutLine();
@@ -149,8 +149,13 @@ public class HtCli {
             while (!line.endsWith(RUN_LINE_MARKER)) {
                 if (!line.isEmpty()) {
                     if (command.terminatePredicate().test(line)) {
-                        var ctrlc = Runtime.getRuntime().exec("powershell kill -SIGINT " + cliShell.pid());
-                        ctrlc.waitFor();
+                        if (shell == ShellType.POWERSHELL) {
+                            var killProcess = Runtime.getRuntime().exec("powershell kill -SIGINT " + cliShell.pid());
+                            killProcess.waitFor();
+                        } else if (shell == ShellType.GITBASH) {
+                            var killProcess = Runtime.getRuntime().exec("C:\\Program Files\\Git\\bin\\bash.exe kill " + cliShell.pid());
+                            killProcess.waitFor();
+                        }
                         lines.add(line);
                         break;
                     }
@@ -181,7 +186,7 @@ public class HtCli {
             }
         }
 
-        public void stop() {
+        private void stop() {
             if (isStopped.compareAndSet(false, true)) {
                 if (cleanupOnClose) {
                     if (!containerIdsForCleanup.isEmpty()) {
@@ -216,7 +221,7 @@ public class HtCli {
         }
 
         private String readOutLine() {
-            return cliShell.nextLine();
+            return cliShell.outLine();
         }
     }
 }
