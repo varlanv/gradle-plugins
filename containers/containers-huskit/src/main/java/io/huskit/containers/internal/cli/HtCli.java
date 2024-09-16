@@ -3,6 +3,7 @@ package io.huskit.containers.internal.cli;
 import io.huskit.common.Environment;
 import io.huskit.common.Nothing;
 import io.huskit.common.Sneaky;
+import io.huskit.common.Volatile;
 import io.huskit.common.function.MemoizedSupplier;
 import io.huskit.containers.api.*;
 import lombok.Locked;
@@ -22,7 +23,6 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
@@ -72,9 +72,6 @@ public class HtCli {
         private CliRecorder recorder;
         @NonFinal
         @Nullable
-        private String previousOutLine;
-        @NonFinal
-        @Nullable
         private String previousErrLine;
         private Queue<String> containerIdsForCleanup;
         private Boolean cleanupOnClose;
@@ -84,7 +81,7 @@ public class HtCli {
             this.recorder = dockerSpec.recorder();
             this.cleanupOnClose = dockerSpec.cleanOnClose();
             this.shell = dockerSpec.shell();
-            var builder = new ProcessBuilder().redirectErrorStream(true);
+            var builder = new ProcessBuilder();
             var shell = dockerSpec.shell();
             if (shell == Shell.DEFAULT) {
                 if (Environment.is(Environment.WINDOWS)) {
@@ -110,12 +107,9 @@ public class HtCli {
                 try {
                     stop();
                 } catch (Exception e) {
-                    e.printStackTrace();
+                    Sneaky.rethrow(e);
                 }
             }));
-//            do {
-//                previousOutLine = readOutLine();
-//            } while (!previousOutLine.isEmpty());
         }
 
         public <T> T sendCommand(HtCommand command, Function<CommandResult, T> resultFunction) throws IOException {
@@ -132,19 +126,17 @@ public class HtCli {
         @SneakyThrows
         private <T> T sendFollow(HtCommand command, Function<CommandResult, T> resultFunction) {
             recorder.record(command);
-            var processRef = new AtomicReference<Process>();
+            var process = Volatile.<Process>of();
             var task = CompletableFuture.supplyAsync(() -> {
-                Process process = null;
                 try {
                     var lines = new ArrayList<String>();
-                    process = new ProcessBuilder(command.value()).start();
-                    processRef.set(process);
-                    try (var reader = new BufferedReader(new InputStreamReader(process.getInputStream()))) {
+                    process.set(new ProcessBuilder(command.value()).start());
+                    try (var reader = new BufferedReader(new InputStreamReader(process.require().getInputStream()))) {
                         String line;
                         while ((line = reader.readLine()) != null) {
                             lines.add(line);
                             if (command.terminatePredicate().test(line)) {
-                                process.destroyForcibly();
+                                process.require().destroyForcibly();
                                 if (command.type() == CommandType.RUN) {
                                     containerIdsForCleanup.add(lines.get(0));
                                 }
@@ -154,9 +146,11 @@ public class HtCli {
                     }
                     return lines;
                 } catch (Exception e) {
-                    if (process != null && process.isAlive()) {
-                        process.destroyForcibly();
-                    }
+                    process.ifPresent(p -> {
+                        if (p.isAlive()) {
+                            p.destroyForcibly();
+                        }
+                    });
                     throw Sneaky.rethrow(e);
                 }
             });
@@ -167,10 +161,11 @@ public class HtCli {
                     return resultFunction.apply(new CommandResult(task.get(command.timeout().toMillis(), TimeUnit.MILLISECONDS)));
                 }
             } catch (Exception e) {
-                var process = processRef.get();
-                if (process != null && process.isAlive()) {
-                    process.destroyForcibly();
-                }
+                process.ifPresent(p -> {
+                    if (p.isAlive()) {
+                        p.destroyForcibly();
+                    }
+                });
                 task.cancel(true);
                 throw e;
             }
@@ -197,8 +192,6 @@ public class HtCli {
             while (!line.endsWith(RUN_LINE_MARKER)) {
                 if (!line.isEmpty()) {
                     if (command.terminatePredicate().test(line)) {
-//                        commandWriter.write("\003"); // ASCII code for "Ctrl+C"
-//                        commandWriter.flush();
                         var ctrlc = Runtime.getRuntime().exec("powershell kill -SIGINT " + dockerProcess.pid());
                         ctrlc.waitFor();
                         lines.add(line);
@@ -210,7 +203,6 @@ public class HtCli {
                 }
                 line = readOutLine();
             }
-            previousOutLine = line;
             if (command.type() == CommandType.RUN_FOLLOW) {
                 var containerId = lines.get(0);
                 containerIdsForCleanup.add(containerId);
@@ -254,7 +246,7 @@ public class HtCli {
                                     Function.identity()
                             );
                         } catch (Exception e) {
-                            e.printStackTrace();
+                            Sneaky.rethrow(e);
                         }
                     }
                 }
@@ -263,7 +255,7 @@ public class HtCli {
                     commandWriter.close();
                     commandOutputReader.close();
                 } catch (Exception e) {
-                    e.printStackTrace();
+                    Sneaky.rethrow(e);
                 }
             }
         }
@@ -276,7 +268,6 @@ public class HtCli {
             while (!Objects.equals(line, CLEAR_LINE_MARKER)) {
                 line = readOutLine();
             }
-            previousOutLine = line;
             while (previousErrLine != null && !previousErrLine.isEmpty()) {
                 previousErrLine = commandErrorReader.readLine();
             }
