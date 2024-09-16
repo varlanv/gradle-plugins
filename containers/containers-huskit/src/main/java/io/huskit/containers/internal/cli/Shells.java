@@ -17,7 +17,8 @@ public class Shells {
     private static final Map<ShellType, Supplier<Shell>> SHELLS = new EnumMap<>(Map.of(
             ShellType.SH, () -> new Sh("/bin/sh"),
             ShellType.POWERSHELL, () -> new PowerShell("powershell"),
-            ShellType.GITBASH, () -> new GitBash("C:\\Program Files\\Git\\bin\\bash.exe")
+            ShellType.GITBASH, () -> new GitBash("C:\\Program Files\\Git\\bin\\bash.exe"),
+            ShellType.CMD, () -> new Cmd("cmd")
     ));
     private static final Volatile<Shell> DEFAULT_SHELL = Volatile.of();
 

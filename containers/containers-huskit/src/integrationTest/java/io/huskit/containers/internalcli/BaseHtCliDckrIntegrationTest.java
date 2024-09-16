@@ -4,6 +4,7 @@ import io.huskit.containers.api.*;
 import io.huskit.containers.api.logs.LookFor;
 import io.huskit.gradle.commontest.DockerAvailableCondition;
 import io.huskit.gradle.commontest.DockerIntegrationTest;
+import io.huskit.gradle.commontest.EnabledIfShellPresent;
 import lombok.experimental.NonFinal;
 import org.junit.jupiter.api.*;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -30,16 +31,54 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
  * in this context can often indicate a bug in the implementation.</p>
  */
 @ExtendWith(DockerAvailableCondition.class)
-public class HtCliDckrIntegrationTest implements DockerIntegrationTest {
+abstract class BaseHtCliDckrIntegrationTest implements DockerIntegrationTest {
 
-    private static HtCliDocker subject;
-    private static ThreadLocalCliRecorder recorder;
+    private @NonFinal HtCliDocker subject;
+    private @NonFinal ThreadLocalCliRecorder recorder;
     String helloWorldImage = "hello-world";
+
+    abstract ShellType shellType();
+
+    @EnabledIfShellPresent.Cmd
+    static class CmdShellCliTest extends BaseHtCliDckrIntegrationTest {
+
+        @Override
+        ShellType shellType() {
+            return ShellType.CMD;
+        }
+    }
+
+    @EnabledIfShellPresent.PowerShell
+    static class PowerShellCliTest extends BaseHtCliDckrIntegrationTest {
+
+        @Override
+        ShellType shellType() {
+            return ShellType.POWERSHELL;
+        }
+    }
+
+    @EnabledIfShellPresent.Bash
+    static class BashCliTest extends BaseHtCliDckrIntegrationTest {
+
+        @Override
+        ShellType shellType() {
+            return ShellType.GITBASH;
+        }
+    }
+
+    @EnabledIfShellPresent.Sh
+    static class ShCliTest extends BaseHtCliDckrIntegrationTest {
+
+        @Override
+        ShellType shellType() {
+            return ShellType.SH;
+        }
+    }
 
     @BeforeAll
     void setupAll() {
         recorder = new ThreadLocalCliRecorder();
-        subject = HtDocker.cli().configure(spec -> spec.withCliRecorder(recorder).withShell(ShellType.POWERSHELL));
+        subject = HtDocker.cli().configure(spec -> spec.withCliRecorder(recorder).withShell(shellType()));
     }
 
     @AfterAll
