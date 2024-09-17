@@ -112,34 +112,18 @@ jobs:
   #       ------------------ MAC ------------------
   gradle-build-mac:
     macos:
-      xcode: "14.0.0"
+      xcode: "14.2.0"
     steps:
       - checkout
-      - restore_cache:
-          keys:
-            - gradle-wrapper-{{ checksum "gradle/wrapper/gradle-wrapper.properties" }}
-            - gradle-cache-{{ checksum "build.gradle.kts" }}-{{ checksum "settings.gradle.kts" }}
       - run:
           name: "gradle assemble mac"
           command: "./gradlew assemble --no-configuration-cache --no-build-cache --no-configure-on-demand --stacktrace"
-      - save_cache:
-          paths:
-            - ~/.gradle/wrapper/
-          key: gradle-wrapper-{{ checksum "gradle/wrapper/gradle-wrapper.properties" }}
-      - save_cache:
-          paths:
-            - ~/.gradle/caches/
-          key: gradle-cache-{{ checksum "build.gradle.kts" }}-{{ checksum "settings.gradle.kts" }}
 
   gradle-test-mac:
     macos:
-      xcode: "14.0.0"
+      xcode: "14.2.0"
     steps:
       - checkout
-      - restore_cache:
-          keys:
-            - gradle-wrapper-{{ checksum "gradle/wrapper/gradle-wrapper.properties" }}
-            - gradle-cache-{{ checksum "build.gradle.kts" }}-{{ checksum "settings.gradle.kts" }}
       - run:
           name: "Run unit tests in mac"
           command: "./gradlew test --no-configuration-cache --no-build-cache --no-configure-on-demand --stacktrace"
@@ -154,13 +138,9 @@ jobs:
 
   gradle-integration-test-mac:
     macos:
-      xcode: "14.0.0"
+      xcode: "14.2.0"
     steps:
       - checkout
-      - restore_cache:
-          keys:
-            - gradle-wrapper-{{ checksum "gradle/wrapper/gradle-wrapper.properties" }}
-            - gradle-cache-{{ checksum "build.gradle.kts" }}-{{ checksum "settings.gradle.kts" }}
       - run:
           name: "Run integration tests in mac"
           command: "./gradlew integrationTest --no-configuration-cache --no-build-cache --no-configure-on-demand --stacktrace"
@@ -175,13 +155,9 @@ jobs:
 
   gradle-functional-test-mac:
     macos:
-      xcode: "14.0.0"
+      xcode: "14.2.0"
     steps:
       - checkout
-      - restore_cache:
-          keys:
-            - gradle-wrapper-{{ checksum "gradle/wrapper/gradle-wrapper.properties" }}
-            - gradle-cache-{{ checksum "build.gradle.kts" }}-{{ checksum "settings.gradle.kts" }}
       - run:
           name: "Run functional tests in mac"
           command: "./gradlew functionalTest --no-configuration-cache --no-build-cache --no-configure-on-demand --stacktrace"
@@ -208,11 +184,17 @@ workflows:
       - gradle-functional-test-unix
   gradle-build-mac:
     jobs:
-      - gradle-build-mac
-  gradle-test-mac:
-    jobs:
-      - gradle-test-mac
-      - gradle-integration-test-mac
-  gradle-functional-test-mac:
-    jobs:
-      - gradle-functional-test-mac
+      - hold:
+          type: approval
+      - gradle-build-mac:
+          requires:
+            - hold
+      - gradle-test-mac:
+          requires:
+            - hold
+      - gradle-integration-test-mac:
+          requires:
+            - hold
+      - gradle-functional-test-mac:
+          requires:
+            - hold
