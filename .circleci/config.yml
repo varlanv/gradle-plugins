@@ -65,8 +65,8 @@ jobs:
       - store_test_results:
           path: ~/test-results
       - store_artifacts:
-          path: ~/test-results/junit/
-          destination: test-results
+          path: ~/reports/tests/test
+          destination: test-results/unit
 
   gradle-integration-test-unix:
     docker:
@@ -91,8 +91,8 @@ jobs:
       - store_test_results:
           path: ~/test-results
       - store_artifacts:
-          path: ~/test-results/junit/
-          destination: test-results
+          path: ~/reports/tests/integrationTest
+          destination: test-results/integration
 
   gradle-functional-test-unix:
     docker:
@@ -118,8 +118,8 @@ jobs:
       - store_test_results:
           path: ~/test-results
       - store_artifacts:
-          path: ~/test-results/junit/
-          destination: test-results
+          path: ~/reports/tests/functionalTest
+          destination: test-results/functional
 
   #       ------------------ MAC ------------------
   gradle-build-mac:
@@ -148,16 +148,14 @@ jobs:
       - store_test_results:
           path: ~/test-results
       - store_artifacts:
-          path: ~/test-results/junit/
-          destination: test-results
+          path: ~/reports/tests/test
+          destination: test-results/unit
 
   gradle-integration-test-mac:
     macos:
       xcode: "14.2.0"
     steps:
       - checkout
-      - setup_remote_docker:
-          docker_layer_caching: false
       - run:
           name: "Run integration tests in mac"
           command: "./gradlew integrationTest --no-configuration-cache --no-build-cache --no-configure-on-demand --stacktrace"
@@ -170,16 +168,14 @@ jobs:
       - store_test_results:
           path: ~/test-results
       - store_artifacts:
-          path: ~/test-results/junit/
-          destination: test-results
+          path: ~/reports/tests/integrationTest
+          destination: test-results/integration
 
   gradle-functional-test-mac:
     macos:
       xcode: "14.2.0"
     steps:
       - checkout
-      - setup_remote_docker:
-          docker_layer_caching: false
       - run:
           name: "Run functional tests in mac"
           command: "./gradlew functionalTest --no-configuration-cache --no-build-cache --no-configure-on-demand --stacktrace"
@@ -192,8 +188,8 @@ jobs:
       - store_test_results:
           path: ~/test-results
       - store_artifacts:
-          path: ~/test-results/junit/
-          destination: test-results
+          path: ~/reports/tests/functionalTest
+          destination: test-results/functional
 
 
 workflows:
