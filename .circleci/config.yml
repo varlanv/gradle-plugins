@@ -130,7 +130,7 @@ workflows:
       - gradle-build-unix:
           requires:
             - hold
-      - gradle-test-unix:
+      - gradle-unit-test-unix:
           requires:
             - hold
       - gradle-integration-test-unix:
