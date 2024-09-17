@@ -6,8 +6,6 @@ import java.util.Objects;
 
 public interface Shell {
 
-    String path();
-
     void write(String command);
 
     ShellType type();

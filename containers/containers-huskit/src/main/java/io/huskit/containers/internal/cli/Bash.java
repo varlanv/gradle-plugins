@@ -1,17 +1,13 @@
 package io.huskit.containers.internal.cli;
 
 import io.huskit.containers.api.ShellType;
-import lombok.Getter;
 
-public class GitBash implements Shell {
+public class Bash implements Shell {
 
-    @Getter
-    String path;
     CliShell cliShell;
 
-    public GitBash(String path) {
-        this.path = path;
-        this.cliShell = new CliShell(path);
+    public Bash() {
+        this.cliShell = new CliShell(type());
     }
 
     @Override
@@ -21,7 +17,7 @@ public class GitBash implements Shell {
 
     @Override
     public ShellType type() {
-        return ShellType.SH;
+        return ShellType.BASH;
     }
 
     @Override

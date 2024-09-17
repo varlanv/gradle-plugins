@@ -51,7 +51,7 @@ public class HtMongo implements HtContainer {
 //        int count = 0;
 //        System.out.println(count);
         var id = HtDocker.cli()
-                .configure(spec -> spec.withCleanOnClose(true).withShell(ShellType.GITBASH))
+                .configure(spec -> spec.withCleanOnClose(true).withShell(ShellType.BASH))
                 .containers()
                 .run("mongo:4.4.8")
                 .exec().id();

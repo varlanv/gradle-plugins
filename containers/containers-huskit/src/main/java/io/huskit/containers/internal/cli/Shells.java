@@ -1,6 +1,6 @@
 package io.huskit.containers.internal.cli;
 
-import io.huskit.common.Environment;
+import io.huskit.common.Os;
 import io.huskit.common.Volatile;
 import io.huskit.containers.api.ShellType;
 
@@ -9,27 +9,24 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.function.Supplier;
 
-import static io.huskit.common.Environment.UNIX;
-import static io.huskit.common.Environment.WINDOWS;
-
 public class Shells {
 
     private static final Map<ShellType, Supplier<Shell>> SHELLS = new EnumMap<>(Map.of(
-            ShellType.SH, () -> new Sh("/bin/sh"),
-            ShellType.POWERSHELL, () -> new PowerShell("powershell"),
-            ShellType.GITBASH, () -> new GitBash("C:\\Program Files\\Git\\bin\\bash.exe"),
-            ShellType.CMD, () -> new Cmd("cmd")
+            ShellType.SH, Sh::new,
+            ShellType.POWERSHELL, PowerShell::new,
+            ShellType.BASH, Bash::new,
+            ShellType.CMD, Cmd::new
     ));
     private static final Volatile<Shell> DEFAULT_SHELL = Volatile.of();
 
     public Shell pickDefault() {
         return DEFAULT_SHELL.syncSetOrGet(() -> {
-            if (Environment.is(WINDOWS)) {
+            if (Os.WINDOWS.isCurrent()) {
                 return SHELLS.get(ShellType.POWERSHELL).get();
-            } else if (Environment.is(UNIX)) {
+            } else if (Os.LINUX.isCurrent() || Os.MAC.isCurrent()) {
                 return SHELLS.get(ShellType.SH).get();
             } else {
-                throw new IllegalStateException("Could not determine shell type");
+                throw new IllegalStateException("Could not determine default shell type out of available options: " + SHELLS.keySet());
             }
         });
     }

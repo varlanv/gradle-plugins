@@ -31,7 +31,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
  * in this context can often indicate a bug in the implementation.</p>
  */
 @ExtendWith(DockerAvailableCondition.class)
-abstract class BaseHtCliDckrIntegrationTest implements DockerIntegrationTest {
+abstract class HtCliDckrIntegrationTest implements DockerIntegrationTest {
 
     private @NonFinal HtCliDocker subject;
     private @NonFinal ThreadLocalCliRecorder recorder;
@@ -40,7 +40,7 @@ abstract class BaseHtCliDckrIntegrationTest implements DockerIntegrationTest {
     abstract ShellType shellType();
 
     @EnabledIfShellPresent.Cmd
-    static class CmdShellCliTest extends BaseHtCliDckrIntegrationTest {
+    static class CmdShellCliTest extends HtCliDckrIntegrationTest {
 
         @Override
         ShellType shellType() {
@@ -49,7 +49,7 @@ abstract class BaseHtCliDckrIntegrationTest implements DockerIntegrationTest {
     }
 
     @EnabledIfShellPresent.PowerShell
-    static class PowerShellCliTest extends BaseHtCliDckrIntegrationTest {
+    static class PowerShellCliTest extends HtCliDckrIntegrationTest {
 
         @Override
         ShellType shellType() {
@@ -58,16 +58,16 @@ abstract class BaseHtCliDckrIntegrationTest implements DockerIntegrationTest {
     }
 
     @EnabledIfShellPresent.Bash
-    static class BashCliTest extends BaseHtCliDckrIntegrationTest {
+    static class BashCliTest extends HtCliDckrIntegrationTest {
 
         @Override
         ShellType shellType() {
-            return ShellType.GITBASH;
+            return ShellType.BASH;
         }
     }
 
     @EnabledIfShellPresent.Sh
-    static class ShCliTest extends BaseHtCliDckrIntegrationTest {
+    static class ShCliTest extends HtCliDckrIntegrationTest {
 
         @Override
         ShellType shellType() {

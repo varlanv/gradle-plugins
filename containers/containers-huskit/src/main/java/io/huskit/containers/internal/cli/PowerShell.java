@@ -1,17 +1,13 @@
 package io.huskit.containers.internal.cli;
 
 import io.huskit.containers.api.ShellType;
-import lombok.Getter;
 
 public class PowerShell implements Shell {
 
-    @Getter
-    String path;
     CliShell cliShell;
 
-    public PowerShell(String path) {
-        this.path = path;
-        this.cliShell = new CliShell(path);
+    public PowerShell() {
+        this.cliShell = new CliShell(type());
     }
 
     @Override

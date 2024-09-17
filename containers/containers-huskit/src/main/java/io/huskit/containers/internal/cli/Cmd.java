@@ -1,17 +1,13 @@
 package io.huskit.containers.internal.cli;
 
 import io.huskit.containers.api.ShellType;
-import lombok.Getter;
 
 public class Cmd implements Shell {
 
-    @Getter
-    String path;
     CliShell cliShell;
 
-    public Cmd(String path) {
-        this.path = path;
-        this.cliShell = new CliShell(path);
+    public Cmd() {
+        this.cliShell = new CliShell(type());
     }
 
     @Override
