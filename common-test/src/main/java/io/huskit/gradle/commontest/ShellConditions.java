@@ -1,6 +1,8 @@
 package io.huskit.gradle.commontest;
 
+import lombok.AccessLevel;
 import lombok.Locked;
+import lombok.NoArgsConstructor;
 import lombok.SneakyThrows;
 import org.junit.jupiter.api.condition.OS;
 
@@ -9,6 +11,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.TimeUnit;
 
+@NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class ShellConditions {
 
     private static final long TIMEOUT = 2000L; // Timeout in milliseconds
@@ -53,11 +56,7 @@ public class ShellConditions {
     private static boolean checkSuccess(Process process) {
         try {
             boolean finishedInTime = process.waitFor(TIMEOUT, TimeUnit.MILLISECONDS);
-            if (finishedInTime) {
-                return process.exitValue() == 0;
-            } else {
-                return false;
-            }
+            return finishedInTime && process.exitValue() == 0;
         } catch (Exception e) {
             return false;
         } finally {
