@@ -141,6 +141,8 @@ jobs:
       xcode: "14.2.0"
     steps:
       - checkout
+      - setup_remote_docker:
+          docker_layer_caching: false
       - run:
           name: "Run integration tests in mac"
           command: "./gradlew integrationTest --no-configuration-cache --no-build-cache --no-configure-on-demand --stacktrace"
@@ -158,6 +160,8 @@ jobs:
       xcode: "14.2.0"
     steps:
       - checkout
+      - setup_remote_docker:
+          docker_layer_caching: false
       - run:
           name: "Run functional tests in mac"
           command: "./gradlew functionalTest --no-configuration-cache --no-build-cache --no-configure-on-demand --stacktrace"
