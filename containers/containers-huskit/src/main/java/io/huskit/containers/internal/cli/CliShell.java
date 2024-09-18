@@ -1,6 +1,7 @@
 package io.huskit.containers.internal.cli;
 
 import io.huskit.containers.api.ShellType;
+import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 
@@ -10,16 +11,18 @@ import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 
 @RequiredArgsConstructor
-public class CliShell {
+public class CliShell implements Shell {
 
+    @Getter
+    ShellType type;
     Process dockerProcess;
     BufferedWriter commandWriter;
     BufferedReader commandOutputReader;
 
     @SneakyThrows
     public CliShell(ShellType shellType) {
+        this.type = shellType;
         dockerProcess = new ProcessBuilder(shellType.pathForCurrentOs()).start();
-
         commandWriter = new BufferedWriter(new OutputStreamWriter(dockerProcess.getOutputStream()));
         commandOutputReader = new BufferedReader(new InputStreamReader(dockerProcess.getInputStream()));
     }

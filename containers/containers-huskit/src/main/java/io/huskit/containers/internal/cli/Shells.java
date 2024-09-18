@@ -4,19 +4,25 @@ import io.huskit.common.Os;
 import io.huskit.common.Volatile;
 import io.huskit.containers.api.ShellType;
 
+import java.util.Arrays;
 import java.util.EnumMap;
 import java.util.Map;
 import java.util.Optional;
+import java.util.function.Function;
 import java.util.function.Supplier;
+import java.util.stream.Collectors;
 
 public class Shells {
 
-    private static final Map<ShellType, Supplier<Shell>> SHELLS = new EnumMap<>(Map.of(
-            ShellType.SH, Sh::new,
-            ShellType.POWERSHELL, PowerShell::new,
-            ShellType.BASH, Bash::new,
-            ShellType.CMD, Cmd::new
-    ));
+    private static final Map<ShellType, Supplier<Shell>> SHELLS = new EnumMap<>(
+            Arrays.stream(ShellType.values())
+                    .collect(
+                            Collectors.toMap(
+                                    Function.identity(),
+                                    shellType -> () -> new CliShell(shellType)
+                            )
+                    )
+    );
     private static final Volatile<Shell> DEFAULT_SHELL = Volatile.of();
 
     public Shell pickDefault() {
