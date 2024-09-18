@@ -57,6 +57,7 @@ public class ApplyInternalPluginLogic {
     @SuppressWarnings("UnstableApiUsage")
     public void apply() {
         var isGradlePlugin = projectPath.startsWith(":plugins") && projectPath.endsWith("-plugin");
+        var targetJavaVersion = 11;
 
         // Apply common plugins
         if (isGradlePlugin) {
@@ -80,12 +81,12 @@ public class ApplyInternalPluginLogic {
             var java = (JavaPluginExtension) extensions.getByName("java");
             java.withSourcesJar();
             if (environment.isCi()) {
-                java.setSourceCompatibility(JavaLanguageVersion.of(11));
-                java.setTargetCompatibility(JavaLanguageVersion.of(11));
+                java.setSourceCompatibility(JavaLanguageVersion.of(targetJavaVersion));
+                java.setTargetCompatibility(JavaLanguageVersion.of(targetJavaVersion));
             } else {
                 java.toolchain(toolchain -> {
                     toolchain.getVendor().set(JvmVendorSpec.AZUL);
-                    toolchain.getLanguageVersion().set(JavaLanguageVersion.of(11));
+                    toolchain.getLanguageVersion().set(JavaLanguageVersion.of(targetJavaVersion));
                 });
             }
         });
@@ -96,7 +97,7 @@ public class ApplyInternalPluginLogic {
             dependencies.add(JavaPlugin.COMPILE_ONLY_CONFIGURATION_NAME, jetbrainsAnnotations);
             dependencies.add(JavaPlugin.TEST_COMPILE_ONLY_CONFIGURATION_NAME, jetbrainsAnnotations);
             if (!environment.isTest() && !projectPath.equals(":common-test")) {
-                dependencies.add("testImplementation", dependencies.project(Map.of("path", ":common-test")));
+                dependencies.add(JavaPlugin.TEST_IMPLEMENTATION_CONFIGURATION_NAME, dependencies.project(Map.of("path", ":common-test")));
             }
             dependencies.add(JavaPlugin.TEST_IMPLEMENTATION_CONFIGURATION_NAME, properties.getLib("assertj-core"));
             dependencies.add(JavaPlugin.TEST_IMPLEMENTATION_CONFIGURATION_NAME, properties.getLib("junit-jupiter-api"));
@@ -157,7 +158,7 @@ public class ApplyInternalPluginLogic {
                         });
                         jvmTestSuite.getTargets().all(target -> {
                             target.getTestTask().configure(test -> {
-//                                test.getOutputs().upToDateWhen(task -> false);
+                                test.getOutputs().upToDateWhen(task -> false);
                                 test.testLogging(logging -> {
                                     logging.setShowStandardStreams(true);
                                 });
@@ -173,9 +174,12 @@ public class ApplyInternalPluginLogic {
                                                         Arrays.asList(
                                                                 "-XX:TieredStopAtLevel=1",
                                                                 "-noverify",
-//                                                            "-Xmx2048m",
-                                                                "-XX:+UseParallelGC",
-                                                                "-XX:ParallelGCThreads=2"
+//                                                                test.getName().equals(JavaPlugin.TEST_TASK_NAME) ? "-Xms32m" : "-Xms128m",
+                                                                test.getName().equals(JavaPlugin.TEST_TASK_NAME) ? "-Xmx128m" : "-Xmx512m",
+//                                                                "-XX:+UseParallelGC",
+//                                                                "-XX:ParallelGCThreads=2"
+                                                                "-XX:+UnlockExperimentalVMOptions",
+                                                                "-XX:+UseEpsilonGC"
                                                         )
                                                 )
                                                 .filter(Objects::nonNull)
@@ -190,16 +194,16 @@ public class ApplyInternalPluginLogic {
 
                 // configure integration test configurations
                 configurations.named(integrationTestTaskName + "Implementation", configuration -> {
-                    configuration.extendsFrom(configurations.getByName("testImplementation"));
+                    configuration.extendsFrom(configurations.getByName(JavaPlugin.TEST_IMPLEMENTATION_CONFIGURATION_NAME));
                 });
                 configurations.named(integrationTestTaskName + "AnnotationProcessor", configuration -> {
-                    configuration.extendsFrom(configurations.getByName("testAnnotationProcessor"));
+                    configuration.extendsFrom(configurations.getByName(JavaPlugin.TEST_ANNOTATION_PROCESSOR_CONFIGURATION_NAME));
                 });
                 configurations.named(integrationTestTaskName + "CompileOnly", configuration -> {
-                    configuration.extendsFrom(configurations.getByName("testCompileOnly"));
+                    configuration.extendsFrom(configurations.getByName(JavaPlugin.TEST_COMPILE_ONLY_CONFIGURATION_NAME));
                 });
                 configurations.named(integrationTestTaskName + "RuntimeOnly", configuration -> {
-                    configuration.extendsFrom(configurations.getByName("testRuntimeOnly"));
+                    configuration.extendsFrom(configurations.getByName(JavaPlugin.TEST_RUNTIME_ONLY_CONFIGURATION_NAME));
                 });
             });
 
@@ -211,7 +215,7 @@ public class ApplyInternalPluginLogic {
                         mavenPublication.from(javaComponent);
                         mavenPublication.versionMapping(versionMappingStrategy -> {
                             versionMappingStrategy.usage("java-api", variantVersionMappingStrategy ->
-                                    variantVersionMappingStrategy.fromResolutionOf("runtimeClasspath"));
+                                    variantVersionMappingStrategy.fromResolutionOf(JavaPlugin.RUNTIME_CLASSPATH_CONFIGURATION_NAME));
                             versionMappingStrategy.usage("java-runtime", VariantVersionMappingStrategy::fromResolutionResult);
                         });
                     });
