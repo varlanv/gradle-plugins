@@ -1,6 +1,7 @@
 package io.huskit.containers.internalcli;
 
 import io.huskit.containers.api.*;
+import io.huskit.containers.api.list.arg.HtListContainersArgsSpec;
 import io.huskit.containers.api.logs.LookFor;
 import io.huskit.gradle.commontest.DockerAvailableCondition;
 import io.huskit.gradle.commontest.DockerIntegrationTest;
@@ -17,6 +18,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.TimeoutException;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -38,6 +40,22 @@ abstract class HtCliDckrIntegrationTest implements DockerIntegrationTest {
     String helloWorldImage = "hello-world";
 
     abstract ShellType shellType();
+
+    @BeforeAll
+    void setupAll() {
+        recorder = new ThreadLocalCliRecorder();
+        subject = HtDocker.cli().configure(spec -> spec.withCliRecorder(recorder).withShell(shellType()));
+    }
+
+    @AfterAll
+    void afterAll() {
+        subject.close();
+    }
+
+    @BeforeEach
+    void setup() {
+        recorder.clearForCurrentThread();
+    }
 
     @EnabledIfShellPresent.Cmd
     static class CmdShellCliTest extends HtCliDckrIntegrationTest {
@@ -75,20 +93,40 @@ abstract class HtCliDckrIntegrationTest implements DockerIntegrationTest {
         }
     }
 
-    @BeforeAll
-    void setupAll() {
-        recorder = new ThreadLocalCliRecorder();
-        subject = HtDocker.cli().configure(spec -> spec.withCliRecorder(recorder).withShell(shellType()));
-    }
+    @Test
+    void stop__should_stop_docker_shell() {
+        // given
+        var subject = HtDocker.cli()
+                .configure(spec ->
+                        spec.withCleanOnClose(true)
+                                .withCliRecorder(recorder)
+                                .withShell(shellType()));
+        var containerId = subject.containers()
+                .run("alpine:3.20.3", spec -> spec.withCommand("sh -c \"while true; do sleep 3600; done\""))
+                .exec()
+                .id();
+        Supplier<List<HtContainer>> findContainers = () -> subject.containers()
+                .list(spec -> spec.withFilter(filterSpec -> filterSpec.id(containerId)))
+                .asList();
+        assertThat(findContainers.get()).hasSize(1);
 
-    @AfterAll
-    void afterAll() {
+        // when
         subject.close();
-    }
 
-    @BeforeEach
-    void setup() {
-        recorder.clearForCurrentThread();
+        // then
+        assertThatThrownBy(findContainers::get)
+                .isInstanceOf(IllegalStateException.class)
+                .hasMessageContaining("Cli is closed and  cannot be used anymore");
+
+        // and
+        var actual = HtDocker.cli()
+                .containers()
+                .list()
+                .withArgs(args ->
+                        args.withFilter(filter ->
+                                filter.id(containerId)))
+                .asList();
+        assertThat(actual).isEmpty();
     }
 
     @Nested
@@ -104,9 +142,7 @@ abstract class HtCliDckrIntegrationTest implements DockerIntegrationTest {
             void list__with_all__ok() {
                 // given
                 var expectedFindIdsCommand = List.of("docker", "ps", "-a", "--format", "\"{{json .}}\"", "--format", "\"{{.ID}}\"");
-                var containers = subject.containers().list().withArgs(argsSpec ->
-                                argsSpec.withAll()
-                                        .build())
+                var containers = subject.containers().list().withArgs(HtListContainersArgsSpec::withAll)
                         .asList();
 
                 assertThat(containers).isNotNull();
@@ -122,8 +158,7 @@ abstract class HtCliDckrIntegrationTest implements DockerIntegrationTest {
                 var expectedFindIdsCommand = List.of("docker", "ps", "--format", "\"{{json .}}\"",
                         "--filter", "\"id=" + id + "\"", "--format", "\"{{.ID}}\"");
                 var containers = subject.containers().list().withArgs(argsSpec ->
-                                argsSpec.withFilter(filterSpec -> filterSpec.id(id))
-                                        .build())
+                                argsSpec.withFilter(filterSpec -> filterSpec.id(id)))
                         .asList();
 
                 assertThat(containers).isEmpty();
@@ -138,8 +173,7 @@ abstract class HtCliDckrIntegrationTest implements DockerIntegrationTest {
                 var id = "SOME___Id__That__should_NOT__exist";
                 var containers = subject.containers().list().withArgs(argsSpec ->
                                 argsSpec.withAll()
-                                        .withFilter(filterSpec -> filterSpec.id(id))
-                                        .build())
+                                        .withFilter(filterSpec -> filterSpec.id(id)))
                         .asList();
 
                 assertThat(containers).isNotNull();
@@ -329,8 +363,7 @@ abstract class HtCliDckrIntegrationTest implements DockerIntegrationTest {
             @DisplayName("`list` when finds one container by id should return correct container")
             void list__when_finds_one_container_by_id__should_run_correct_commands() {
                 subject.containers().list().withArgs(argsSpec ->
-                                argsSpec.withFilter(filterSpec -> filterSpec.id(containerId))
-                                        .build())
+                                argsSpec.withFilter(filterSpec -> filterSpec.id(containerId)))
                         .asList();
 
                 assertThat(recorder.forCurrentThread()).hasSize(2);
@@ -345,8 +378,7 @@ abstract class HtCliDckrIntegrationTest implements DockerIntegrationTest {
             @DisplayName("`list` when finds one container by id should return correct container")
             void list__when_finds_one_container_by_id__should_return_correct_container() {
                 var containers = subject.containers().list().withArgs(argsSpec ->
-                                argsSpec.withFilter(filterSpec -> filterSpec.id(containerId))
-                                        .build())
+                                argsSpec.withFilter(filterSpec -> filterSpec.id(containerId)))
                         .asList();
 
                 assertThat(containers).hasSize(1);
@@ -357,8 +389,7 @@ abstract class HtCliDckrIntegrationTest implements DockerIntegrationTest {
             @DisplayName("`list` when finds one container by label should run correct commands")
             void list__when_finds_one_container_by_label__should_run_correct_commands() {
                 subject.containers().list().withArgs(argsSpec ->
-                                argsSpec.withFilter(filterSpec -> filterSpec.label(labelIdKey, labelId))
-                                        .build())
+                                argsSpec.withFilter(filterSpec -> filterSpec.label(labelIdKey, labelId)))
                         .asList();
 
                 assertThat(recorder.forCurrentThread()).hasSize(2);
@@ -373,8 +404,7 @@ abstract class HtCliDckrIntegrationTest implements DockerIntegrationTest {
             @DisplayName("`list` when finds one container by label should return correct container")
             void list__when_finds_one_container_by_label__should_return_correct_container() {
                 var containers = subject.containers().list().withArgs(argsSpec ->
-                                argsSpec.withFilter(filterSpec -> filterSpec.label(labelIdKey, labelId))
-                                        .build())
+                                argsSpec.withFilter(filterSpec -> filterSpec.label(labelIdKey, labelId)))
                         .asList();
 
                 assertThat(containers).hasSize(1);
@@ -387,8 +417,7 @@ abstract class HtCliDckrIntegrationTest implements DockerIntegrationTest {
                 subject.containers().list().withArgs(argsSpec ->
                                 argsSpec.withAll()
                                         .withFilter(filterSpec -> filterSpec.label(labelIdKey, labelId))
-                                        .withFilter(filterSpec -> filterSpec.id(containerId))
-                                        .build())
+                                        .withFilter(filterSpec -> filterSpec.id(containerId)))
                         .asList();
 
                 assertThat(recorder.forCurrentThread()).hasSize(2);
@@ -406,8 +435,7 @@ abstract class HtCliDckrIntegrationTest implements DockerIntegrationTest {
                 var containers = subject.containers().list().withArgs(argsSpec ->
                                 argsSpec.withAll()
                                         .withFilter(filterSpec -> filterSpec.label(labelIdKey, labelId))
-                                        .withFilter(filterSpec -> filterSpec.id(containerId))
-                                        .build())
+                                        .withFilter(filterSpec -> filterSpec.id(containerId)))
                         .asList();
 
                 assertThat(containers).hasSize(1);

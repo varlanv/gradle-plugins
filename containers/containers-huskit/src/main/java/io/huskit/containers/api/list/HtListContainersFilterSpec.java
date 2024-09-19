@@ -2,9 +2,9 @@ package io.huskit.containers.api.list;
 
 public interface HtListContainersFilterSpec {
 
-    HtListContainersFilter id(CharSequence id);
+    HtListContainersFilterSpec id(CharSequence id);
 
-    HtListContainersFilter name(CharSequence name);
+    HtListContainersFilterSpec name(CharSequence name);
 
-    HtListContainersFilter label(CharSequence label, CharSequence value);
+    HtListContainersFilterSpec label(CharSequence label, CharSequence value);
 }

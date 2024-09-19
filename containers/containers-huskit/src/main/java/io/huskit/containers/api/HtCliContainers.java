@@ -29,7 +29,7 @@ public class HtCliContainers implements HtContainers {
 
     @Override
     public HtListContainers list(Consumer<HtListContainersArgsSpec> args) {
-        return null;
+        return new HtCliListCtrs(cli, HtListContainersArgs.empty()).withArgs(args);
     }
 
     @Override

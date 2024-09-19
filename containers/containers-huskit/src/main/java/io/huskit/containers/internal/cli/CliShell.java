@@ -27,11 +27,13 @@ public class CliShell implements Shell {
         commandOutputReader = new BufferedReader(new InputStreamReader(dockerProcess.getInputStream()));
     }
 
+    @Override
     @SneakyThrows
     public String outLine() {
         return commandOutputReader.readLine();
     }
 
+    @Override
     @SneakyThrows
     public void write(String command) {
         commandWriter.write(command);
@@ -40,10 +42,12 @@ public class CliShell implements Shell {
 
     }
 
+    @Override
     public long pid() {
         return dockerProcess.pid();
     }
 
+    @Override
     @SneakyThrows
     public void close() {
         dockerProcess.destroyForcibly();

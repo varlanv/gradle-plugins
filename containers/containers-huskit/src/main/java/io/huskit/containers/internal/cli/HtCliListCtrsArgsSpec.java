@@ -1,5 +1,6 @@
 package io.huskit.containers.internal.cli;
 
+import io.huskit.common.Volatile;
 import io.huskit.containers.api.HtArg;
 import io.huskit.containers.api.list.HtListContainersFilter;
 import io.huskit.containers.api.list.HtListContainersFilterSpec;
@@ -13,22 +14,23 @@ import lombok.With;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.function.Function;
+import java.util.function.Consumer;
 
 @With
 @RequiredArgsConstructor
 public class HtCliListCtrsArgsSpec implements HtListContainersArgsSpec {
 
-    boolean all;
-    List<HtListContainersFilter> filters;
+    Volatile<Boolean> all;
+    Volatile<List<HtListContainersFilter>> filters;
 
     public HtCliListCtrsArgsSpec() {
-        this.all = false;
-        this.filters = new ArrayList<>(3);
+        this.all = Volatile.of(false);
+        this.filters = Volatile.of(new ArrayList<>(3));
     }
 
-    @Override
     public HtListContainersArgs build() {
+        var all = this.all.require();
+        var filters = this.filters.require();
         var result = new ArrayList<HtArg>(filters.size());
         if (all) {
             result.add(HtArg.of("-a"));
@@ -43,13 +45,15 @@ public class HtCliListCtrsArgsSpec implements HtListContainersArgsSpec {
 
     @Override
     public HtListContainersArgsSpec withAll() {
-        return this.withAll(true);
+        this.all.set(true);
+        return this;
     }
 
     @Override
-    public HtListContainersArgsSpec withFilter(Function<HtListContainersFilterSpec, HtListContainersFilter> filter) {
-        var newFilter = new ArrayList<>(this.filters);
-        newFilter.add(filter.apply(new HtDefaultListContainersFilterSpec()));
-        return this.withFilters(newFilter);
+    public HtListContainersArgsSpec withFilter(Consumer<HtListContainersFilterSpec> filter) {
+        var spec = new HtDefaultListContainersFilterSpec();
+        filter.accept(spec);
+        spec.filters().forEach((type, entry) -> filters.require().add(new HtCliListCtrsFilter(entry, type)));
+        return this;
     }
 }

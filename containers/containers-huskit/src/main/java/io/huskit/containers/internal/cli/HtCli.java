@@ -27,9 +27,13 @@ public class HtCli {
     HtCliDckrSpec dockerSpec;
     Shells shells;
     MemoizedSupplier<DockerShell> process = new MemoizedSupplier<>(this::createProcess);
+    AtomicBoolean isClosed = new AtomicBoolean();
 
     @Locked
     public <T> T sendCommand(HtCommand command, Function<CommandResult, T> resultConsumer) {
+        if (isClosed.get()) {
+            throw new IllegalStateException("Cli is closed and  cannot be used anymore");
+        }
         var dockerShellProcess = process.get();
         return dockerShellProcess.sendCommand(command, resultConsumer);
     }
@@ -50,6 +54,7 @@ public class HtCli {
         if (process.isInitialized()) {
             process.get().stop();
         }
+        isClosed.set(true);
     }
 
     static class DockerShell {

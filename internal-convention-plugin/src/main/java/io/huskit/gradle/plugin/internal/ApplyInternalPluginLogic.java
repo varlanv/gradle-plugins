@@ -168,18 +168,22 @@ public class ApplyInternalPluginLogic {
                                 var environment = new HashMap<>(test.getEnvironment());
                                 environment.put("TESTCONTAINERS_REUSE_ENABLE", "true");
                                 test.setEnvironment(environment);
+                                var memory = test.getName().equals(JavaPlugin.TEST_TASK_NAME) ? "128m" : "512m";
                                 test.setJvmArgs(
                                         Stream.of(
+                                                        test.getName().equals("functionalTest") ?
+                                                                List.of() :
+                                                                List.of("-Xms" + memory, "-Xmx" + memory),
+                                                        test.getName().equals("functionalTest") ?
+                                                                List.of() :
+                                                                List.of("-XX:+UnlockExperimentalVMOptions", "-XX:+UseEpsilonGC"),
                                                         test.getJvmArgs(),
                                                         Arrays.asList(
                                                                 "-XX:TieredStopAtLevel=1",
-                                                                "-noverify",
+                                                                "-noverify"
 //                                                                test.getName().equals(JavaPlugin.TEST_TASK_NAME) ? "-Xms32m" : "-Xms128m",
-                                                                test.getName().equals(JavaPlugin.TEST_TASK_NAME) ? "-Xmx128m" : "-Xmx512m",
 //                                                                "-XX:+UseParallelGC",
 //                                                                "-XX:ParallelGCThreads=2"
-                                                                "-XX:+UnlockExperimentalVMOptions",
-                                                                "-XX:+UseEpsilonGC"
                                                         )
                                                 )
                                                 .filter(Objects::nonNull)

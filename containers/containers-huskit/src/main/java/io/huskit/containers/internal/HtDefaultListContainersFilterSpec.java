@@ -1,26 +1,32 @@
 package io.huskit.containers.internal;
 
-import io.huskit.containers.api.list.HtListContainersFilter;
 import io.huskit.containers.api.list.HtListContainersFilterSpec;
 import io.huskit.containers.api.list.HtListContainersFilterType;
-import io.huskit.containers.internal.cli.HtCliListCtrsFilter;
+import lombok.Getter;
 
+import java.util.LinkedHashMap;
 import java.util.Map;
 
+@Getter
 public class HtDefaultListContainersFilterSpec implements HtListContainersFilterSpec {
 
+    Map<HtListContainersFilterType, Map.Entry<String, String>> filters = new LinkedHashMap<>();
+
     @Override
-    public HtListContainersFilter id(CharSequence id) {
-        return new HtCliListCtrsFilter(Map.entry("id", id.toString()), HtListContainersFilterType.ID);
+    public HtDefaultListContainersFilterSpec id(CharSequence id) {
+        filters.put(HtListContainersFilterType.ID, Map.entry("id", id.toString()));
+        return this;
     }
 
     @Override
-    public HtListContainersFilter name(CharSequence name) {
-        return new HtCliListCtrsFilter(Map.entry("name", name.toString()), HtListContainersFilterType.NAME);
+    public HtDefaultListContainersFilterSpec name(CharSequence name) {
+        filters.put(HtListContainersFilterType.NAME, Map.entry("name", name.toString()));
+        return this;
     }
 
     @Override
-    public HtListContainersFilter label(CharSequence label, CharSequence value) {
-        return new HtCliListCtrsFilter(Map.entry("label", label + "=" + value), HtListContainersFilterType.LABEL);
+    public HtDefaultListContainersFilterSpec label(CharSequence label, CharSequence value) {
+        filters.put(HtListContainersFilterType.LABEL, Map.entry("label", label + "=" + value));
+        return this;
     }
 }

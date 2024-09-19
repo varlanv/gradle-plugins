@@ -1,17 +1,16 @@
 package io.huskit.containers.api.list;
 
 import io.huskit.containers.api.HtContainer;
-import io.huskit.containers.api.list.arg.HtListContainersArgs;
 import io.huskit.containers.api.list.arg.HtListContainersArgsSpec;
 
 import java.util.List;
-import java.util.function.Function;
+import java.util.function.Consumer;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 public interface HtListContainers {
 
-    HtListContainers withArgs(Function<HtListContainersArgsSpec, HtListContainersArgs> args);
+    HtListContainers withArgs(Consumer<HtListContainersArgsSpec> args);
 
     Stream<HtContainer> asStream();
 

@@ -6,11 +6,10 @@ import io.huskit.containers.api.list.HtListContainers;
 import io.huskit.containers.api.list.arg.HtListContainersArgs;
 import io.huskit.containers.api.list.arg.HtListContainersArgsSpec;
 import lombok.RequiredArgsConstructor;
-import lombok.SneakyThrows;
 import lombok.With;
 
 import java.util.*;
-import java.util.function.Function;
+import java.util.function.Consumer;
 import java.util.stream.Stream;
 
 @With
@@ -21,12 +20,13 @@ public class HtCliListCtrs implements HtListContainers {
     HtListContainersArgs cmdArgs;
 
     @Override
-    public HtListContainers withArgs(Function<HtListContainersArgsSpec, HtListContainersArgs> args) {
-        return this.withCmdArgs(Objects.requireNonNull(args.apply(new HtCliListCtrsArgsSpec())));
+    public HtListContainers withArgs(Consumer<HtListContainersArgsSpec> args) {
+        var spec = new HtCliListCtrsArgsSpec();
+        args.accept(spec);
+        return this.withCmdArgs(Objects.requireNonNull(spec.build()));
     }
 
     @Override
-    @SneakyThrows
     public Stream<HtContainer> asStream() {
         var requestedIds = findIds();
         if (requestedIds.isEmpty()) {
@@ -39,7 +39,6 @@ public class HtCliListCtrs implements HtListContainers {
         }
     }
 
-    @SneakyThrows
     private Set<String> findIds() {
         var findIdsCommand = buildFindIdsCommand();
         return new LinkedHashSet<>(
