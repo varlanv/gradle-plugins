@@ -2,7 +2,7 @@ package io.huskit.containers.internal.cli;
 
 import io.huskit.common.Os;
 import io.huskit.common.Volatile;
-import io.huskit.containers.api.ShellType;
+import io.huskit.containers.api.cli.ShellType;
 
 import java.util.Arrays;
 import java.util.EnumMap;

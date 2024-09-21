@@ -1,4 +1,4 @@
-package io.huskit.containers.api;
+package io.huskit.containers.api.cli;
 
 import io.huskit.common.Volatile;
 import lombok.RequiredArgsConstructor;

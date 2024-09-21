@@ -1,8 +1,13 @@
 package io.huskit.containers.internalcli;
 
 import io.huskit.containers.api.*;
+import io.huskit.containers.api.cli.HtCliDocker;
+import io.huskit.containers.api.cli.ShellType;
+import io.huskit.containers.api.cli.ThreadLocalCliRecorder;
 import io.huskit.containers.api.list.arg.HtListContainersArgsSpec;
+import io.huskit.containers.api.logs.HtLogs;
 import io.huskit.containers.api.logs.LookFor;
+import io.huskit.containers.api.run.HtRunSpec;
 import io.huskit.gradle.commontest.DockerAvailableCondition;
 import io.huskit.gradle.commontest.DockerIntegrationTest;
 import io.huskit.gradle.commontest.EnabledIfShellPresent;
@@ -152,8 +157,13 @@ abstract class HtCliDckrIntegrationTest implements DockerIntegrationTest {
             @DisplayName("withFilter by id should create correct command")
             void list__with_filter_by_id__ok() {
                 var id = "SOME___Id__That__should_NOT__exist";
-                var expectedFindIdsCommand = List.of("docker", "ps", "--format", "\"{{json .}}\"",
-                        "--filter", "\"id=" + id + "\"", "--format", "\"{{.ID}}\"");
+                var expectedFindIdsCommand = List.of(
+                        "docker",
+                        "ps",
+                        "--filter", "\"id=" + id + "\"",
+                        "--format", "\"{{json .}}\"",
+                        "--format", "\"{{.ID}}\""
+                );
                 var containers = subject.containers().list(spec -> spec.withIdFilter(id))
                         .asList();
 
@@ -172,8 +182,15 @@ abstract class HtCliDckrIntegrationTest implements DockerIntegrationTest {
 
                 assertThat(containers).isNotNull();
                 assertThat(recorder.forCurrentThread().size()).isGreaterThanOrEqualTo(1);
-                assertThat(recorder.forCurrentThread().get(0).value()).isEqualTo(List.of("docker", "ps", "-a", "--format", "\"{{json .}}\"",
-                        "--filter", "\"id=" + id + "\"", "--format", "\"{{.ID}}\""));
+                assertThat(recorder.forCurrentThread().get(0).value()).isEqualTo(List.of(
+                                "docker",
+                                "ps",
+                                "-a",
+                                "--filter", "\"id=" + id + "\"",
+                                "--format", "\"{{json .}}\"",
+                                "--format", "\"{{.ID}}\""
+                        )
+                );
             }
         }
 
@@ -362,8 +379,14 @@ abstract class HtCliDckrIntegrationTest implements DockerIntegrationTest {
 
                 assertThat(recorder.forCurrentThread()).hasSize(2);
                 assertThat(recorder.forCurrentThread().get(0).value())
-                        .isEqualTo(List.of("docker", "ps", "--format", "\"{{json .}}\"", "--filter", "\"id=" + containerId + "\"",
-                                "--format", "\"{{.ID}}\""));
+                        .isEqualTo(List.of(
+                                        "docker",
+                                        "ps",
+                                        "--filter", "\"id=" + containerId + "\"",
+                                        "--format", "\"{{json .}}\"",
+                                        "--format", "\"{{.ID}}\""
+                                )
+                        );
                 assertThat(recorder.forCurrentThread().get(1).value())
                         .isEqualTo(List.of("docker", "inspect", "--format", "\"{{json .}}\"", trimmedId));
             }
@@ -388,10 +411,23 @@ abstract class HtCliDckrIntegrationTest implements DockerIntegrationTest {
 
                 assertThat(recorder.forCurrentThread()).hasSize(2);
                 assertThat(recorder.forCurrentThread().get(0).value())
-                        .isEqualTo(List.of("docker", "ps", "--format", "\"{{json .}}\"", "--filter",
-                                "\"label=" + labelIdKey + "=" + labelId + "\"", "--format", "\"{{.ID}}\""));
+                        .isEqualTo(List.of(
+                                        "docker",
+                                        "ps",
+                                        "--filter",
+                                        "\"label=" + labelIdKey + "=" + labelId + "\"",
+                                        "--format", "\"{{json .}}\"",
+                                        "--format", "\"{{.ID}}\""
+                                )
+                        );
                 assertThat(recorder.forCurrentThread().get(1).value())
-                        .isEqualTo(List.of("docker", "inspect", "--format", "\"{{json .}}\"", trimmedId));
+                        .isEqualTo(List.of(
+                                        "docker",
+                                        "inspect",
+                                        "--format",
+                                        "\"{{json .}}\"", trimmedId
+                                )
+                        );
             }
 
             @Test
@@ -415,11 +451,23 @@ abstract class HtCliDckrIntegrationTest implements DockerIntegrationTest {
 
                 assertThat(recorder.forCurrentThread()).hasSize(2);
                 assertThat(recorder.forCurrentThread().get(0).value())
-                        .isEqualTo(List.of("docker", "ps", "-a", "--format", "\"{{json .}}\"", "--filter",
-                                "\"label=" + labelIdKey + "=" + labelId + "\"", "--filter",
-                                "\"id=" + containerId + "\"", "--format", "\"{{.ID}}\""));
+                        .isEqualTo(List.of(
+                                        "docker",
+                                        "ps",
+                                        "-a",
+                                        "--filter", "\"id=" + containerId + "\"",
+                                        "--filter", "\"label=" + labelIdKey + "=" + labelId + "\"",
+                                        "--format", "\"{{json .}}\"",
+                                        "--format", "\"{{.ID}}\""
+                                )
+                        );
                 assertThat(recorder.forCurrentThread().get(1).value())
-                        .isEqualTo(List.of("docker", "inspect", "--format", "\"{{json .}}\"", trimmedId));
+                        .isEqualTo(List.of(
+                                        "docker",
+                                        "inspect",
+                                        "--format", "\"{{json .}}\"", trimmedId
+                                )
+                        );
             }
 
             @Test

@@ -2,10 +2,10 @@ package io.huskit.containers.internal.cli;
 
 import io.huskit.common.Nothing;
 import io.huskit.common.function.MemoizedSupplier;
-import io.huskit.containers.api.CliRecorder;
-import io.huskit.containers.api.CommandType;
-import io.huskit.containers.api.HtCliDckrSpec;
-import io.huskit.containers.api.HtCommand;
+import io.huskit.containers.api.cli.CliRecorder;
+import io.huskit.containers.api.cli.CommandType;
+import io.huskit.containers.api.cli.HtCliDckrSpec;
+import io.huskit.containers.api.cli.HtCommand;
 import lombok.Locked;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
@@ -134,7 +134,7 @@ public class HtCli {
         private void stop() {
             if (isStopped.compareAndSet(false, true)) {
                 if (cleanupOnClose && !containerIdsForCleanup.isEmpty()) {
-                    new HtCliRm(parent, new ArrayList<>(containerIdsForCleanup), true, true).exec();
+                    new HtCliRm(parent, new HtCliRmSpec(new ArrayList<>(containerIdsForCleanup), true, true)).exec();
                 }
                 shell.close();
             }

@@ -1,14 +1,17 @@
 package io.huskit.containers.internal.cli;
 
-import io.huskit.containers.api.CommandType;
 import io.huskit.containers.api.HtContainer;
+import io.huskit.containers.api.cli.CommandType;
+import io.huskit.containers.api.cli.HtArg;
 import io.huskit.containers.api.list.HtListContainers;
-import io.huskit.containers.api.list.arg.HtListContainersArgs;
 import io.huskit.containers.api.list.arg.HtListContainersArgsSpec;
 import lombok.RequiredArgsConstructor;
 import lombok.With;
 
-import java.util.*;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Objects;
+import java.util.Set;
 import java.util.function.Consumer;
 import java.util.stream.Stream;
 
@@ -17,7 +20,7 @@ import java.util.stream.Stream;
 public class HtCliListCtrs implements HtListContainers {
 
     HtCli cli;
-    HtListContainersArgs cmdArgs;
+    List<HtArg> cmdArgs;
 
     @Override
     public HtListContainers withArgs(Consumer<HtListContainersArgsSpec> args) {
@@ -40,26 +43,16 @@ public class HtCliListCtrs implements HtListContainers {
     }
 
     private Set<String> findIds() {
-        var findIdsCommand = buildFindIdsCommand();
         return new LinkedHashSet<>(
                 cli.sendCommand(
-                        new CliCommand(CommandType.LIST_CONTAINERS, findIdsCommand),
+                        new CliCommand(
+                                CommandType.LIST_CONTAINERS,
+                                new FindIdsCommand(
+                                        cmdArgs
+                                ).list()
+                        ),
                         CommandResult::lines
                 )
         );
-    }
-
-    private List<String> buildFindIdsCommand() {
-        var staticArgsAmount = 4;
-        var command = new ArrayList<String>(staticArgsAmount + cmdArgs.size());
-        command.add("docker");
-        command.add("ps");
-        cmdArgs.stream().forEach(arg -> {
-            command.add(arg.name());
-            command.addAll(arg.values());
-        });
-        command.add("--format");
-        command.add("\"{{.ID}}\"");
-        return command;
     }
 }

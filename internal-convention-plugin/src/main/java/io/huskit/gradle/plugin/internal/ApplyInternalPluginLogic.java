@@ -176,7 +176,7 @@ public class ApplyInternalPluginLogic {
                                                                 List.of("-Xms" + memory, "-Xmx" + memory),
                                                         test.getName().equals("functionalTest") ?
                                                                 List.of() :
-                                                                List.of("-XX:+UnlockExperimentalVMOptions", "-XX:+UseEpsilonGC"),
+                                                                List.of(/*"-XX:+UnlockExperimentalVMOptions", "-XX:+UseEpsilonGC"*/),
                                                         test.getJvmArgs(),
                                                         Arrays.asList(
                                                                 "-XX:TieredStopAtLevel=1",

@@ -2,7 +2,7 @@ package io.huskit.containers.integration.mongo;
 
 import io.huskit.containers.api.HtDocker;
 import io.huskit.containers.api.HtDockerImageName;
-import io.huskit.containers.api.ShellType;
+import io.huskit.containers.api.cli.ShellType;
 import lombok.RequiredArgsConstructor;
 
 import java.time.Duration;

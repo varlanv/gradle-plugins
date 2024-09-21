@@ -5,6 +5,7 @@ import io.huskit.gradle.commontest.UnitTest;
 import lombok.SneakyThrows;
 import org.junit.jupiter.api.Test;
 
+import java.io.IOException;
 import java.util.NoSuchElementException;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -230,5 +231,73 @@ class DfVolatileTest implements UnitTest {
         var subject = new DfVolatile<>(subjectValue);
 
         assertThat(subject.get()).isEqualTo(subjectValue);
+    }
+
+    @Test
+    void or__when_value_is_present__returns_value() {
+        var subject = new DfVolatile<String>();
+        subject.set(subjectValue);
+
+        assertThat(subject.or("other")).isEqualTo(subjectValue);
+    }
+
+    @Test
+    void or__when_value_is_not_present__returns_other() {
+        var subject = new DfVolatile<String>();
+
+        assertThat(subject.or("other")).isEqualTo("other");
+    }
+
+    @Test
+    void or__when_other_is_null__and_value_is_present__returns_value() {
+        var subject = new DfVolatile<String>();
+        subject.set(subjectValue);
+
+        assertThat(subject.or(null)).isEqualTo(subjectValue);
+    }
+
+    @Test
+    void or__when_other_is_null__and_value_is_not_present__throws_exception() {
+        var subject = new DfVolatile<String>();
+
+        assertThatThrownBy(() -> subject.or(null))
+                .isInstanceOf(NullPointerException.class)
+                .hasMessage("other");
+    }
+
+    @Test
+    void check__when_value_is_present__and_predicate_returns_true__returns_true() {
+        var subject = new DfVolatile<String>();
+        subject.set(subjectValue);
+
+        assertThat(subject.check(val -> val.equals(subjectValue))).isTrue();
+    }
+
+    @Test
+    void check__when_value_is_present__and_predicate_returns_false__returns_false() {
+        var subject = new DfVolatile<String>();
+        subject.set(subjectValue);
+
+        assertThat(subject.check("other"::equals)).isFalse();
+    }
+
+    @Test
+    void check__when_value_is_not_present__returns_false_and_does_not_call_predicate() {
+        var subject = new DfVolatile<String>();
+
+        assertThat(subject.check(val -> {
+            throw new IllegalStateException("Should not be called");
+        })).isFalse();
+    }
+
+    @Test
+    void check__when_predicate_throws_exception__should_not_be_ignored() {
+        var subject = new DfVolatile<>("value");
+
+        assertThatThrownBy(() ->
+                subject.check(val -> {
+                    throw new IOException("msg");
+                })
+        ).isInstanceOf(IOException.class).hasMessage("msg");
     }
 }

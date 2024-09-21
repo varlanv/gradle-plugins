@@ -1,18 +1,13 @@
 package io.huskit.containers.internal.cli;
 
 import io.huskit.common.Volatile;
-import io.huskit.containers.api.HtArg;
+import io.huskit.containers.api.cli.HtArg;
 import io.huskit.containers.api.list.HtListContainersFilterType;
-import io.huskit.containers.api.list.arg.HtListContainersArgs;
 import io.huskit.containers.api.list.arg.HtListContainersArgsSpec;
-import io.huskit.containers.api.list.arg.ListCtrsArgs;
 import lombok.RequiredArgsConstructor;
 import lombok.With;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.LinkedHashMap;
-import java.util.Map;
+import java.util.*;
 
 @With
 @RequiredArgsConstructor
@@ -20,24 +15,10 @@ public class HtCliListCtrsArgsSpec implements HtListContainersArgsSpec {
 
     Volatile<Boolean> all;
     Map<HtListContainersFilterType, Map.Entry<String, String>> filters;
+    Map<String, String> labels;
 
     public HtCliListCtrsArgsSpec() {
-        this.all = Volatile.of(false);
-        this.filters = new LinkedHashMap<>();
-    }
-
-    public HtListContainersArgs build() {
-        var all = this.all.require();
-        var result = new ArrayList<HtArg>(filters.size());
-        if (all) {
-            result.add(HtArg.of("-a"));
-        }
-        result.add(HtArg.of("--format", "\"{{json .}}\""));
-        for (var psFilter : filters.entrySet()) {
-            var filterEntry = psFilter.getValue();
-            result.add(HtArg.of("--filter", "\"" + filterEntry.getKey() + "=" + filterEntry.getValue() + "\""));
-        }
-        return new ListCtrsArgs(Collections.unmodifiableList(result));
+        this(Volatile.of(false), new LinkedHashMap<>(), new LinkedHashMap<>());
     }
 
     @Override
@@ -60,7 +41,24 @@ public class HtCliListCtrsArgsSpec implements HtListContainersArgsSpec {
 
     @Override
     public HtCliListCtrsArgsSpec withLabelFilter(CharSequence label, CharSequence value) {
-        filters.put(HtListContainersFilterType.LABEL, Map.entry("label", label + "=" + value));
+        this.labels.put(label.toString(), value.toString());
         return this;
+    }
+
+    public List<HtArg> build() {
+        var all = this.all.require();
+        var result = new ArrayList<HtArg>(filters.size());
+        if (all) {
+            result.add(HtArg.of("-a"));
+        }
+        for (var psFilter : filters.entrySet()) {
+            var filterEntry = psFilter.getValue();
+            result.add(HtArg.of("--filter", "\"" + filterEntry.getKey() + "=" + filterEntry.getValue() + "\""));
+        }
+        for (var label : labels.entrySet()) {
+            result.add(HtArg.of("--filter", "\"label=" + label.getKey() + "=" + label.getValue() + "\""));
+        }
+        result.add(HtArg.of("--format", "\"{{json .}}\""));
+        return Collections.unmodifiableList(result);
     }
 }

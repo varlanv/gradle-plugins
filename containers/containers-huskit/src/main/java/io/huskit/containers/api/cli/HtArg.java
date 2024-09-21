@@ -1,16 +1,28 @@
-package io.huskit.containers.api;
+package io.huskit.containers.api.cli;
 
 import io.huskit.containers.internal.HtDefaultArg;
 
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.NoSuchElementException;
 
 public interface HtArg {
 
     String name();
 
     List<String> values();
+
+    default String singleValue() {
+        var values = values();
+        if (values.isEmpty()) {
+            throw new NoSuchElementException();
+        } else if (values.size() > 1) {
+            throw new IllegalStateException(String.format("Could not return single value for list with multiple values: %s", values));
+        } else {
+            return values.get(0);
+        }
+    }
 
     static HtArg of(CharSequence name, CharSequence value) {
         return new HtDefaultArg(name, Collections.singletonList(value.toString()));

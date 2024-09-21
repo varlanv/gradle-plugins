@@ -1,6 +1,10 @@
 package io.huskit.containers.internal.cli;
 
 import io.huskit.containers.api.*;
+import io.huskit.containers.api.cli.HtCliContainers;
+import io.huskit.containers.api.cli.HtCliDckrSpec;
+import io.huskit.containers.api.cli.HtCliDocker;
+import io.huskit.containers.api.cli.HtCliDockerSpec;
 import lombok.RequiredArgsConstructor;
 
 import java.util.function.Consumer;

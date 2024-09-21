@@ -2,9 +2,9 @@ package io.huskit.containers.internal.cli;
 
 import io.huskit.common.Sneaky;
 import io.huskit.common.Volatile;
-import io.huskit.containers.api.CliRecorder;
-import io.huskit.containers.api.CommandType;
-import io.huskit.containers.api.HtCommand;
+import io.huskit.containers.api.cli.CliRecorder;
+import io.huskit.containers.api.cli.CommandType;
+import io.huskit.containers.api.cli.HtCommand;
 import lombok.RequiredArgsConstructor;
 
 import java.io.BufferedReader;

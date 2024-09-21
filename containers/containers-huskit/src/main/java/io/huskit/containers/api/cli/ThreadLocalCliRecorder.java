@@ -1,4 +1,4 @@
-package io.huskit.containers.api;
+package io.huskit.containers.api.cli;
 
 import java.util.ArrayList;
 import java.util.List;

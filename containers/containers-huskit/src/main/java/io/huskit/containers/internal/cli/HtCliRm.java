@@ -1,46 +1,38 @@
 package io.huskit.containers.internal.cli;
 
-import io.huskit.containers.api.CommandType;
-import io.huskit.containers.api.HtRm;
+import io.huskit.containers.api.cli.CommandType;
+import io.huskit.containers.api.rm.HtRm;
 import lombok.RequiredArgsConstructor;
 import lombok.With;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.function.Function;
 
 @RequiredArgsConstructor
 public class HtCliRm implements HtRm {
 
     HtCli cli;
-    List<String> containerIds;
     @With
-    Boolean frc;
-    @With
-    Boolean vlm;
+    HtCliRmSpec spec;
 
     @Override
     public HtRm withForce(Boolean force) {
-        return withFrc(force);
+        return this.withSpec(
+                spec.withForce(force)
+        );
     }
 
     @Override
     public HtRm withVolumes(Boolean volumes) {
-        return withVlm(volumes);
+        return this.withSpec(
+                spec.withVolumes(volumes)
+        );
     }
 
     @Override
     public void exec() {
-        var command = new ArrayList<String>(4);
-        command.add("docker");
-        command.add("rm");
-        if (frc) {
-            command.add("--force");
-        }
-        if (vlm) {
-            command.add("--volumes");
-        }
-        command.addAll(containerIds);
-        cli.sendCommand(new CliCommand(CommandType.REMOVE_CONTAINERS, command), Function.identity());
+        cli.sendCommand(
+                new CliCommand(CommandType.REMOVE_CONTAINERS, spec.build()),
+                Function.identity()
+        );
     }
 }

@@ -1,6 +1,6 @@
 package io.huskit.containers.internal.cli;
 
-import io.huskit.containers.api.ShellType;
+import io.huskit.containers.api.cli.ShellType;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;

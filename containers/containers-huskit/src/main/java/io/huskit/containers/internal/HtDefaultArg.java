@@ -1,6 +1,6 @@
 package io.huskit.containers.internal;
 
-import io.huskit.containers.api.HtArg;
+import io.huskit.containers.api.cli.HtArg;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 

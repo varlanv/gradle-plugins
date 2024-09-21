@@ -1,4 +1,6 @@
-package io.huskit.containers.api;
+package io.huskit.containers.api.cli;
+
+import io.huskit.containers.api.HtDocker;
 
 import java.util.function.Consumer;
 

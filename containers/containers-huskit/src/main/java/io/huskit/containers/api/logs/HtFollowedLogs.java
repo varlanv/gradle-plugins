@@ -1,6 +1,4 @@
-package io.huskit.containers.api;
-
-import io.huskit.containers.api.logs.LookFor;
+package io.huskit.containers.api.logs;
 
 import java.util.stream.Stream;
 

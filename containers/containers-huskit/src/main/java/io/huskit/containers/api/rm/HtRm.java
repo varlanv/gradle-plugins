@@ -1,4 +1,4 @@
-package io.huskit.containers.api;
+package io.huskit.containers.api.rm;
 
 public interface HtRm {
 
