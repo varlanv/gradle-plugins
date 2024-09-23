@@ -1,11 +1,11 @@
 package io.huskit.containers.internal.cli;
 
-import io.huskit.containers.api.cli.CommandType;
 import io.huskit.containers.api.HtContainer;
+import io.huskit.containers.api.cli.CommandType;
 import io.huskit.containers.internal.HtContainerFromMap;
+import io.huskit.containers.internal.HtJson;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
-import org.json.JSONObject;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -27,8 +27,7 @@ public class HtFindCliCtrsByIds {
                     new CliCommand(CommandType.INSPECT, buildListContainersCommand(ids)).withLinePredicate(Predicate.not(String::isBlank)),
                     result -> {
                         return result.lines().stream()
-                                .map(JSONObject::new)
-                                .map(JSONObject::toMap)
+                                .map(HtJson::toMap)
                                 .map(map -> (HtContainer) new HtContainerFromMap(map))
                                 .collect(Collectors.toList());
                     });

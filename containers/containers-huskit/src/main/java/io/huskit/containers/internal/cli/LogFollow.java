@@ -28,9 +28,20 @@ public class LogFollow {
         var task = listLogsTask(command, process);
         try {
             if (command.timeout().isZero()) {
-                return resultFunction.apply(new CommandResult(task.get()));
+                return resultFunction.apply(
+                        new CommandResult(
+                                task.get()
+                        )
+                );
             } else {
-                return resultFunction.apply(new CommandResult(task.get(command.timeout().toMillis(), TimeUnit.MILLISECONDS)));
+                return resultFunction.apply(
+                        new CommandResult(
+                                task.get(
+                                        command.timeout().toMillis(),
+                                        TimeUnit.MILLISECONDS
+                                )
+                        )
+                );
             }
         } catch (Exception e) {
             process.ifPresent(p -> {
@@ -47,13 +58,14 @@ public class LogFollow {
         return CompletableFuture.supplyAsync(() -> {
             try {
                 var lines = new ArrayList<String>();
-                process.set(new ProcessBuilder(command.value()).start());
-                try (var reader = new BufferedReader(new InputStreamReader(process.require().getInputStream()))) {
+                var p = new ProcessBuilder(command.value()).start();
+                process.set(p);
+                try (var reader = new BufferedReader(new InputStreamReader(p.getInputStream()))) {
                     String line;
                     while ((line = reader.readLine()) != null) {
                         lines.add(line);
                         if (command.terminatePredicate().test(line)) {
-                            process.require().destroyForcibly();
+                            p.destroyForcibly();
                             if (command.type() == CommandType.RUN) {
                                 containerIdsForCleanup.add(lines.get(0));
                             }

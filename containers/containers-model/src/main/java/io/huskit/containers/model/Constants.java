@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 
 import java.time.Duration;
 import java.time.temporal.ChronoUnit;
+import java.util.function.Predicate;
 
 @RequiredArgsConstructor(access = lombok.AccessLevel.PRIVATE)
 public class Constants {
@@ -14,6 +15,23 @@ public class Constants {
     public static class Cleanup {
 
         public static final Duration DEFAULT_CLEANUP_AFTER = Duration.of(12, ChronoUnit.HOURS);
+    }
+
+    @RequiredArgsConstructor(access = lombok.AccessLevel.PRIVATE)
+    public static class Predicates {
+
+        private static final Predicate<?> ALWAYS_TRUE = t -> true;
+        private static final Predicate<?> ALWAYS_FALSE = t -> false;
+
+        @SuppressWarnings("unchecked")
+        public static <T> Predicate<T> alwaysTrue() {
+            return (Predicate<T>) ALWAYS_TRUE;
+        }
+
+        @SuppressWarnings("unchecked")
+        public static <T> Predicate<T> alwaysFalse() {
+            return (Predicate<T>) ALWAYS_FALSE;
+        }
     }
 
     @RequiredArgsConstructor(access = lombok.AccessLevel.PRIVATE)

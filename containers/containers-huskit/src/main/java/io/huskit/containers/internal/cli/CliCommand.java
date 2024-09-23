@@ -2,6 +2,7 @@ package io.huskit.containers.internal.cli;
 
 import io.huskit.containers.api.cli.CommandType;
 import io.huskit.containers.api.cli.HtCommand;
+import io.huskit.containers.model.Constants;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.With;
@@ -24,6 +25,12 @@ public class CliCommand implements HtCommand {
     Duration timeout;
 
     public CliCommand(CommandType type, List<String> value) {
-        this(type, value, (line) -> false, (line) -> true, Duration.ZERO);
+        this(
+                type,
+                value,
+                Constants.Predicates.alwaysFalse(),
+                Constants.Predicates.alwaysTrue(),
+                Duration.ZERO
+        );
     }
 }

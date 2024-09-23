@@ -67,6 +67,7 @@ public class HtCli {
         Queue<String> containerIdsForCleanup;
         Boolean cleanupOnClose;
         Shell shell;
+        Shells shells;
 
         public DockerShell(HtCli parent, HtCliDckrSpec dockerSpec, Shells shells) {
             this.parent = parent;
@@ -74,12 +75,19 @@ public class HtCli {
             this.cleanupOnClose = dockerSpec.cleanOnClose();
             this.containerIdsForCleanup = new ConcurrentLinkedQueue<>();
             this.shell = shells.take(dockerSpec.shell());
+            this.shells = shells;
             Runtime.getRuntime().addShutdownHook(new Thread(this::stop));
         }
 
         public <T> T sendCommand(HtCommand command, Function<CommandResult, T> resultFunction) {
             if (command.type() == CommandType.LOGS_FOLLOW) {
-                return new LogFollow(recorder, containerIdsForCleanup).send(command, resultFunction);
+                return new LogFollow(
+                        recorder,
+                        containerIdsForCleanup
+                ).send(
+                        command,
+                        resultFunction
+                );
             }
             doSendCommand(command);
             shell.echo(RUN_LINE_MARKER);

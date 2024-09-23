@@ -9,6 +9,7 @@ import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 @RequiredArgsConstructor
 public class CliShell implements Shell {
@@ -18,13 +19,15 @@ public class CliShell implements Shell {
     Process dockerProcess;
     BufferedWriter commandWriter;
     BufferedReader commandOutputReader;
+    AtomicBoolean isClosed;
 
     @SneakyThrows
     public CliShell(ShellType shellType) {
         this.type = shellType;
-        dockerProcess = new ProcessBuilder(shellType.pathForCurrentOs()).start();
-        commandWriter = new BufferedWriter(new OutputStreamWriter(dockerProcess.getOutputStream()));
-        commandOutputReader = new BufferedReader(new InputStreamReader(dockerProcess.getInputStream()));
+        this.dockerProcess = new ProcessBuilder(shellType.pathForCurrentOs()).start();
+        this.commandWriter = new BufferedWriter(new OutputStreamWriter(dockerProcess.getOutputStream()));
+        this.commandOutputReader = new BufferedReader(new InputStreamReader(dockerProcess.getInputStream()));
+        this.isClosed = new AtomicBoolean();
     }
 
     @Override
@@ -50,8 +53,10 @@ public class CliShell implements Shell {
     @Override
     @SneakyThrows
     public void close() {
-        dockerProcess.destroyForcibly();
-        commandWriter.close();
-        commandOutputReader.close();
+        if (isClosed.compareAndSet(false, true)) {
+            dockerProcess.destroyForcibly();
+            commandWriter.close();
+            commandOutputReader.close();
+        }
     }
 }

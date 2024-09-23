@@ -2,6 +2,7 @@ package io.huskit.containers.internal.cli;
 
 import io.huskit.containers.api.cli.ShellType;
 
+import java.util.List;
 import java.util.Objects;
 
 public interface Shell {
@@ -15,6 +16,10 @@ public interface Shell {
     String outLine();
 
     void close();
+
+    default void write(List<String> commands) {
+        this.write(String.join(" ", commands));
+    }
 
     default void echo(String message) {
         write("echo " + message);
