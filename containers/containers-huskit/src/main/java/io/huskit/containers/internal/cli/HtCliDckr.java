@@ -1,6 +1,6 @@
 package io.huskit.containers.internal.cli;
 
-import io.huskit.containers.api.*;
+import io.huskit.containers.api.HtContainers;
 import io.huskit.containers.api.cli.HtCliContainers;
 import io.huskit.containers.api.cli.HtCliDckrSpec;
 import io.huskit.containers.api.cli.HtCliDocker;
@@ -16,9 +16,9 @@ public class HtCliDckr implements HtCliDocker {
     HtCliDckrSpec spec;
 
     @Override
-    public HtCliDocker configure(Consumer<HtCliDockerSpec> configurer) {
+    public HtCliDocker configure(Consumer<HtCliDockerSpec> configureAction) {
         var spec = new HtCliDckrSpec(this.spec);
-        configurer.accept(spec);
+        configureAction.accept(spec);
         var newSpec = new HtCliDckrSpec(spec);
         return new HtCliDckr(
                 cli.withDockerSpec(newSpec),
@@ -29,6 +29,14 @@ public class HtCliDckr implements HtCliDocker {
     @Override
     public void close() {
         cli.close();
+    }
+
+    @Override
+    public HtCliDocker withCleanOnClose(Boolean cleanOnClose) {
+        return new HtCliDckr(
+                cli,
+                spec.withCleanOnClose(cleanOnClose)
+        );
     }
 
     @Override

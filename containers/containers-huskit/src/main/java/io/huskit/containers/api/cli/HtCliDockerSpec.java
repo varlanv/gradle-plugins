@@ -1,10 +1,8 @@
 package io.huskit.containers.api.cli;
 
-public interface HtCliDockerSpec {
+public interface HtCliDockerSpec extends HtDockerSpec {
 
     HtCliDockerSpec withCliRecorder(CliRecorder recorder);
-
-    HtCliDockerSpec withCleanOnClose(Boolean cleanOnClose);
 
     HtCliDockerSpec withShell(ShellType shell);
 }

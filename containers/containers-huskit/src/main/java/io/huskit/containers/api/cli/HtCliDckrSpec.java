@@ -13,7 +13,7 @@ public class HtCliDckrSpec implements HtCliDockerSpec {
     public HtCliDckrSpec(HtCliDckrSpec another) {
         this(
                 Volatile.of(another.recorder()),
-                Volatile.of(another.cleanOnClose()),
+                Volatile.of(another.isCleanOnClose()),
                 Volatile.of(another.shell())
         );
     }
@@ -21,12 +21,6 @@ public class HtCliDckrSpec implements HtCliDockerSpec {
     @Override
     public HtCliDockerSpec withCliRecorder(CliRecorder recorder) {
         this.recorder.set(recorder);
-        return this;
-    }
-
-    @Override
-    public HtCliDockerSpec withCleanOnClose(Boolean cleanOnClose) {
-        this.cleanOnClose.set(cleanOnClose);
         return this;
     }
 
@@ -40,11 +34,17 @@ public class HtCliDckrSpec implements HtCliDockerSpec {
         return recorder.require();
     }
 
-    public Boolean cleanOnClose() {
+    public Boolean isCleanOnClose() {
         return cleanOnClose.require();
     }
 
     public ShellType shell() {
         return shell.require();
+    }
+
+    @Override
+    public HtCliDckrSpec withCleanOnClose(Boolean cleanOnClose) {
+        this.cleanOnClose.set(cleanOnClose);
+        return this;
     }
 }

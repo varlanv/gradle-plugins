@@ -6,7 +6,10 @@ import java.util.function.Consumer;
 
 public interface HtCliDocker extends HtDocker {
 
-    HtCliDocker configure(Consumer<HtCliDockerSpec> configurer);
+    @Override
+    HtCliDocker withCleanOnClose(Boolean cleanOnClose);
+
+    HtCliDocker configure(Consumer<HtCliDockerSpec> configureAction);
 
     void close();
 }

@@ -17,6 +17,7 @@ checkerframework = "3.47.0"
 github-docker = "3.4.0"
 json = "20240303"
 gradle-shadow-plugin = "8.3.1"
+immutables = "2.10.1"
 
 [libraries]
 testcontainers-core = { group = "org.testcontainers", name = "testcontainers", version.ref = "testContainers" }
@@ -43,6 +44,9 @@ checkerframework-checker = { group = "org.checkerframework", name = "checker", v
 github-docker-java = { group = "com.github.docker-java", name = "docker-java", version.ref = "github-docker" }
 github-docker-transport = { group = "com.github.docker-java", name = "docker-java-transport-httpclient5", version.ref = "github-docker" }
 json = { group = "org.json", name = "json", version.ref = "json" }
+immutables-value = { group = "org.immutables", name = "value", version.ref = "immutables" }
+immutables-annotations = { group = "org.immutables", name = "value-annotations", version.ref = "immutables" }
+immutables-builder = { group = "org.immutables", name = "builder", version.ref = "immutables" }
 
 [bundles]
 testcontainers = ["testcontainers-core", "testcontainers-mongodb", "testcontainers-postgresql", "testcontainers-kafka", "testcontainers-rabbitmq"]

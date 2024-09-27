@@ -1,5 +1,6 @@
-package io.huskit.containers.integration.mongo;
+package io.huskit.containers.integration;
 
+import io.huskit.common.Mutable;
 import io.huskit.common.Volatile;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
@@ -11,11 +12,14 @@ import java.time.Duration;
 public class DefWaitSpec implements WaitSpec {
 
     ContainerSpec parent;
-    Volatile<Waiter> logMessage = Volatile.of();
+    Mutable<TextWait> textWait = Volatile.of();
 
     @Override
     public ContainerSpec forLogMessageContaining(CharSequence text, Duration timeout) {
-        this.logMessage.set(new Waiter(text.toString(), timeout));
+        if (timeout.isNegative()) {
+            throw new IllegalArgumentException("Timeout must be positive (or zero for no timeout). Received: " + timeout);
+        }
+        this.textWait.set(new TextWait(text.toString(), timeout));
         return parent;
     }
 }

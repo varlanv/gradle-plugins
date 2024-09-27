@@ -253,16 +253,66 @@ class DfVolatileTest implements UnitTest {
         var subject = new DfVolatile<String>();
         subject.set(subjectValue);
 
-        assertThat(subject.or(null)).isEqualTo(subjectValue);
+        assertThat(subject.or((String) null)).isEqualTo(subjectValue);
     }
 
     @Test
     void or__when_other_is_null__and_value_is_not_present__throws_exception() {
         var subject = new DfVolatile<String>();
 
-        assertThatThrownBy(() -> subject.or(null))
+        assertThatThrownBy(() -> subject.or((String) null))
                 .isInstanceOf(NullPointerException.class)
                 .hasMessage("other");
+    }
+
+    @Test
+    void or__when_supplier_is_present__returns_value() {
+        var subject = new DfVolatile<String>();
+        subject.set(subjectValue);
+
+        assertThat(subject.or(() -> "other")).isEqualTo(subjectValue);
+    }
+
+    @Test
+    void or__when_supplier_is_not_present__returns_other() {
+        var subject = new DfVolatile<String>();
+
+        assertThat(subject.or(() -> "other")).isEqualTo("other");
+    }
+
+    @Test
+    void or__when_supplier_is_null__and_value_is_present__returns_value() {
+        var subject = new DfVolatile<String>();
+        subject.set(subjectValue);
+
+        assertThat(subject.or((ThrowingSupplier<String>) null)).isEqualTo(subjectValue);
+    }
+
+    @Test
+    void or__when_supplier_is_null__and_value_is_not_present__throws_exception() {
+        var subject = new DfVolatile<String>();
+
+        assertThatThrownBy(() -> subject.or((ThrowingSupplier<String>) null))
+                .isInstanceOf(NullPointerException.class)
+                .hasMessage(null);
+    }
+
+    @Test
+    void or__when_supplier_throws_exception__should_not_be_ignored() {
+        var subject = new DfVolatile<String>();
+
+        assertThatThrownBy(() -> subject.or(() -> {
+            throw new IOException("msg");
+        })).isInstanceOf(IOException.class).hasMessage("msg");
+    }
+
+    @Test
+    void or__when_supplier_returns_null__throws_exception() {
+        var subject = new DfVolatile<String>();
+
+        assertThatThrownBy(() -> subject.or(() -> null))
+                .isInstanceOf(NullPointerException.class)
+                .hasMessage("supplier");
     }
 
     @Test

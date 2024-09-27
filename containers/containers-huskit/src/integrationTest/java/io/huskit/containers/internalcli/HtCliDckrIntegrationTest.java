@@ -1,6 +1,7 @@
 package io.huskit.containers.internalcli;
 
-import io.huskit.containers.api.*;
+import io.huskit.containers.api.HtContainer;
+import io.huskit.containers.api.HtDocker;
 import io.huskit.containers.api.cli.HtCliDocker;
 import io.huskit.containers.api.cli.ShellType;
 import io.huskit.containers.api.cli.ThreadLocalCliRecorder;
@@ -102,9 +103,9 @@ abstract class HtCliDckrIntegrationTest implements DockerIntegrationTest {
     void stop__should_stop_docker_shell() {
         // given
         var subject = HtDocker.cli()
+                .withCleanOnClose(true)
                 .configure(spec ->
-                        spec.withCleanOnClose(true)
-                                .withCliRecorder(recorder)
+                        spec.withCliRecorder(recorder)
                                 .withShell(shellType()));
         var containerId = subject.containers()
                 .run("alpine:3.20.3", spec -> spec.withCommand("sh -c \"while true; do sleep 3600; done\""))

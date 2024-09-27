@@ -3,6 +3,8 @@ package io.huskit.gradle.commontest;
 import lombok.NonNull;
 import lombok.SneakyThrows;
 import org.apache.commons.io.FileDeleteStrategy;
+import org.assertj.core.api.Assertions;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.TestInstance;
 
 import java.io.File;
@@ -24,6 +26,11 @@ public interface BaseTest {
     String INTEGRATION_TEST_TAG = "integration-test";
     String FUNCTIONAL_TEST_TAG = "functional-test";
     int DEFAULT_REPEAT_COUNT = 10;
+
+    @BeforeAll
+    default void setupAssertJParent() {
+        Assertions.setMaxStackTraceElementsDisplayed(Integer.MAX_VALUE);
+    }
 
     default <T> T parseJson(String json, Class<T> type) {
         return (T) null;

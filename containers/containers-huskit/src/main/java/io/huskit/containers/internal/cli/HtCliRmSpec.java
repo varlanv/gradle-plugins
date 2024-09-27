@@ -13,9 +13,9 @@ import java.util.stream.Stream;
 @RequiredArgsConstructor
 public class HtCliRmSpec {
 
-    List<String> containerIds;
-    Boolean force;
-    Boolean volumes;
+    final List<String> containerIds;
+    final Boolean force;
+    final Boolean volumes;
 
     public HtCliRmSpec(List<? extends CharSequence> containerIds) {
         this(containerIds.stream().map(CharSequence::toString).collect(Collectors.toList()), false, false);

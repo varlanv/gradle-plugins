@@ -1,4 +1,4 @@
-package io.huskit.containers.integration.mongo;
+package io.huskit.containers.integration;
 
 import java.util.Map;
 

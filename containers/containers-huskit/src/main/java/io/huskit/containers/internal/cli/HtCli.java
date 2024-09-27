@@ -72,7 +72,7 @@ public class HtCli {
         public DockerShell(HtCli parent, HtCliDckrSpec dockerSpec, Shells shells) {
             this.parent = parent;
             this.recorder = dockerSpec.recorder();
-            this.cleanupOnClose = dockerSpec.cleanOnClose();
+            this.cleanupOnClose = dockerSpec.isCleanOnClose();
             this.containerIdsForCleanup = new ConcurrentLinkedQueue<>();
             this.shell = shells.take(dockerSpec.shell());
             this.shells = shells;

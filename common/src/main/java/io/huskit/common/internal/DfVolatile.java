@@ -80,6 +80,13 @@ public class DfVolatile<T> implements Volatile<T>, Serializable {
 
     @Override
     @SneakyThrows
+    public T or(ThrowingSupplier<T> supplier) {
+        var val = value;
+        return val != null ? val : Objects.requireNonNull(supplier.get(), "supplier");
+    }
+
+    @Override
+    @SneakyThrows
     public void ifPresent(ThrowingConsumer<T> consumer) {
         var val = value;
         if (val != null) {
