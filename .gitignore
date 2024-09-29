@@ -6,6 +6,7 @@
 *.jar
 !gradle/wrapper/gradle-wrapper.jar
 
+libs
 # Avoid ignore Gradle wrappper properties
 !gradle/wrapper/gradle-wrapper.properties
 
