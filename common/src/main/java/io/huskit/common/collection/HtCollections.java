@@ -1,0 +1,37 @@
+package io.huskit.common.collection;
+
+import lombok.experimental.UtilityClass;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+
+@UtilityClass
+public class HtCollections {
+
+    @SuppressWarnings("unchecked")
+    public static <T> List<T> add(List<T> list, T... elements) {
+        if (list.isEmpty()) {
+            return Arrays.asList(elements);
+        } else if (elements.length == 0) {
+            return list;
+        } else {
+            var newList = new ArrayList<T>(list.size() + elements.length);
+            newList.addAll(list);
+            newList.addAll(Arrays.asList(elements));
+            return newList;
+        }
+    }
+
+    public static <T> List<T> add(T t1, T t2, List<T> elements) {
+        if (elements.isEmpty()) {
+            return List.of(t1, t2);
+        } else {
+            var newList = new ArrayList<T>(elements.size() + 2);
+            newList.add(t1);
+            newList.add(t2);
+            newList.addAll(elements);
+            return newList;
+        }
+    }
+}

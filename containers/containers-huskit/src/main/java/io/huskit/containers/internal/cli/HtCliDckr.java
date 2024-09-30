@@ -5,6 +5,7 @@ import io.huskit.containers.api.cli.HtCliContainers;
 import io.huskit.containers.api.cli.HtCliDckrSpec;
 import io.huskit.containers.api.cli.HtCliDocker;
 import io.huskit.containers.api.cli.HtCliDockerSpec;
+import io.huskit.containers.api.image.HtImages;
 import lombok.RequiredArgsConstructor;
 
 import java.util.function.Consumer;
@@ -42,5 +43,10 @@ public class HtCliDckr implements HtCliDocker {
     @Override
     public HtContainers containers() {
         return new HtCliContainers(cli, spec);
+    }
+
+    @Override
+    public HtImages images() {
+        return new HtCliImages(cli, spec);
     }
 }
