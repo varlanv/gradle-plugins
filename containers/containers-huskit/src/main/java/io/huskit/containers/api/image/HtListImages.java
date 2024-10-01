@@ -4,9 +4,5 @@ import java.util.stream.Stream;
 
 public interface HtListImages {
 
-    HtListImages withAll(Boolean isAll);
-
-    HtListImageFilter filter();
-
     Stream<HtImageView> stream();
 }

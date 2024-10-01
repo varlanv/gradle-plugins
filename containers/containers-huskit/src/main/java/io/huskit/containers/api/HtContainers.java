@@ -6,15 +6,16 @@ import io.huskit.containers.api.logs.HtLogs;
 import io.huskit.containers.api.rm.HtRm;
 import io.huskit.containers.api.run.HtRun;
 import io.huskit.containers.api.run.HtRunSpec;
+import io.huskit.containers.internal.cli.HtCliRmSpec;
 
-import java.util.List;
+import java.util.Collection;
 import java.util.function.Consumer;
 
 public interface HtContainers {
 
     HtListContainers list();
 
-    HtListContainers list(Consumer<HtListContainersArgsSpec> args);
+    HtListContainers list(Consumer<HtListContainersArgsSpec> argsAction);
 
     HtLogs logs(CharSequence containerId);
 
@@ -24,5 +25,7 @@ public interface HtContainers {
 
     HtRm remove(CharSequence... containerIds);
 
-    <T extends CharSequence> HtRm remove(List<T> containerIds);
+    HtRm remove(CharSequence containerId, Consumer<HtCliRmSpec> specAction);
+
+    <T extends CharSequence> HtRm remove(Collection<T> containerIds, Consumer<HtCliRmSpec> specAction);
 }

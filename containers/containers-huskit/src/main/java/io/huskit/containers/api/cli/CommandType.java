@@ -8,6 +8,7 @@ public enum CommandType {
     RUN,
     RUN_FOLLOW,
     REMOVE_CONTAINERS,
+    REMOVE_IMAGES,
     LIST_CONTAINERS,
     INSPECT,
 }

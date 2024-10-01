@@ -13,6 +13,7 @@ import io.huskit.containers.api.run.HtRunSpec;
 import io.huskit.containers.internal.cli.*;
 import lombok.RequiredArgsConstructor;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.function.Consumer;
 
@@ -58,12 +59,21 @@ public class HtCliContainers implements HtContainers {
     }
 
     @Override
-    public HtRm remove(CharSequence... containerIds) {
+    public HtCliRm remove(CharSequence... containerIds) {
         return new HtCliRm(cli, new HtCliRmSpec(containerIds));
     }
 
     @Override
-    public <T extends CharSequence> HtRm remove(List<T> containerIds) {
+    public HtRm remove(CharSequence containerId, Consumer<HtCliRmSpec> specAction) {
+        var rmSpec = new HtCliRmSpec(containerId);
+        specAction.accept(rmSpec);
+        return new HtCliRm(cli, rmSpec);
+    }
+
+    @Override
+    public <T extends CharSequence> HtCliRm remove(Collection<T> containerIds, Consumer<HtCliRmSpec> specAction) {
+        var rmSpec = new HtCliRmSpec(containerIds);
+        specAction.accept(rmSpec);
         return new HtCliRm(cli, new HtCliRmSpec(containerIds));
     }
 }

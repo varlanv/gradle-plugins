@@ -29,6 +29,10 @@ public class HtCli {
     MemoizedSupplier<DockerShell> process = new MemoizedSupplier<>(this::createProcess);
     AtomicBoolean isClosed = new AtomicBoolean();
 
+    public void sendCommand(HtCommand command) {
+        sendCommand(command, Function.identity());
+    }
+
     @Locked
     public <T> T sendCommand(HtCommand command, Function<CommandResult, T> resultConsumer) {
         if (isClosed.get()) {
@@ -38,7 +42,6 @@ public class HtCli {
         return dockerShellProcess.sendCommand(command, resultConsumer);
     }
 
-    @Locked
     public void sendCommand(HtCommand command, Consumer<CommandResult> resultConsumer) {
         sendCommand(command, result -> {
             resultConsumer.accept(result);
@@ -142,7 +145,7 @@ public class HtCli {
         private void stop() {
             if (isStopped.compareAndSet(false, true)) {
                 if (cleanupOnClose && !containerIdsForCleanup.isEmpty()) {
-                    new HtCliRm(parent, new HtCliRmSpec(new ArrayList<>(containerIdsForCleanup), true, true)).exec();
+                    new HtCliRm(parent, new HtCliRmSpec(containerIdsForCleanup).withForce().withVolumes()).exec();
                 }
                 shell.close();
             }

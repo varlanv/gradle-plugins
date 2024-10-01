@@ -9,6 +9,7 @@ import lombok.With;
 
 import java.time.Duration;
 import java.util.List;
+import java.util.Set;
 import java.util.function.Predicate;
 
 @Getter
@@ -28,6 +29,16 @@ public class CliCommand implements HtCommand {
         this(
                 type,
                 value,
+                Constants.Predicates.alwaysFalse(),
+                Constants.Predicates.alwaysTrue(),
+                Duration.ZERO
+        );
+    }
+
+    public CliCommand(CommandType type, Set<String> value) {
+        this(
+                type,
+                List.copyOf(value),
                 Constants.Predicates.alwaysFalse(),
                 Constants.Predicates.alwaysTrue(),
                 Duration.ZERO
