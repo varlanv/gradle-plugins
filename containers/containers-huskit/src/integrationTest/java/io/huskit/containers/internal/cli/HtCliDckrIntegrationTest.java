@@ -48,7 +48,8 @@ class HtCliDckrIntegrationTest implements DockerIntegrationTest {
 
     static String alpineImageRepo = "alpine";
     static String alpineImageVersion = "3.20.3";
-    static String alpineImageForRemoveTest = "3.20.2";
+    static String alpineImageVersionForRemoveTest = "3.20.2";
+    static String alpineImageVersionForPullTest = "3.20.1";
     static String alpineImage = alpineImageRepo + ":" + alpineImageVersion;
     static String helloWorldImage = "hello-world";
 
@@ -499,6 +500,35 @@ class HtCliDckrIntegrationTest implements DockerIntegrationTest {
 
         assertThat(actual).isNotEmpty();
         assertThat(actual).allSatisfy(id -> assertThat(id).hasSize(64));
+    }
+
+    @TestTemplate
+    @DisplayName("image pull should successfully pull image")
+    void image_pull_should_successfully_pull_image(HtCliDocker subject) {
+        subject.images().pull(alpineImageRepo + ":" + alpineImageVersionForPullTest).exec();
+
+        var existingImages = subject.images().list()
+                .stream()
+                .filter(image -> image.inspect().tags()
+                        .anyMatch(tag -> tag.tag().equals(alpineImageVersionForPullTest) && tag.repository().equals(alpineImageRepo)))
+                .collect(Collectors.toList());
+
+        assertThat(existingImages).isNotEmpty();
+    }
+
+    @TestTemplate
+    @DisplayName("image rm should successfully remove image")
+    void image_rm_should_successfully_remove_image(HtCliDocker subject) {
+        subject.images().pull(alpineImageRepo + ":" + alpineImageVersionForRemoveTest).exec();
+        subject.images().rm(alpineImageRepo + ":" + alpineImageVersionForRemoveTest).exec();
+
+        var existingImages = subject.images().list()
+                .stream()
+                .filter(image -> image.inspect().tags()
+                        .anyMatch(tag -> tag.tag().equals(alpineImageVersionForRemoveTest) && tag.repository().equals(alpineImageRepo)))
+                .collect(Collectors.toList());
+
+        assertThat(existingImages).isEmpty();
     }
 
     @Getter

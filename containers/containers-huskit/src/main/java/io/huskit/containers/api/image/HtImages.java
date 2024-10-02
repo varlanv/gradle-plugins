@@ -17,4 +17,8 @@ public interface HtImages {
     HtRmImages rm(CharSequence imageId, Consumer<HtRmImagesSpec> action);
 
     <T extends CharSequence> HtCliRmImages rm(Collection<T> imageIds, Consumer<HtRmImagesSpec> action);
+
+    HtPullImages pull(CharSequence imageId);
+
+    HtPullImages pull(CharSequence imageId, Consumer<HtPullImagesSpec> action);
 }

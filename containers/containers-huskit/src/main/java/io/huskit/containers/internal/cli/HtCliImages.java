@@ -1,9 +1,7 @@
 package io.huskit.containers.internal.cli;
 
 import io.huskit.containers.api.cli.HtCliDckrSpec;
-import io.huskit.containers.api.image.HtImages;
-import io.huskit.containers.api.image.HtListImages;
-import io.huskit.containers.api.image.HtRmImagesSpec;
+import io.huskit.containers.api.image.*;
 import lombok.RequiredArgsConstructor;
 
 import java.util.Collection;
@@ -45,5 +43,17 @@ public class HtCliImages implements HtImages {
         var spec = new HtCliRmImagesSpec(imageIds);
         action.accept(spec);
         return new HtCliRmImages(cli, spec);
+    }
+
+    @Override
+    public HtPullImages pull(CharSequence imageId) {
+        return new HtCliPullImages(cli, new HtCliPullImagesSpec(imageId));
+    }
+
+    @Override
+    public HtPullImages pull(CharSequence imageId, Consumer<HtPullImagesSpec> action) {
+        var pullImagesSpec = new HtCliPullImagesSpec(imageId);
+        action.accept(pullImagesSpec);
+        return new HtCliPullImages(cli, pullImagesSpec);
     }
 }

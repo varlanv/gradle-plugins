@@ -11,4 +11,5 @@ public enum CommandType {
     REMOVE_IMAGES,
     LIST_CONTAINERS,
     INSPECT,
+    PULL_IMAGE,
 }
