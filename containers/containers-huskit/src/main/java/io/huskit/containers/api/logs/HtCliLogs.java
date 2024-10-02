@@ -22,7 +22,7 @@ public class HtCliLogs implements HtLogs {
         return Stream.of("")
                 .flatMap(ignore -> cli.sendCommand(
                         new CliCommand(
-                                CommandType.LOGS,
+                                CommandType.CONTAINERS_LOGS,
                                 List.of("docker", "logs", id)
                         ),
                         CommandResult::lines

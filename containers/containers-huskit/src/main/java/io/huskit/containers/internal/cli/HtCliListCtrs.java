@@ -46,7 +46,7 @@ public class HtCliListCtrs implements HtListContainers {
         return new LinkedHashSet<>(
                 cli.sendCommand(
                         new CliCommand(
-                                CommandType.LIST_CONTAINERS,
+                                CommandType.CONTAINERS_LIST,
                                 new FindIdsCommand(
                                         cmdArgs
                                 ).list()

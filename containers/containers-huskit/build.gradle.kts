@@ -13,6 +13,7 @@ tasks.named<ShadowJar>("shadowJar", {
     }
     relocate("io.huskit.common", "io.huskit.shadow.common")
     relocate("io.huskit.log", "io.huskit.shadow.log")
+    relocate("org.json", "io.huskit.shadow.json")
     minimize()
 })
 

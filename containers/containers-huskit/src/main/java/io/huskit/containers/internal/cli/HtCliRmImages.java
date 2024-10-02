@@ -12,6 +12,6 @@ public class HtCliRmImages implements HtRmImages {
 
     @Override
     public void exec() {
-        cli.sendCommand(new CliCommand(CommandType.REMOVE_IMAGES, rmImagesSpec.toCommand()));
+        cli.sendCommand(new CliCommand(CommandType.IMAGES_REMOVE, rmImagesSpec.toCommand()));
     }
 }

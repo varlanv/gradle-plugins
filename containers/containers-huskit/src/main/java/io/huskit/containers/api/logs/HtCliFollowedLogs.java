@@ -23,7 +23,7 @@ public class HtCliFollowedLogs implements HtFollowedLogs {
     public Stream<String> stream() {
         return cli.sendCommand(
                 new CliCommand(
-                        CommandType.LOGS_FOLLOW,
+                        CommandType.CONTAINERS_LOGS_FOLLOW,
                         List.of("docker", "logs", "-f", id)
                 ).withTerminatePredicate(line -> !Objects.equals(lookFor, LookFor.nothing()) && lookFor.predicate().test(line))
                         .withTimeout(lookFor.timeout()),

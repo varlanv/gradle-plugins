@@ -66,7 +66,7 @@ public class LogFollow {
                         lines.add(line);
                         if (command.terminatePredicate().test(line)) {
                             p.destroyForcibly();
-                            if (command.type() == CommandType.RUN) {
+                            if (command.type() == CommandType.CONTAINERS_RUN) {
                                 containerIdsForCleanup.add(lines.get(0));
                             }
                             break;

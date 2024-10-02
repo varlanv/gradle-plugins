@@ -13,6 +13,6 @@ public class HtCliPullImages implements HtPullImages {
 
     @Override
     public void exec() {
-        cli.sendCommand(new CliCommand(CommandType.PULL_IMAGE, pullImagesSpec.toCommand()));
+        cli.sendCommand(new CliCommand(CommandType.IMAGES_PULL, pullImagesSpec.toCommand()));
     }
 }

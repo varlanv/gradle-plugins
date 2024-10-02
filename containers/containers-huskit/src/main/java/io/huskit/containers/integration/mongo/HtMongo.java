@@ -24,7 +24,7 @@ public class HtMongo implements HtContainer, HtStartedContainer {
         this.reuse = Volatile.of(false);
     }
 
-   public static HtMongo fromImage(CharSequence image) {
+    public static HtMongo fromImage(CharSequence image) {
         return new HtMongo(HtDockerImageName.of(image));
     }
 

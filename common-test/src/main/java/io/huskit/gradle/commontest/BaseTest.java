@@ -4,12 +4,14 @@ import lombok.NonNull;
 import lombok.SneakyThrows;
 import org.apache.commons.io.FileDeleteStrategy;
 import org.assertj.core.api.Assertions;
+import org.assertj.core.api.Condition;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.TestInstance;
 
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
+import java.time.Instant;
 import java.util.Objects;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Executors;
@@ -101,6 +103,15 @@ public interface BaseTest {
                 rethrow(Objects.requireNonNullElse(originalException, e));
             }
         }
+    }
+
+    default Condition<? super Instant> today() {
+        return new Condition<>(instant -> {
+            var now = Instant.now();
+            var start = now.truncatedTo(TimeUnit.DAYS.toChronoUnit());
+            var end = start.plus(1, TimeUnit.DAYS.toChronoUnit());
+            return !instant.isBefore(start) && !instant.isAfter(end);
+        }, "today");
     }
 
     default <T extends Throwable> void rethrow(Throwable t) {

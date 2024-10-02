@@ -531,6 +531,45 @@ class HtCliDckrIntegrationTest implements DockerIntegrationTest {
         assertThat(existingImages).isEmpty();
     }
 
+    @TestTemplate
+    @Execution(ExecutionMode.CONCURRENT)
+    @DisplayName("volume create should create volume")
+    void volume_create_should_create_volume(HtCliDocker subject) {
+        var volumes = subject.volumes();
+
+        var volumeId = volumes.create(spec ->
+                        spec.withLabel("label1")
+                                .withLabel("label2", "value")
+                                .withLabels(Map.of("label3", "value", "label4", "value"))
+                )
+                .exec();
+        assertThat(volumeId).isNotEmpty();
+        boolean removed = false;
+        try {
+            var volumeView = volumes.inspect(volumeId);
+            assertThat(volumeView.id()).isEqualTo(volumeId);
+            assertThat(volumeView.labels()).containsAllEntriesOf(
+                    Map.of("label1", "", "label2", "value", "label3", "value", "label4", "value")
+            );
+            assertThat(volumeView.createdAt()).is(today());
+            var listedVolumeBeforeRm = volumes.list().stream()
+                    .filter(volume -> volume.id().equals(volumeId))
+                    .findFirst();
+            assertThat(listedVolumeBeforeRm).isPresent();
+            volumes.rm(volumeId, true).exec();
+            removed = true;
+
+            var listedVolumeAfterRm = volumes.list().stream()
+                    .filter(volume -> volume.id().equals(volumeId))
+                    .findFirst();
+            assertThat(listedVolumeAfterRm).isEmpty();
+        } finally {
+            if (!removed) {
+                volumes.rm(volumeId, true).exec();
+            }
+        }
+    }
+
     @Getter
     @RequiredArgsConstructor
     static class OneContainerFixture {

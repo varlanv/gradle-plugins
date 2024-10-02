@@ -18,6 +18,8 @@ public interface HtDocker {
 
     HtImages images();
 
+    HtVolumes volumes();
+
     static HtDocker anyClient() {
         return cli();
     }

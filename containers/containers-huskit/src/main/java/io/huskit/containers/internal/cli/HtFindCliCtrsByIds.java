@@ -24,7 +24,7 @@ public class HtFindCliCtrsByIds {
     public Stream<HtContainer> stream() {
         try {
             var containers = cli.sendCommand(
-                    new CliCommand(CommandType.INSPECT, buildListContainersCommand(ids)).withLinePredicate(Predicate.not(String::isBlank)),
+                    new CliCommand(CommandType.CONTAINERS_INSPECT, buildListContainersCommand(ids)).withLinePredicate(Predicate.not(String::isBlank)),
                     result -> {
                         return result.lines().stream()
                                 .map(HtJson::toMap)

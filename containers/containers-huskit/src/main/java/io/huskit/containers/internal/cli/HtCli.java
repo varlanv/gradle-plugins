@@ -83,7 +83,7 @@ public class HtCli {
         }
 
         public <T> T sendCommand(HtCommand command, Function<CommandResult, T> resultFunction) {
-            if (command.type() == CommandType.LOGS_FOLLOW) {
+            if (command.type() == CommandType.CONTAINERS_LOGS_FOLLOW) {
                 return new LogFollow(
                         recorder,
                         containerIdsForCleanup
@@ -121,12 +121,12 @@ public class HtCli {
                 }
                 line = shell.outLine();
             }
-            if (command.type() == CommandType.RUN_FOLLOW) {
+            if (command.type() == CommandType.CONTAINERS_RUN_FOLLOW) {
                 var containerId = lines.get(0);
                 containerIdsForCleanup.add(containerId);
                 sendCommand(
                         new CliCommand(
-                                CommandType.LOGS_FOLLOW,
+                                CommandType.CONTAINERS_LOGS_FOLLOW,
                                 List.of("docker", "logs", "-f", containerId),
                                 l -> command.terminatePredicate().test(l),
                                 l -> true,
@@ -135,7 +135,7 @@ public class HtCli {
                         Function.identity());
                 return resultConsumer.apply(new CommandResult(List.of(containerId)));
             } else {
-                if (command.type() == CommandType.RUN) {
+                if (command.type() == CommandType.CONTAINERS_RUN) {
                     containerIdsForCleanup.add(lines.get(0));
                 }
                 return resultConsumer.apply(new CommandResult(lines));

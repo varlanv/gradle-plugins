@@ -1,11 +1,10 @@
 package io.huskit.containers.internal.cli;
 
-import io.huskit.containers.api.HtContainers;
+import io.huskit.containers.api.HtCliVolumes;
 import io.huskit.containers.api.cli.HtCliContainers;
 import io.huskit.containers.api.cli.HtCliDckrSpec;
 import io.huskit.containers.api.cli.HtCliDocker;
 import io.huskit.containers.api.cli.HtCliDockerSpec;
-import io.huskit.containers.api.image.HtImages;
 import lombok.RequiredArgsConstructor;
 
 import java.util.function.Consumer;
@@ -17,7 +16,7 @@ public class HtCliDckr implements HtCliDocker {
     HtCliDckrSpec spec;
 
     @Override
-    public HtCliDocker configure(Consumer<HtCliDockerSpec> configureAction) {
+    public HtCliDckr configure(Consumer<HtCliDockerSpec> configureAction) {
         var spec = new HtCliDckrSpec(this.spec);
         configureAction.accept(spec);
         var newSpec = new HtCliDckrSpec(spec);
@@ -33,7 +32,7 @@ public class HtCliDckr implements HtCliDocker {
     }
 
     @Override
-    public HtCliDocker withCleanOnClose(Boolean cleanOnClose) {
+    public HtCliDckr withCleanOnClose(Boolean cleanOnClose) {
         return new HtCliDckr(
                 cli,
                 spec.withCleanOnClose(cleanOnClose)
@@ -41,12 +40,17 @@ public class HtCliDckr implements HtCliDocker {
     }
 
     @Override
-    public HtContainers containers() {
+    public HtCliContainers containers() {
         return new HtCliContainers(cli, spec);
     }
 
     @Override
-    public HtImages images() {
+    public HtCliImages images() {
         return new HtCliImages(cli, spec);
+    }
+
+    @Override
+    public HtCliVolumes volumes() {
+        return new HtCliVolumes(cli, spec);
     }
 }

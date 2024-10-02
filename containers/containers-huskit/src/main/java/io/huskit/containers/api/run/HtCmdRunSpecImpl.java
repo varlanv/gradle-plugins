@@ -17,7 +17,7 @@ import java.util.stream.Stream;
 
 @With
 @RequiredArgsConstructor
-public class  HtCmdRunSpecImpl implements HtRunSpec {
+public class HtCmdRunSpecImpl implements HtRunSpec {
 
     HtDockerImageName imgName;
     Volatile<Map<String, String>> labels = Volatile.of();
@@ -114,7 +114,7 @@ public class  HtCmdRunSpecImpl implements HtRunSpec {
     }
 
     public CommandType commandType() {
-        return lookFor.isPresent() ? CommandType.RUN_FOLLOW : CommandType.RUN;
+        return lookFor.isPresent() ? CommandType.CONTAINERS_RUN_FOLLOW : CommandType.CONTAINERS_RUN;
     }
 
     public Duration timeout() {

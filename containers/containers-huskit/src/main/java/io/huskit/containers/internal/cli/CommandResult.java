@@ -4,6 +4,7 @@ import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
 import java.util.List;
+import java.util.stream.Stream;
 
 @Getter
 @RequiredArgsConstructor
@@ -16,5 +17,9 @@ public class CommandResult {
             throw new IllegalStateException("Expected a single line, but got " + lines.size() + " lines");
         }
         return lines.get(0);
+    }
+
+    public Stream<String> stream() {
+        return lines.stream();
     }
 }
