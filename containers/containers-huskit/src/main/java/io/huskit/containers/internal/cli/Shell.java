@@ -9,6 +9,10 @@ public interface Shell {
 
     void write(String command);
 
+    default void write(List<String> commands) {
+        this.write(String.join(" ", commands));
+    }
+
     ShellType type();
 
     long pid();
@@ -16,10 +20,6 @@ public interface Shell {
     String outLine();
 
     void close();
-
-    default void write(List<String> commands) {
-        this.write(String.join(" ", commands));
-    }
 
     default void echo(String message) {
         write("echo " + message);

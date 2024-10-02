@@ -1,13 +1,10 @@
 package io.huskit.common;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.LinkedHashSet;
-import java.util.List;
+import java.util.*;
 
 public class StringTuples {
 
-    LinkedHashSet<Tuple<String, String>> args;
+    Set<Tuple<String, String>> args;
 
     public StringTuples() {
         this.args = new LinkedHashSet<>();

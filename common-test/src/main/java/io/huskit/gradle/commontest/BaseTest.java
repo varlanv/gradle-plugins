@@ -30,7 +30,7 @@ public interface BaseTest {
     int DEFAULT_REPEAT_COUNT = 10;
 
     @BeforeAll
-    default void setupAssertJParent() {
+    default void setupAssertjParent() {
         Assertions.setMaxStackTraceElementsDisplayed(Integer.MAX_VALUE);
     }
 

@@ -28,6 +28,8 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.TimeoutException;
+import java.util.function.Function;
+import java.util.function.Predicate;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -535,30 +537,38 @@ class HtCliDckrIntegrationTest implements DockerIntegrationTest {
     @Execution(ExecutionMode.CONCURRENT)
     @DisplayName("volume create should create volume")
     void volume_create_should_create_volume(HtCliDocker subject) {
+        // when creating volume
         var volumes = subject.volumes();
-
         var volumeId = volumes.create(spec ->
                         spec.withLabel("label1")
                                 .withLabel("label2", "value")
                                 .withLabels(Map.of("label3", "value", "label4", "value"))
                 )
                 .exec();
+
+        // then volume id should not be empty
         assertThat(volumeId).isNotEmpty();
         boolean removed = false;
         try {
+            // and volume should be found with inspect command
             var volumeView = volumes.inspect(volumeId);
             assertThat(volumeView.id()).isEqualTo(volumeId);
             assertThat(volumeView.labels()).containsAllEntriesOf(
                     Map.of("label1", "", "label2", "value", "label3", "value", "label4", "value")
             );
             assertThat(volumeView.createdAt()).is(today());
+
+            // and volume should be found with list command
             var listedVolumeBeforeRm = volumes.list().stream()
                     .filter(volume -> volume.id().equals(volumeId))
                     .findFirst();
             assertThat(listedVolumeBeforeRm).isPresent();
+
+            // when removing volume
             volumes.rm(volumeId, true).exec();
             removed = true;
 
+            // then volume should not be found with list command
             var listedVolumeAfterRm = volumes.list().stream()
                     .filter(volume -> volume.id().equals(volumeId))
                     .findFirst();
@@ -632,11 +642,11 @@ class HtCliDckrIntegrationTest implements DockerIntegrationTest {
                                 .withLabels(labels)
                 ).exec();
                 var containerId = container.id();
-                var trimmedId = containerId.substring(0, 12);
                 assertThat(container).isNotNull();
                 assertThat(containerId).isNotBlank();
                 assertThat(container.labels()).isEqualTo(labels);
                 recorder.forCurrentThread().clear();
+                var trimmedId = containerId.substring(0, 12);
                 return new OneContainerFixture(
                         subject,
                         recorder,
@@ -656,21 +666,15 @@ class HtCliDckrIntegrationTest implements DockerIntegrationTest {
 
         @Override
         public Stream<TestTemplateInvocationContext> provideTestTemplateInvocationContexts(ExtensionContext extensionContext) {
+            var predicates = Map.<ShellType, Predicate<ShellType>>of(
+                    ShellType.DEFAULT, shellType -> false,
+                    ShellType.BASH, shellType -> ShellConditions.bashAvailable(),
+                    ShellType.POWERSHELL, shellType -> ShellConditions.powershellAvailable(),
+                    ShellType.CMD, shellType -> ShellConditions.cmdAvailable(),
+                    ShellType.SH, shellType -> ShellConditions.shAvailable()
+            );
             return Arrays.stream(ShellType.values())
-                    .filter(shellType -> shellType != ShellType.DEFAULT)
-                    .filter(shellType -> {
-                        if (shellType == ShellType.BASH && !ShellConditions.bashAvailable()) {
-                            return false;
-                        } else if (shellType == ShellType.POWERSHELL && !ShellConditions.powershellAvailable()) {
-                            return false;
-                        } else if (shellType == ShellType.CMD && !ShellConditions.cmdAvailable()) {
-                            return false;
-                        } else if (shellType == ShellType.SH && !ShellConditions.shAvailable()) {
-                            return false;
-                        } else {
-                            return true;
-                        }
-                    })
+                    .filter(shellType -> predicates.get(shellType).test(shellType))
                     .map(shellType -> contexts.computeIfAbsent(shellType, k -> {
                         var recorder = new ThreadLocalCliRecorder();
                         return new Context(
@@ -688,6 +692,12 @@ class HtCliDckrIntegrationTest implements DockerIntegrationTest {
 
                         @Override
                         public List<Extension> getAdditionalExtensions() {
+                            var parameterMap = Map.<String, Function<Context, Object>>of(
+                                    ThreadLocalCliRecorder.class.getName(), ctx -> ctx.recorder,
+                                    HtCliDocker.class.getName(), ctx -> ctx.subject,
+                                    ShellType.class.getName(), ctx -> ctx.shellType,
+                                    OneContainerFixture.class.getName(), ctx -> ctx.oneContainerFixture.get()
+                            );
                             return List.of(
                                     (BeforeEachCallback) extensionContext -> {
                                         Optional.ofNullable(contexts.get(context.shellType)).ifPresent(context ->
@@ -697,27 +707,15 @@ class HtCliDckrIntegrationTest implements DockerIntegrationTest {
 
                                         @Override
                                         public boolean supportsParameter(ParameterContext parameterContext, ExtensionContext extensionContext) {
-                                            var type = parameterContext.getParameter().getType();
-                                            return type == ThreadLocalCliRecorder.class ||
-                                                    type == HtCliDocker.class ||
-                                                    type == ShellType.class ||
-                                                    type == OneContainerFixture.class;
+                                            return parameterMap.containsKey(parameterContext.getParameter().getType().getName());
                                         }
 
                                         @Override
                                         public Object resolveParameter(ParameterContext parameterContext, ExtensionContext extensionContext) {
-                                            var type = parameterContext.getParameter().getType();
-                                            if (type == ThreadLocalCliRecorder.class) {
-                                                return context.recorder;
-                                            } else if (type == HtCliDocker.class) {
-                                                return context.subject;
-                                            } else if (type == ShellType.class) {
-                                                return context.shellType;
-                                            } else if (type == OneContainerFixture.class) {
-                                                return context.oneContainerFixture.get();
-                                            } else {
-                                                throw new IllegalArgumentException("Unsupported parameter type: " + type);
-                                            }
+                                            return Optional.ofNullable(parameterMap.get(parameterContext.getParameter().getType().getName()))
+                                                    .map(fn -> fn.apply(context))
+                                                    .orElseThrow(() -> new IllegalArgumentException(
+                                                            "Unsupported parameter type: " + parameterContext.getParameter().getType()));
                                         }
                                     });
                         }

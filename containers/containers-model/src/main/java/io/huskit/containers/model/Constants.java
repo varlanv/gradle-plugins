@@ -1,23 +1,23 @@
 package io.huskit.containers.model;
 
-import lombok.RequiredArgsConstructor;
+import lombok.NoArgsConstructor;
 
 import java.time.Duration;
 import java.time.temporal.ChronoUnit;
 import java.util.function.Predicate;
 
-@RequiredArgsConstructor(access = lombok.AccessLevel.PRIVATE)
+@NoArgsConstructor(access = lombok.AccessLevel.PRIVATE)
 public class Constants {
 
     public static final String KEY_LABEL = "huskit_key";
 
-    @RequiredArgsConstructor(access = lombok.AccessLevel.PRIVATE)
+    @NoArgsConstructor(access = lombok.AccessLevel.PRIVATE)
     public static class Cleanup {
 
         public static final Duration DEFAULT_CLEANUP_AFTER = Duration.of(12, ChronoUnit.HOURS);
     }
 
-    @RequiredArgsConstructor(access = lombok.AccessLevel.PRIVATE)
+    @NoArgsConstructor(access = lombok.AccessLevel.PRIVATE)
     public static class Predicates {
 
         private static final Predicate<?> ALWAYS_TRUE = t -> true;
@@ -34,7 +34,7 @@ public class Constants {
         }
     }
 
-    @RequiredArgsConstructor(access = lombok.AccessLevel.PRIVATE)
+    @NoArgsConstructor(access = lombok.AccessLevel.PRIVATE)
     public static class Mongo {
 
         public static final Integer DEFAULT_PORT = 27017;
