@@ -5,13 +5,21 @@ executors:
     docker:
       - image: cimg/openjdk:11.0.22
 
+commands:
+  prepare-gradle:
+    steps:
+      - run:
+          name: Replace distributionUrl
+          command: sed -i 's/-all.zip/-bin.zip/' gradle/wrapper/gradle-wrapper.properties
+
+
 jobs:
   #       ------------------ UNIX ------------------
   gradle-build-unix:
     executor: jdk-executor
-    docker:
     steps:
       - checkout
+      - prepare-gradle
       - restore_cache:
           keys:
             - gradle-wrapper-{{ checksum "gradle/wrapper/gradle-wrapper.properties" }}
@@ -30,10 +38,9 @@ jobs:
 
   gradle-build-test-unix:
     executor: jdk-executor
-    docker:
-      - image: cimg/openjdk:11.0.22
     steps:
       - checkout
+      - prepare-gradle
       - restore_cache:
           keys:
             - gradle-wrapper-{{ checksum "gradle/wrapper/gradle-wrapper.properties" }}
@@ -54,6 +61,7 @@ jobs:
     executor: jdk-executor
     steps:
       - checkout
+      - prepare-gradle
       - restore_cache:
           keys:
             - gradle-wrapper-{{ checksum "gradle/wrapper/gradle-wrapper.properties" }}
@@ -73,8 +81,8 @@ jobs:
   gradle-integration-test-unix:
     executor: jdk-executor
     steps:
-      - setup_remote_docker:
-          docker_layer_caching: true
+      #      - setup_remote_docker:
+      #          docker_layer_caching: true
       - checkout
       - restore_cache:
           keys:
@@ -95,9 +103,8 @@ jobs:
   gradle-functional-test-unix:
     executor: jdk-executor
     steps:
-      - setup_remote_docker:
-          version: default
-          docker_layer_caching: true
+      #      - setup_remote_docker:
+      #          docker_layer_caching: true
       - checkout
       - restore_cache:
           keys:
@@ -115,20 +122,21 @@ jobs:
       - store_test_results:
           path: ~/test-results
 
+branch-filters: &branch-filters
+  branches:
+    only:
+      - feature/*
+      - fix/*
+      - dev
+
 workflows:
-  gradle-build-unix:
+  gradle-build-unix-wf:
     jobs:
-      - hold:
-          type: approval
       - gradle-build-unix:
-          requires:
-            - hold
+          filters: *branch-filters
       - gradle-unit-test-unix:
-          requires:
-            - hold
+          filters: *branch-filters
       - gradle-integration-test-unix:
-          requires:
-            - hold
+          filters: *branch-filters
       - gradle-functional-test-unix:
-          requires:
-            - hold
+          filters: *branch-filters
