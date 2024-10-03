@@ -132,7 +132,7 @@ workflows:
       - gradle-build:
           name: Compile
       - gradle-unit-test:
-          name: Unit tests
+          name: Unit test
       - gradle-integration-test-unix:
           name: Integration test
       - gradle-functional-test-unix:
