@@ -3,7 +3,7 @@ description: Run specific tests
 
 inputs:
   test-type:
-    description: 'The type of test to run: "test", 'integrationTest", "functionalTest"'
+    description: The type of test to run - test, integrationTest or functionalTest
     required: true
 
 runs:
