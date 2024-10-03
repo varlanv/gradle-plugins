@@ -31,8 +31,8 @@ commands:
         type: string
     steps:
       - run:
-          name: "Run gradle command ${{ parameters.command }}"
-          command: "./gradlew ${{ parameters.command }} --no-configuration-cache --no-build-cache --no-configure-on-demand --stacktrace"
+          name: "Run gradle command << parameters.command >>"
+          command: "./gradlew << parameters.command >> --no-configuration-cache --no-build-cache --no-configure-on-demand --stacktrace"
   save-gradle-cache:
     steps:
       - save_cache:
@@ -60,7 +60,7 @@ commands:
             - setup_remote_docker
       - restore-gradle-cache
       - run-gradle-command:
-          command: "${{ parameters.test-type }}"
+          command: << parameters.test-type >>
       - save-gradle-test-results
 
 jobs:
