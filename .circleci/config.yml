@@ -128,9 +128,15 @@ workflows:
             pattern: fix/.*
             value: << pipeline.git.branch >>
     jobs:
-      - gradle-build
-      - gradle-unit-test
-      - gradle-integration-test-unix
-      - gradle-functional-test-unix
-      - static-analysis-sources
-      - static-analysis-test
+      - gradle-build:
+          name: Compile project
+      - gradle-unit-test:
+          name: Run unit tests
+      - gradle-integration-test-unix:
+          name: Run integration tests
+      - gradle-functional-test-unix:
+          name: Run functional tests
+      - static-analysis-sources:
+          name: Static analysis of sources
+      - static-analysis-test:
+          name: Static analysis of tests
