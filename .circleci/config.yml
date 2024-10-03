@@ -131,16 +131,10 @@ workflows:
           name: Compile project
       - gradle-unit-test:
           name: Run unit tests
-          requires:
-            - "Compile project"
       - gradle-integration-test-unix:
           name: Run integration tests
-          requires:
-            - "Compile project"
       - gradle-functional-test-unix:
           name: Run functional tests
-          requires:
-            - "Compile project"
       - static-analysis-sources:
           name: Static analysis of sources
       - static-analysis-test:
