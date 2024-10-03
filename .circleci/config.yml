@@ -58,7 +58,8 @@ commands:
           condition:
             equal: [ true, << parameters.setup-docker >> ]
           steps:
-            - setup_remote_docker
+            - setup_remote_docker:
+                docker_layer_caching: true
       - restore-gradle-cache
       - run-gradle-command:
           command: << parameters.test-type >>
