@@ -103,20 +103,13 @@ jobs:
       - gradle-test:
           test-type: "functionalTest"
           setup-docker: true
-  static-analysis-sources:
+  static-analysis:
     executor: jdk-executor
     steps:
       - checkout
       - restore-gradle-cache
       - run-gradle-command:
-          command: "staticAnalyseMain"
-  static-analysis-test:
-    executor: jdk-executor
-    steps:
-      - checkout
-      - restore-gradle-cache
-      - run-gradle-command:
-          command: "staticAnalyseTest"
+          command: "staticAnalyseFull"
 
 workflows:
   Verify:
@@ -138,7 +131,5 @@ workflows:
           name: Integration test
       - gradle-functional-test-unix:
           name: Functional test
-      - static-analysis-sources:
-          name: Static analysis of sources
-      - static-analysis-test:
-          name: Static analysis of tests
+      - static-analysis:
+          name: Static analysis of sources and tests
