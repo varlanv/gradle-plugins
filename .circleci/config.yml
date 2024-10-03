@@ -123,9 +123,9 @@ jobs:
 branch-filters: &branch-filters
   branches:
     only:
-      - feature/*
-      - fix/*
-      - dev
+      - "feature/*"
+      - "fix/*"
+      - "dev"
 
 workflows:
   Verify:
