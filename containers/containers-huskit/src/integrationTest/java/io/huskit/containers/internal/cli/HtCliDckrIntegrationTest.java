@@ -398,7 +398,7 @@ class HtCliDckrIntegrationTest implements DockerIntegrationTest {
 
     @TestTemplate
     @Execution(ExecutionMode.CONCURRENT)
-    @DisplayName("image pull should successfully pull image")
+    @DisplayName("'image pull' should successfully pull image")
     void image_pull_should_successfully_pull_image(HtCliDocker subject, String smallImage) {
         subject.images().pull(smallImage).exec();
 
@@ -411,7 +411,7 @@ class HtCliDckrIntegrationTest implements DockerIntegrationTest {
 
     @TestTemplate
     @Execution(ExecutionMode.CONCURRENT)
-    @DisplayName("image rm should successfully remove image")
+    @DisplayName("'image rm' should successfully remove image")
     void image_rm_should_successfully_remove_image(HtCliDocker subject, String smallImage) {
         subject.images().pull(smallImage).exec();
         subject.images().rm(smallImage).exec();
@@ -425,7 +425,7 @@ class HtCliDckrIntegrationTest implements DockerIntegrationTest {
 
     @TestTemplate
     @Execution(ExecutionMode.CONCURRENT)
-    @DisplayName("volume create should create volume")
+    @DisplayName("'volume create' should create volume")
     void volume_create_should_create_volume(HtCliDocker subject) {
         // when creating volume
         var volumes = subject.volumes();
