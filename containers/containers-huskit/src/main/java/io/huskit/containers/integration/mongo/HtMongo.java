@@ -4,7 +4,7 @@ import io.huskit.common.port.DynamicContainerPort;
 import io.huskit.containers.api.HtContainer;
 import io.huskit.containers.api.HtContainers;
 import io.huskit.containers.api.HtDocker;
-import io.huskit.containers.api.HtDockerImageName;
+import io.huskit.containers.api.HtImgName;
 import io.huskit.containers.integration.*;
 import io.huskit.containers.model.Constants;
 import lombok.Getter;
@@ -19,18 +19,18 @@ import java.util.stream.Collectors;
 
 public class HtMongo implements HtServiceContainer {
 
-    HtDockerImageName imageName;
+    HtImgName imageName;
     DefContainerSpec containerSpec;
     DefDockerClientSpec dockerClientSpec;
     ContainerHash containerHash;
 
-    public HtMongo(HtDockerImageName imageName) {
+    public HtMongo(HtImgName imageName) {
         this.imageName = imageName;
         this.containerSpec = new DefContainerSpec();
         this.dockerClientSpec = new DefDockerClientSpec(this);
         this.containerSpec.await().forLogMessageContaining("Waiting for connections");
         this.containerHash = new ContainerHash()
-                .add(imageName.id())
+                .add(imageName.reference())
                 .add(containerSpec.envSpec().envMap())
                 .add(containerSpec.labelSpec().labelMap())
                 .add(containerSpec.waitSpec().textWait())
@@ -38,7 +38,7 @@ public class HtMongo implements HtServiceContainer {
     }
 
     public static HtMongo fromImage(CharSequence image) {
-        return new HtMongo(HtDockerImageName.of(image));
+        return new HtMongo(HtImgName.of(image));
     }
 
     @Override
@@ -69,7 +69,7 @@ public class HtMongo implements HtServiceContainer {
             var containers = htDocker.containers();
             var hostPort = new DynamicContainerPort().hostValue();
             return containers
-                    .run(imageName.id(), runSpec -> {
+                    .run(imageName.reference(), runSpec -> {
                                 var envSpec = containerSpec.envSpec();
                                 envSpec.envMap().ifPresent(runSpec::withEnv);
                                 var labelSpec = containerSpec.labelSpec();

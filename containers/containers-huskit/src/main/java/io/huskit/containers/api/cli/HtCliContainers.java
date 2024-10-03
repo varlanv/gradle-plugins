@@ -2,7 +2,7 @@ package io.huskit.containers.api.cli;
 
 import io.huskit.containers.api.HtContainer;
 import io.huskit.containers.api.HtContainers;
-import io.huskit.containers.api.HtDockerImageName;
+import io.huskit.containers.api.HtImgName;
 import io.huskit.containers.api.list.HtListContainers;
 import io.huskit.containers.api.list.arg.HtListContainersArgsSpec;
 import io.huskit.containers.api.logs.HtCliLogs;
@@ -63,14 +63,14 @@ public class HtCliContainers implements HtContainers {
     public HtRun run(CharSequence dockerImageName) {
         return new HtCliRun(
                 cli,
-                new HtCmdRunSpecImpl(HtDockerImageName.of(dockerImageName.toString())),
+                new HtCmdRunSpecImpl(HtImgName.ofPrefix(dockerSpec.imagePrefix(), dockerImageName)),
                 dockerSpec
         );
     }
 
     @Override
     public HtRun run(CharSequence dockerImageName, Consumer<HtRunSpec> spec) {
-        var runSpec = new HtCmdRunSpecImpl(HtDockerImageName.of(dockerImageName.toString()));
+        var runSpec = new HtCmdRunSpecImpl(HtImgName.ofPrefix(dockerSpec.imagePrefix(), dockerImageName));
         spec.accept(runSpec);
         return new HtCliRun(
                 cli,

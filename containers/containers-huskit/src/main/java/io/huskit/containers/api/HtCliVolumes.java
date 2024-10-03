@@ -87,12 +87,12 @@ public class HtCliVolumes implements HtVolumes {
     }
 
     @Override
-    public <T extends CharSequence> HtRemoveVolumes rm(Iterable<T> imageIds, Boolean force) {
+    public <T extends CharSequence> HtRemoveVolumes rm(Iterable<T> imageRefs, Boolean force) {
         return new HtCliRemoveVolumes(
                 cli,
                 new HtCliRemoveVolumesSpec(
                         force,
-                        imageIds
+                        imageRefs
                 )
         );
     }

@@ -3,7 +3,6 @@ package io.huskit.containers.api.image;
 import io.huskit.containers.internal.cli.HtCliRmImages;
 import io.huskit.containers.internal.cli.HtListImagesSpec;
 
-import java.util.Collection;
 import java.util.function.Consumer;
 
 public interface HtImages {
@@ -12,13 +11,13 @@ public interface HtImages {
 
     HtListImages list(Consumer<HtListImagesSpec> action);
 
-    HtRmImages rm(CharSequence imageId);
+    HtRmImages rm(CharSequence imageRef);
 
-    HtRmImages rm(CharSequence imageId, Consumer<HtRmImagesSpec> action);
+    HtRmImages rm(CharSequence imageRef, Consumer<HtRmImagesSpec> action);
 
-    <T extends CharSequence> HtCliRmImages rm(Collection<T> imageIds, Consumer<HtRmImagesSpec> action);
+    <T extends CharSequence> HtCliRmImages rm(Iterable<T> imageRefs, Consumer<HtRmImagesSpec> action);
 
-    HtPullImages pull(CharSequence imageId);
+    HtPullImages pull(CharSequence imageRef);
 
-    HtPullImages pull(CharSequence imageId, Consumer<HtPullImagesSpec> action);
+    HtPullImages pull(CharSequence imageRef, Consumer<HtPullImagesSpec> action);
 }

@@ -1,7 +1,7 @@
 package io.huskit.containers.api.run;
 
 import io.huskit.common.Mutable;
-import io.huskit.containers.api.HtDockerImageName;
+import io.huskit.containers.api.HtImgName;
 import io.huskit.containers.api.cli.CommandType;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
@@ -19,7 +19,7 @@ import java.util.stream.Stream;
 @RequiredArgsConstructor
 public class HtCmdRunSpecImpl implements HtRunSpec {
 
-    HtDockerImageName imgName;
+    HtImgName imgName;
     Mutable<Map<String, String>> labels = Mutable.of();
     Mutable<Map<String, String>> env = Mutable.of();
     Mutable<Map<Integer, Integer>> ports = Mutable.of();
@@ -131,7 +131,7 @@ public class HtCmdRunSpecImpl implements HtRunSpec {
             processCmd.add(k + ":" + v);
         }));
 
-        processCmd.add(imgName.id());
+        processCmd.add(imgName.reference());
         command.ifPresent(runCmd -> {
             processCmd.add(runCmd.command());
             processCmd.addAll(runCmd.args());

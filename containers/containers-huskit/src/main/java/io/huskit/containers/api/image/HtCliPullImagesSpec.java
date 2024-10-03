@@ -2,22 +2,20 @@ package io.huskit.containers.api.image;
 
 import io.huskit.common.Mutable;
 import io.huskit.common.Volatile;
+import io.huskit.containers.api.HtImgName;
 
 import java.util.ArrayList;
 import java.util.List;
 
 public class HtCliPullImagesSpec implements HtPullImagesSpec {
 
-    String imageId;
+    HtImgName imageName;
     Mutable<Boolean> allTags = Volatile.of(false);
     Mutable<Boolean> disableContentTrust = Volatile.of(false);
     Mutable<String> platform = Volatile.of();
 
-    public HtCliPullImagesSpec(CharSequence imageId) {
-        this.imageId = imageId.toString();
-        if (this.imageId.isBlank()) {
-            throw new IllegalArgumentException("Image ID cannot be blank");
-        }
+    public HtCliPullImagesSpec(HtImgName imageName) {
+        this.imageName = imageName;
     }
 
     @Override
@@ -39,7 +37,7 @@ public class HtCliPullImagesSpec implements HtPullImagesSpec {
     }
 
     public List<String> toCommand() {
-        var command = new ArrayList<String>(4 + imageId.length());
+        var command = new ArrayList<String>(4);
         command.add("docker");
         command.add("pull");
         if (allTags.require()) {
@@ -55,7 +53,7 @@ public class HtCliPullImagesSpec implements HtPullImagesSpec {
                 command.add(platform);
             }
         });
-        command.add(imageId);
+        command.add(imageName.reference());
         return command;
     }
 }

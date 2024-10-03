@@ -3,6 +3,7 @@ package io.huskit.containers.internal.cli;
 import io.huskit.common.function.MemoizedSupplier;
 import io.huskit.containers.api.HtContainer;
 import io.huskit.containers.api.HtDocker;
+import io.huskit.containers.api.HtVolumeView;
 import io.huskit.containers.api.cli.HtCliDocker;
 import io.huskit.containers.api.cli.ShellType;
 import io.huskit.containers.api.cli.ThreadLocalCliRecorder;
@@ -11,6 +12,7 @@ import io.huskit.containers.api.image.HtImageView;
 import io.huskit.containers.api.list.arg.HtListContainersArgsSpec;
 import io.huskit.containers.api.logs.HtLogs;
 import io.huskit.containers.api.logs.LookFor;
+import io.huskit.gradle.commontest.DockerImagesStash;
 import io.huskit.gradle.commontest.DockerIntegrationTest;
 import io.huskit.gradle.commontest.ShellConditions;
 import lombok.Getter;
@@ -23,7 +25,10 @@ import org.junit.jupiter.api.parallel.ExecutionMode;
 
 import java.time.Duration;
 import java.util.*;
-import java.util.concurrent.*;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.ThreadLocalRandom;
+import java.util.concurrent.TimeoutException;
 import java.util.function.BiFunction;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
@@ -44,11 +49,6 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 @ExtendWith(HtCliDckrIntegrationTest.ShellExtension.class)
 class HtCliDckrIntegrationTest implements DockerIntegrationTest {
 
-    static String alpineImageRepo = "alpine";
-    static String alpineImageVersion = "3.20.3";
-    static String alpineImage = alpineImageRepo + ":" + alpineImageVersion;
-    static String helloWorldImage = "hello-world";
-
     @TestTemplate
     @DisplayName("docker cli .stop method should stop docker shell")
     @Execution(ExecutionMode.CONCURRENT)
@@ -61,7 +61,7 @@ class HtCliDckrIntegrationTest implements DockerIntegrationTest {
                         spec.withCliRecorder(recorder)
                                 .withShell(shellType));
         var containerId = subject.containers()
-                .run(alpineImage, spec -> spec.withCommand("sh -c \"while true; do sleep 3600; done\""))
+                .run(DockerImagesStash.defaultSmall(), spec -> spec.withCommand("sh -c \"while true; do sleep 3600; done\""))
                 .exec()
                 .id();
         Supplier<List<HtContainer>> findContainers = () -> subject.containers()
@@ -142,9 +142,9 @@ class HtCliDckrIntegrationTest implements DockerIntegrationTest {
 
     @TestTemplate
     @DisplayName("container run when not called exec then should not run command")
-    void run__when_not_called_exec__should_not_run_command(HtCliDocker subject, ThreadLocalCliRecorder recorder) {
+    void run__when_not_called_exec__should_not_run_command(HtCliDocker subject, ThreadLocalCliRecorder recorder, String smallImage) {
         // given
-        subject.containers().run(helloWorldImage);
+        subject.containers().run(smallImage);
 
         // then
         assertThat(recorder.forCurrentThread()).isEmpty();
@@ -153,12 +153,12 @@ class HtCliDckrIntegrationTest implements DockerIntegrationTest {
     @TestTemplate
     @Execution(ExecutionMode.CONCURRENT)
     @DisplayName("with labels should create correct command")
-    void run__with_labels__should_create_correct_command(HtCliDocker subject, ThreadLocalCliRecorder recorder) {
+    void run__with_labels__should_create_correct_command(HtCliDocker subject, ThreadLocalCliRecorder recorder, String smallImage) {
         // given
         var labels = new LinkedHashMap<String, String>();
         labels.put("someLabelKey", "someLabelVal");
         labels.put("someLabelKey2", "someLabelVal2");
-        subject.containers().run(helloWorldImage, spec -> spec.withLabels(labels).withRemove())
+        subject.containers().run(smallImage, spec -> spec.withLabels(labels).withRemove())
                 .exec();
 
         // then
@@ -167,7 +167,7 @@ class HtCliDckrIntegrationTest implements DockerIntegrationTest {
                 .containsExactly("docker", "run", "-d", "--rm",
                         "--label", "\"someLabelKey=someLabelVal\"",
                         "--label", "\"someLabelKey2=someLabelVal2\"",
-                        helloWorldImage);
+                        smallImage);
     }
 
     @TestTemplate
@@ -252,9 +252,7 @@ class HtCliDckrIntegrationTest implements DockerIntegrationTest {
         assertThat(fixture.recorder().forCurrentThread()).hasSize(2);
         assertThat(fixture.recorder().forCurrentThread().get(0).value())
                 .isEqualTo(List.of(
-                                "docker",
-                                "ps",
-                                "-a",
+                                "docker", "ps", "-a",
                                 "--filter", "\"id=" + fixture.containerId() + "\"",
                                 "--filter", "\"label=" + fixture.labelIdKey() + "=" + fixture.labelId() + "\"",
                                 "--format", "\"{{json .}}\"",
@@ -364,7 +362,7 @@ class HtCliDckrIntegrationTest implements DockerIntegrationTest {
     @Execution(ExecutionMode.CONCURRENT)
     @DisplayName("when one container, images list should contain container image")
     void image_list_should_return_container_image(OneContainerFixture fixture) {
-        var actual = fixture.subject().images().list(spec -> spec.withFilterByReference(alpineImage))
+        var actual = fixture.subject().images().list(spec -> spec.withFilterByReference(DockerImagesStash.defaultSmall()))
                 .stream()
                 .collect(Collectors.toList());
 
@@ -388,7 +386,7 @@ class HtCliDckrIntegrationTest implements DockerIntegrationTest {
     @Execution(ExecutionMode.CONCURRENT)
     @DisplayName("when one container, images list should return images with full ids")
     void image_list_should_return_images_with_full_ids(OneContainerFixture fixture) {
-        var actual = fixture.subject().images().list(spec -> spec.withFilterByReference(alpineImage))
+        var actual = fixture.subject().images().list(spec -> spec.withFilterByReference(DockerImagesStash.defaultSmall()))
                 .stream()
                 .map(HtImageView::inspect)
                 .map(HtImageRichView::id)
@@ -431,12 +429,14 @@ class HtCliDckrIntegrationTest implements DockerIntegrationTest {
     void volume_create_should_create_volume(HtCliDocker subject) {
         // when creating volume
         var volumes = subject.volumes();
-        var volumeId = volumes.create(spec ->
-                        spec.withLabel("label1")
-                                .withLabel("label2", "value")
-                                .withLabels(Map.of("label3", "value", "label4", "value"))
+        var volumeId = String.valueOf(System.nanoTime());
+        var createdVolumeId = volumes.create(volumeId, spec -> spec
+                        .withLabel("label1")
+                        .withLabel("label2", "value")
+                        .withLabels(Map.of("label3", "value", "label4", "value"))
                 )
                 .exec();
+        assertThat(createdVolumeId).isEqualTo(volumeId);
 
         // then volume id should not be empty
         assertThat(volumeId).isNotEmpty();
@@ -451,10 +451,10 @@ class HtCliDckrIntegrationTest implements DockerIntegrationTest {
             assertThat(volumeView.createdAt()).is(today());
 
             // and volume should be found with list command
-            var listedVolumeBeforeRm = volumes.list().stream()
-                    .filter(volume -> volume.id().equals(volumeId))
-                    .findFirst();
-            assertThat(listedVolumeBeforeRm).isPresent();
+            var existingVolumesBeforeRm = volumes.list().stream()
+                    .map(HtVolumeView::id)
+                    .collect(Collectors.toSet());
+            assertThat(existingVolumesBeforeRm).contains(volumeId);
 
             // when removing volume
             volumes.rm(volumeId, true).exec();
@@ -500,18 +500,6 @@ class HtCliDckrIntegrationTest implements DockerIntegrationTest {
     static class ShellExtension implements TestTemplateInvocationContextProvider, AfterAllCallback {
 
         private static final ConcurrentMap<ShellType, Context> contexts = new ConcurrentHashMap<>();
-        private static final Queue<String> smallImages = new ConcurrentLinkedQueue<>(Set.of(
-                "alpine:3.19.0",
-                "alpine:3.19.1",
-                "alpine:3.19.2",
-                "alpine:3.19.3",
-                "alpine:3.19.4",
-                "alpine:3.20.0",
-                "alpine:3.20.1",
-                "alpine:3.20.2"
-//                "alpine:3.20.3"
-        ));
-        private static final Map<String, String> usedSmallImages = new ConcurrentHashMap<>();
 
         @Override
         public void afterAll(ExtensionContext extensionContext) {
@@ -540,7 +528,7 @@ class HtCliDckrIntegrationTest implements DockerIntegrationTest {
                         "someLabelKey2", "someLabelVal2"
                 );
                 var container = subject.containers().run(
-                        alpineImage,
+                        DockerImagesStash.defaultSmall(),
                         spec -> spec
                                 .withCommand("sh -c \"echo 'Hello World 1' && echo 'Hello World 2' && tail -f /dev/null\"")
                                 .withLabels(labels)
@@ -583,7 +571,12 @@ class HtCliDckrIntegrationTest implements DockerIntegrationTest {
                         var recorder = new ThreadLocalCliRecorder();
                         return new Context(
                                 shellType,
-                                HtDocker.cli().configure(spec -> spec.withCliRecorder(recorder).withShell(shellType)),
+                                HtDocker.cli().configure(spec -> spec
+                                        .withCliRecorder(recorder)
+                                        .withShell(shellType)
+                                        .withForwardStderr(false)
+                                        .withForwardStdout(false)
+                                ),
                                 recorder
                         );
                     }))
@@ -601,11 +594,7 @@ class HtCliDckrIntegrationTest implements DockerIntegrationTest {
                                     HtCliDocker.class.getName(), (ectx, ctx) -> ctx.subject,
                                     ShellType.class.getName(), (ectx, ctx) -> ctx.shellType,
                                     OneContainerFixture.class.getName(), (ectx, ctx) -> ctx.oneContainerFixture.get(),
-                                    String.class.getName(), (ectx, ctx) -> {
-                                        var smallImage = Objects.requireNonNull(smallImages.poll());
-                                        usedSmallImages.put(ectx.getUniqueId(), smallImage);
-                                        return smallImage;
-                                    }
+                                    String.class.getName(), (ectx, ctx) -> DockerImagesStash.pickSmall(ectx.getUniqueId())
                             );
                             return List.of(
                                     (BeforeEachCallback) extensionContext -> {
@@ -613,8 +602,7 @@ class HtCliDckrIntegrationTest implements DockerIntegrationTest {
                                                 context.recorder.clearForCurrentThread());
                                     },
                                     (AfterEachCallback) extensionContext -> {
-                                        Optional.ofNullable(usedSmallImages.get(extensionContext.getUniqueId()))
-                                                .ifPresent(smallImages::offer);
+                                        DockerImagesStash.returnSmallIfPresent(extensionContext.getUniqueId());
                                     },
                                     new ParameterResolver() {
 

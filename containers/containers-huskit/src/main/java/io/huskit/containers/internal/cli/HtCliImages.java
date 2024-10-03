@@ -1,10 +1,10 @@
 package io.huskit.containers.internal.cli;
 
+import io.huskit.containers.api.HtImgName;
 import io.huskit.containers.api.cli.HtCliDckrSpec;
 import io.huskit.containers.api.image.*;
 import lombok.RequiredArgsConstructor;
 
-import java.util.Collection;
 import java.util.List;
 import java.util.function.Consumer;
 
@@ -27,32 +27,32 @@ public class HtCliImages implements HtImages {
     }
 
     @Override
-    public HtCliRmImages rm(CharSequence imageId) {
-        return new HtCliRmImages(cli, new HtCliRmImagesSpec(List.of(imageId.toString())));
+    public HtCliRmImages rm(CharSequence imageRef) {
+        return new HtCliRmImages(cli, new HtCliRmImagesSpec(List.of(HtImgName.of(imageRef))));
     }
 
     @Override
-    public HtCliRmImages rm(CharSequence imageId, Consumer<HtRmImagesSpec> action) {
-        var spec = new HtCliRmImagesSpec(imageId);
+    public HtCliRmImages rm(CharSequence imageRef, Consumer<HtRmImagesSpec> action) {
+        var spec = new HtCliRmImagesSpec(List.of(HtImgName.of(imageRef)));
         action.accept(spec);
         return new HtCliRmImages(cli, spec);
     }
 
     @Override
-    public <T extends CharSequence> HtCliRmImages rm(Collection<T> imageIds, Consumer<HtRmImagesSpec> action) {
-        var spec = new HtCliRmImagesSpec(imageIds);
+    public <T extends CharSequence> HtCliRmImages rm(Iterable<T> imageRefs, Consumer<HtRmImagesSpec> action) {
+        var spec = new HtCliRmImagesSpec(HtImgName.ofPrefix(dockerSpec.imagePrefix(), imageRefs));
         action.accept(spec);
         return new HtCliRmImages(cli, spec);
     }
 
     @Override
-    public HtPullImages pull(CharSequence imageId) {
-        return new HtCliPullImages(cli, new HtCliPullImagesSpec(imageId));
+    public HtPullImages pull(CharSequence imageRef) {
+        return new HtCliPullImages(cli, new HtCliPullImagesSpec(HtImgName.ofPrefix(dockerSpec.imagePrefix(), imageRef)));
     }
 
     @Override
-    public HtPullImages pull(CharSequence imageId, Consumer<HtPullImagesSpec> action) {
-        var pullImagesSpec = new HtCliPullImagesSpec(imageId);
+    public HtPullImages pull(CharSequence imageRef, Consumer<HtPullImagesSpec> action) {
+        var pullImagesSpec = new HtCliPullImagesSpec(HtImgName.ofPrefix(dockerSpec.imagePrefix(), imageRef));
         action.accept(pullImagesSpec);
         return new HtCliPullImages(cli, pullImagesSpec);
     }

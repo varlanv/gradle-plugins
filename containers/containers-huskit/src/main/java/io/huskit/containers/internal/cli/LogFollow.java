@@ -1,9 +1,12 @@
 package io.huskit.containers.internal.cli;
 
+import io.huskit.common.Mutable;
 import io.huskit.common.Sneaky;
 import io.huskit.common.Volatile;
+import io.huskit.common.io.TeeBufferedReader;
 import io.huskit.containers.api.cli.CliRecorder;
 import io.huskit.containers.api.cli.CommandType;
+import io.huskit.containers.api.cli.HtCliDckrSpec;
 import io.huskit.containers.api.cli.HtCommand;
 import lombok.RequiredArgsConstructor;
 
@@ -19,6 +22,7 @@ import java.util.function.Function;
 @RequiredArgsConstructor
 public class LogFollow {
 
+    HtCliDckrSpec dockerSpec;
     CliRecorder recorder;
     Collection<String> containerIdsForCleanup;
 
@@ -54,18 +58,36 @@ public class LogFollow {
         }
     }
 
-    private CompletableFuture<List<String>> listLogsTask(HtCommand command, Volatile<Process> process) {
+    private CompletableFuture<List<String>> listLogsTask(HtCommand command, Volatile<Process> processHolder) {
         return CompletableFuture.supplyAsync(() -> {
+            var errReadTask = Mutable.<CompletableFuture<?>>of();
             try {
                 var lines = new ArrayList<String>();
-                var p = new ProcessBuilder(command.value()).start();
-                process.set(p);
-                try (var reader = new BufferedReader(new InputStreamReader(p.getInputStream()))) {
+                var pb = new ProcessBuilder(command.value());
+                var process = pb.start();
+                if (dockerSpec.forwardStderr()) {
+                    errReadTask.set(
+                            CompletableFuture.runAsync(
+                                    Sneaky.quiet(
+                                            () -> {
+                                                try (var reader = new BufferedReader(new InputStreamReader(process.getErrorStream()))) {
+                                                    String line;
+                                                    while ((line = reader.readLine()) != null) {
+                                                        System.err.println(line);
+                                                    }
+                                                }
+                                            }
+                                    )
+                            )
+                    );
+                }
+                processHolder.set(process);
+                try (var reader = getReader(process)) {
                     String line;
                     while ((line = reader.readLine()) != null) {
                         lines.add(line);
                         if (command.terminatePredicate().test(line)) {
-                            p.destroyForcibly();
+                            process.destroyForcibly();
                             if (command.type() == CommandType.CONTAINERS_RUN) {
                                 containerIdsForCleanup.add(lines.get(0));
                             }
@@ -75,13 +97,24 @@ public class LogFollow {
                 }
                 return lines;
             } catch (Exception e) {
-                process.ifPresent(p -> {
+                processHolder.ifPresent(p -> {
                     if (p.isAlive()) {
                         p.destroyForcibly();
                     }
                 });
                 throw Sneaky.rethrow(e);
+            } finally {
+                errReadTask.ifPresent(f -> f.cancel(true));
             }
         });
+    }
+
+    private BufferedReader getReader(Process process) {
+        var reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
+        if (dockerSpec.forwardStdout()) {
+            return new TeeBufferedReader(reader);
+        } else {
+            return reader;
+        }
     }
 }

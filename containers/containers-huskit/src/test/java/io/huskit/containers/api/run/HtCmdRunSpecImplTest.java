@@ -1,6 +1,6 @@
 package io.huskit.containers.api.run;
 
-import io.huskit.containers.api.HtDockerImageName;
+import io.huskit.containers.api.HtImgName;
 import io.huskit.gradle.commontest.UnitTest;
 import org.junit.jupiter.api.Test;
 
@@ -10,7 +10,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 class HtCmdRunSpecImplTest implements UnitTest {
 
-    HtDockerImageName imageName = HtDockerImageName.of("anyImage");
+    HtImgName imageName = HtImgName.of("any:image");
 
     @Test
     void toCommand__no_args__returns_default_command() {
@@ -22,7 +22,7 @@ class HtCmdRunSpecImplTest implements UnitTest {
                 "docker",
                 "run",
                 "-d",
-                imageName.id()
+                imageName.reference()
         );
     }
 
@@ -39,7 +39,7 @@ class HtCmdRunSpecImplTest implements UnitTest {
                 "-d",
                 "--label",
                 "\"key=value\"",
-                imageName.id()
+                imageName.reference()
         );
     }
 
@@ -58,7 +58,7 @@ class HtCmdRunSpecImplTest implements UnitTest {
                 "\"key1=value1\"",
                 "--label",
                 "\"key2=value2\"",
-                imageName.id()
+                imageName.reference()
         );
     }
 
@@ -74,7 +74,7 @@ class HtCmdRunSpecImplTest implements UnitTest {
                 "run",
                 "-d",
                 "--rm",
-                imageName.id()
+                imageName.reference()
         );
     }
 
@@ -91,7 +91,7 @@ class HtCmdRunSpecImplTest implements UnitTest {
                 "-d",
                 "-e",
                 "\"key=value\"",
-                imageName.id()
+                imageName.reference()
         );
     }
 
@@ -110,7 +110,7 @@ class HtCmdRunSpecImplTest implements UnitTest {
                 "\"key1=value1\"",
                 "-e",
                 "\"key2=value2\"",
-                imageName.id()
+                imageName.reference()
         );
     }
 
@@ -125,7 +125,7 @@ class HtCmdRunSpecImplTest implements UnitTest {
                 "docker",
                 "run",
                 "-d",
-                imageName.id(),
+                imageName.reference(),
                 "command",
                 "arg1",
                 "arg2"
@@ -148,7 +148,7 @@ class HtCmdRunSpecImplTest implements UnitTest {
                 "--rm",
                 "--label",
                 "\"key=value\"",
-                imageName.id(),
+                imageName.reference(),
                 "command",
                 "arg1",
                 "arg2"

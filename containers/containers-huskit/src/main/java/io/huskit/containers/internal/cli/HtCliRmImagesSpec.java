@@ -2,28 +2,24 @@ package io.huskit.containers.internal.cli;
 
 import io.huskit.common.Mutable;
 import io.huskit.common.Volatile;
+import io.huskit.containers.api.HtImgName;
 import io.huskit.containers.api.image.HtRmImagesSpec;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
 public class HtCliRmImagesSpec implements HtRmImagesSpec {
 
-    List<String> imageIds;
+    List<HtImgName> imageNames;
     Mutable<Boolean> force = Volatile.of(false);
     Mutable<Boolean> noPrune = Volatile.of(false);
 
-    public HtCliRmImagesSpec(Collection<? extends CharSequence> imageIds) {
-        if (imageIds.isEmpty()) {
-            throw new IllegalArgumentException("Image IDs must not be empty");
+    public HtCliRmImagesSpec(List<HtImgName> imageRefs) {
+        if (imageRefs.isEmpty()) {
+            throw new IllegalArgumentException("Image references must not be empty");
         }
-        this.imageIds = new ArrayList<>(imageIds.size());
-        for (var imageId : imageIds) {
-            this.imageIds.add(imageId.toString());
-        }
-    }
-
-    public HtCliRmImagesSpec(CharSequence... imageIds) {
-        this(Arrays.asList(imageIds));
+        this.imageNames = imageRefs;
     }
 
     @Override
@@ -39,7 +35,7 @@ public class HtCliRmImagesSpec implements HtRmImagesSpec {
     }
 
     public List<String> toCommand() {
-        var command = new ArrayList<String>(4 + imageIds.size());
+        var command = new ArrayList<String>(4 + imageNames.size());
         command.add("docker");
         command.add("rmi");
         if (force.require()) {
@@ -48,7 +44,9 @@ public class HtCliRmImagesSpec implements HtRmImagesSpec {
         if (noPrune.require()) {
             command.add("--no-prune");
         }
-        command.addAll(imageIds);
+        for (var imageName : imageNames) {
+            command.add(imageName.reference());
+        }
         return Collections.unmodifiableList(command);
     }
 }

@@ -1,5 +1,8 @@
 package io.huskit.containers.internal.cli;
 
+import io.huskit.common.Mutable;
+import io.huskit.common.Sneaky;
+import io.huskit.common.io.TeeBufferedReader;
 import io.huskit.containers.api.cli.ShellType;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
@@ -9,6 +12,8 @@ import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 @RequiredArgsConstructor
@@ -20,13 +25,33 @@ public class CliShell implements Shell {
     BufferedWriter commandWriter;
     BufferedReader commandOutputReader;
     AtomicBoolean isClosed;
+    Mutable<Future<?>> errReadTask = Mutable.of();
 
     @SneakyThrows
-    public CliShell(ShellType shellType) {
-        this.type = shellType;
-        this.dockerProcess = new ProcessBuilder(shellType.pathForCurrentOs()).start();
+    public CliShell(ShellPickArg arg) {
+        this.type = arg.shellType();
+        var processBuilder = new ProcessBuilder(arg.shellType().pathForCurrentOs());
+        this.dockerProcess = processBuilder.start();
+        var cr = new BufferedReader(new InputStreamReader(dockerProcess.getInputStream()));
+        if (arg.forwardStdout()) {
+            this.commandOutputReader = new TeeBufferedReader(cr);
+        } else {
+            this.commandOutputReader = cr;
+        }
         this.commandWriter = new BufferedWriter(new OutputStreamWriter(dockerProcess.getOutputStream()));
-        this.commandOutputReader = new BufferedReader(new InputStreamReader(dockerProcess.getInputStream()));
+        var err = new BufferedReader(new InputStreamReader(dockerProcess.getErrorStream()));
+        if (arg.forwardStderr()) {
+            errReadTask.set(
+                    CompletableFuture.runAsync(Sneaky.quiet(
+                            () -> {
+                                String line;
+                                while ((line = err.readLine()) != null) {
+                                    System.err.println(line);
+                                }
+                            }
+                    ))
+            );
+        }
         this.isClosed = new AtomicBoolean();
     }
 
@@ -54,6 +79,7 @@ public class CliShell implements Shell {
     @SneakyThrows
     public void close() {
         if (isClosed.compareAndSet(false, true)) {
+            errReadTask.ifPresent(f -> f.cancel(true));
             dockerProcess.destroyForcibly();
             commandWriter.close();
             commandOutputReader.close();
