@@ -26,10 +26,23 @@ commands:
             find . -type f -regex ".*/build/test-results/.*xml" -exec cp {} ~/test-results/junit/ \;
           when: always
   run-gradle-command:
+    parameters:
+      command:
+        type: string
     steps:
       - run:
           name: "Run gradle command ${{ inputs.command }}"
           command: "./gradlew ${{ inputs.command }} --no-configuration-cache --no-build-cache --no-configure-on-demand --stacktrace"
+  save-gradle-cache:
+    steps:
+      - save_cache:
+          paths:
+            - ~/.gradle/wrapper/
+          key: gradle-wrapper-{{ checksum "gradle/wrapper/gradle-wrapper.properties" }}
+      - save_cache:
+          paths:
+            - ~/.gradle/caches/
+          key: gradle-cache-{{ checksum "build.gradle.kts" }}-{{ checksum "settings.gradle.kts" }}
 
 jobs:
   #       ------------------ UNIX ------------------
@@ -41,7 +54,8 @@ jobs:
       - restore-gradle-cache
       - run-gradle-command:
           command: "assemble"
-      - save-gradle-test-results
+      - save-gradle-cache
+
 
   gradle-build-test-unix:
     executor: jdk-executor
