@@ -127,9 +127,7 @@ workflows:
   Verify:
     when:
       or:
-        - equal: [ "dev", << pipeline.git.branch >> ]
-        - matches: { pattern: "*", value: << pipeline.git.branch >> }
-        - matches: { pattern: "fix/*", value: << pipeline.git.branch >> }
+        - equal: [ "dev", "dev" ]
     jobs:
       - gradle-build-unix
       - gradle-unit-test-unix
