@@ -81,9 +81,8 @@ jobs:
   gradle-integration-test-unix:
     executor: jdk-executor
     steps:
-      #      - setup_remote_docker:
-      #          docker_layer_caching: true
       - checkout
+      - setup_remote_docker
       - restore_cache:
           keys:
             - gradle-wrapper-{{ checksum "gradle/wrapper/gradle-wrapper.properties" }}
@@ -103,9 +102,8 @@ jobs:
   gradle-functional-test-unix:
     executor: jdk-executor
     steps:
-      #      - setup_remote_docker:
-      #          docker_layer_caching: true
       - checkout
+      - setup_remote_docker
       - restore_cache:
           keys:
             - gradle-wrapper-{{ checksum "gradle/wrapper/gradle-wrapper.properties" }}
@@ -130,7 +128,7 @@ branch-filters: &branch-filters
       - dev
 
 workflows:
-  gradle-build-unix-wf:
+  Verify:
     jobs:
       - gradle-build-unix:
           filters: *branch-filters
