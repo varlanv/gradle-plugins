@@ -63,6 +63,8 @@ commands:
       - run-gradle-command:
           command: << parameters.test-type >>
       - save-gradle-test-results
+      - store_test_results:
+          path: ~/test-results
 
 jobs:
   gradle-build:
