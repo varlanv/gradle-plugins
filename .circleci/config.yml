@@ -65,7 +65,6 @@ commands:
       - save-gradle-test-results
 
 jobs:
-  #       ------------------ UNIX ------------------
   gradle-build:
     executor: jdk-executor
     steps:
@@ -132,10 +131,16 @@ workflows:
           name: Compile project
       - gradle-unit-test:
           name: Run unit tests
+          requires:
+            - gradle-build
       - gradle-integration-test-unix:
           name: Run integration tests
+          requires:
+            - gradle-build
       - gradle-functional-test-unix:
           name: Run functional tests
+          requires:
+            - gradle-build
       - static-analysis-sources:
           name: Static analysis of sources
       - static-analysis-test:
