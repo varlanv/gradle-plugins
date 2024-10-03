@@ -11,6 +11,14 @@ runs:
   steps:
     - name: Setup gradle
       uses: ./.github/actions/setup-gradle
-    - name: Run test task -  "${{ inputs.test-type }}"
-      run: "./gradlew ${{ inputs.test-type }} --no-configuration-cache --no-build-cache --no-configure-on-demand --stacktrace"
+    - name: Run test task - "${{ inputs.test-type }}"
+      #      ./gradlew -Dorg.gradle.wrapper.distributionUrl=https://services.gradle.org/distributions/gradle-8.10.1-bin.zip build
+      #      run: "./gradlew ${{ inputs.test-type }} --no-configuration-cache --no-build-cache --no-configure-on-demand --stacktrace"
+      run: |
+        ./gradlew -Dorg.gradle.wrapper.distributionUrl=https://services.gradle.org/distributions/gradle-8.10.2-bin.zip \
+          ${{ inputs.test-type }} \
+          --no-configuration-cache \
+          --no-build-cache \
+          --no-configure-on-demand \
+          --stacktrace
       shell: bash
