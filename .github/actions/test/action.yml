@@ -12,8 +12,7 @@ runs:
     - name: Setup gradle
       uses: ./.github/actions/setup-gradle
     - name: Run test task - "${{ inputs.test-type }}"
-      #      ./gradlew -Dorg.gradle.wrapper.distributionUrl=https://services.gradle.org/distributions/gradle-8.10.1-bin.zip build
-      #      run: "./gradlew ${{ inputs.test-type }} --no-configuration-cache --no-build-cache --no-configure-on-demand --stacktrace"
+      shell: bash
       run: |
         ./gradlew -Dorg.gradle.wrapper.distributionUrl=https://services.gradle.org/distributions/gradle-8.10.2-bin.zip \
           ${{ inputs.test-type }} \
@@ -21,4 +20,12 @@ runs:
           --no-build-cache \
           --no-configure-on-demand \
           --stacktrace
-      shell: bash
+    - name: Store reports
+      if: failure()
+      uses: actions/upload-artifact@v3
+      with:
+        name: reports
+        path: |
+          **/build/reports/
+          **/build/test-results/
+      
