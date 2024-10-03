@@ -132,4 +132,5 @@ workflows:
       - gradle-unit-test
       - gradle-integration-test-unix
       - gradle-functional-test-unix
-      - static-analysis
+      - static-analysis-sources
+      - static-analysis-test
