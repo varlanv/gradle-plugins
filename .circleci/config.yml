@@ -66,7 +66,7 @@ commands:
 
 jobs:
   #       ------------------ UNIX ------------------
-  gradle-build-unix:
+  gradle-build:
     executor: jdk-executor
     steps:
       - checkout
@@ -76,14 +76,13 @@ jobs:
           command: "assemble"
       - save-gradle-cache
 
-
   gradle-build-test-unix:
     executor: jdk-executor
     steps:
       - gradle-test:
           test-type: ":internal-convention-plugin:test"
 
-  gradle-unit-test-unix:
+  gradle-unit-test:
     executor: jdk-executor
     steps:
       - gradle-test:
@@ -102,13 +101,20 @@ jobs:
       - gradle-test:
           test-type: "functionalTest"
           setup-docker: true
-  local-static-analysis:
+  static-analysis-sources:
     executor: jdk-executor
     steps:
       - checkout
       - restore-gradle-cache
       - run-gradle-command:
-          command: "staticAnalyseFull"
+          command: "staticAnalyseMain"
+  static-analysis-test:
+    executor: jdk-executor
+    steps:
+      - checkout
+      - restore-gradle-cache
+      - run-gradle-command:
+          command: "staticAnalyseTest"
 
 workflows:
   Verify:
@@ -122,8 +128,8 @@ workflows:
             pattern: fix/.*
             value: << pipeline.git.branch >>
     jobs:
-      - gradle-build-unix
-      - gradle-unit-test-unix
+      - gradle-build
+      - gradle-unit-test
       - gradle-integration-test-unix
       - gradle-functional-test-unix
-      - local-static-analysis
+      - static-analysis
