@@ -136,7 +136,7 @@ workflows:
       - gradle-integration-test-unix:
           name: Integration test
       - gradle-functional-test-unix:
-          name: Functional tests
+          name: Functional test
       - static-analysis-sources:
           name: Static analysis of sources
       - static-analysis-test:
