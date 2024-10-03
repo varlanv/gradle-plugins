@@ -130,13 +130,13 @@ workflows:
             value: << pipeline.git.branch >>
     jobs:
       - gradle-build:
-          name: Compile project
+          name: Compile
       - gradle-unit-test:
-          name: Run unit tests
+          name: Unit tests
       - gradle-integration-test-unix:
-          name: Run integration tests
+          name: Integration test
       - gradle-functional-test-unix:
-          name: Run functional tests
+          name: Functional tests
       - static-analysis-sources:
           name: Static analysis of sources
       - static-analysis-test:
