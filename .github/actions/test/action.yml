@@ -11,6 +11,8 @@ runs:
   steps:
     - name: Setup java
       uses: ./.github/actions/setup-java
+    - name: Setup gradle
+      uses: ./.github/actions/setup-gradle
     - name: Run test task - "${{ inputs.test-type }}"
       shell: bash
       env:
