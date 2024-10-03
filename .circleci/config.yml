@@ -102,6 +102,13 @@ jobs:
       - gradle-test:
           test-type: "functionalTest"
           setup-docker: true
+  local-static-analysis:
+    executor: jdk-executor
+    steps:
+      - checkout
+      - restore-gradle-cache
+      - run-gradle-command:
+          command: "staticAnalyseFull"
 
 workflows:
   Verify:
@@ -119,3 +126,4 @@ workflows:
       - gradle-unit-test-unix
       - gradle-integration-test-unix
       - gradle-functional-test-unix
+      - local-static-analysis
