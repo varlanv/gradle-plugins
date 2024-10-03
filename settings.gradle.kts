@@ -38,7 +38,6 @@ include(
         "common",
         "common-test",
         "functional-test",
-        "plugins:properties-plugin",
         "plugins:common-plugin",
         "containers:containers-model",
         "containers:containers-core",
