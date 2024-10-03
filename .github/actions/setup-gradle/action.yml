@@ -5,6 +5,7 @@ description: Setup gradle and java
 runs:
   using: "composite"
   steps:
-    - name: Docker read
-      run: ls -lah
-      shell: bash
+    - uses: actions/setup-java@v4
+      with:
+        distribution: 'zulu'
+        java-version: '17'

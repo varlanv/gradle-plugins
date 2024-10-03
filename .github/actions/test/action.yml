@@ -1,0 +1,16 @@
+name: Test
+description: Run specific tests
+
+inputs:
+  test-type:
+    description: 'The type of test to run: "test", 'integrationTest", "functionalTest"'
+    required: true
+
+runs:
+  using: "composite"
+  steps:
+    - name: Setup gradle
+      uses: ./.github/actions/setup-gradle
+    - name: Run test task -  '${{ inputs.test-type }}'
+      run: "./gradlew ${{ inputs.test-type }} --no-configuration-cache --no-build-cache --no-configure-on-demand --stacktrace"
+      shell: bash
