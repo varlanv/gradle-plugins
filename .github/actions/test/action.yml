@@ -15,8 +15,6 @@ runs:
       uses: ./.github/actions/setup-gradle
     - name: Run test task - "${{ inputs.test-type }}"
       shell: bash
-      env:
-        GRADLE_OPTS: -Dorg.gradle.wrapper.distributionUrl=https://services.gradle.org/distributions/gradle-8.10.2-bin.zip
       run: |
         ./gradlew ${{ inputs.test-type }} \
           --no-configuration-cache \
