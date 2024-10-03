@@ -129,17 +129,13 @@ branch-filters: &branch-filters
 
 workflows:
   Verify:
+    when:
+      or:
+        - equal: [ "dev", << pipeline.git.branch >> ]
+        - matches: { pattern: "feature/*", value: << pipeline.git.branch >> }
+        - matches: { pattern: "fix/*", value: << pipeline.git.branch >> }
     jobs:
-      - gradle-build-unix:
-          filters:
-            branches:
-              only:
-                - feature/*
-                - fix/*
-                - dev
-      - gradle-unit-test-unix:
-          filters: *branch-filters
-      - gradle-integration-test-unix:
-          filters: *branch-filters
-      - gradle-functional-test-unix:
-          filters: *branch-filters
+      - gradle-build-unix
+      - gradle-unit-test-unix
+      - gradle-integration-test-unix
+      - gradle-functional-test-unix
