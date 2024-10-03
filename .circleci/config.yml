@@ -94,12 +94,14 @@ jobs:
     steps:
       - gradle-test:
           test-type: "integrationTest"
+          setup-docker: true
 
   gradle-functional-test-unix:
     executor: jdk-executor
     steps:
       - gradle-test:
           test-type: "functionalTest"
+          setup-docker: true
 
 workflows:
   Verify:
