@@ -61,6 +61,9 @@ jobs:
     executor: jdk-executor
     steps:
       - checkout
+      - run:
+          name: Print branch
+          command: echo << pipeline.git.branch >>
       - prepare-gradle
       - restore_cache:
           keys:
@@ -125,8 +128,8 @@ workflows:
     when:
       or:
         - equal: [ "dev", << pipeline.git.branch >> ]
-        - matches: { pattern: "*feature/*", value: << pipeline.git.branch >> }
-        - matches: { pattern: "*fix/*", value: << pipeline.git.branch >> }
+        - matches: { pattern: "*", value: << pipeline.git.branch >> }
+        - matches: { pattern: "fix/*", value: << pipeline.git.branch >> }
     jobs:
       - gradle-build-unix
       - gradle-unit-test-unix
