@@ -38,7 +38,6 @@ include(
         "common",
         "common-test",
         "functional-test",
-        "plugins:spock-plugin",
         "plugins:properties-plugin",
         "plugins:common-plugin",
         "containers:containers-model",
