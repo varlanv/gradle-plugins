@@ -43,6 +43,25 @@ commands:
           paths:
             - ~/.gradle/caches/
           key: gradle-cache-{{ checksum "build.gradle.kts" }}-{{ checksum "settings.gradle.kts" }}
+  gradle-test:
+    parameters:
+      test-type:
+        type: string
+        description: "The type of test to run: test, integrationTest or functionalTest"
+      setup-docker:
+        type: boolean
+        default: false
+        description: "Whether to setup remote docker or not"
+    steps:
+      - checkout
+      - when:
+          condition: << parameters.setup-docker >>
+          steps:
+            - setup_remote_docker
+      - restore-gradle-cache
+      - run-gradle-command:
+          command: "${{ parameters.test-type }}"
+      - save-gradle-test-results
 
 jobs:
   #       ------------------ UNIX ------------------
@@ -60,42 +79,26 @@ jobs:
   gradle-build-test-unix:
     executor: jdk-executor
     steps:
-      - checkout
-      - prepare-gradle
-      - restore-gradle-cache
-      - run-gradle-command:
-          command: ":internal-convention-plugin:test"
-      - save-gradle-test-results
+      - gradle-test:
+          test-type: ":internal-convention-plugin:test"
 
   gradle-unit-test-unix:
     executor: jdk-executor
     steps:
-      - checkout
-      - prepare-gradle
-      - restore-gradle-cache
-      - run-gradle-command:
-          command: "test"
-      - save-gradle-test-results
+      - gradle-test:
+          test-type: "test"
 
   gradle-integration-test-unix:
     executor: jdk-executor
     steps:
-      - checkout
-      - setup_remote_docker
-      - restore-gradle-cache
-      - run-gradle-command:
-          command: "integrationTest"
-      - save-gradle-test-results
+      - gradle-test:
+          test-type: "integrationTest"
 
   gradle-functional-test-unix:
     executor: jdk-executor
     steps:
-      - checkout
-      - setup_remote_docker
-      - restore-gradle-cache
-      - run-gradle-command:
-          command: "functionalTest"
-      - save-gradle-test-results
+      - gradle-test:
+          test-type: "functionalTest"
 
 workflows:
   Verify:
