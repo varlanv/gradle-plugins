@@ -11,6 +11,6 @@ runs:
   steps:
     - name: Setup gradle
       uses: ./.github/actions/setup-gradle
-    - name: Run test task -  '${{ inputs.test-type }}'
+    - name: Run test task -  "${{ inputs.test-type }}"
       run: "./gradlew ${{ inputs.test-type }} --no-configuration-cache --no-build-cache --no-configure-on-demand --stacktrace"
       shell: bash
