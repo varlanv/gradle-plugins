@@ -120,20 +120,13 @@ jobs:
       - store_test_results:
           path: ~/test-results
 
-branch-filters: &branch-filters
-  branches:
-    only:
-      - "feature/*"
-      - "fix/*"
-      - "dev"
-
 workflows:
   Verify:
     when:
       or:
         - equal: [ "dev", << pipeline.git.branch >> ]
-        - matches: { pattern: "feature/*", value: << pipeline.git.branch >> }
-        - matches: { pattern: "fix/*", value: << pipeline.git.branch >> }
+        - matches: { pattern: "*feature/*", value: << pipeline.git.branch >> }
+        - matches: { pattern: "*fix/*", value: << pipeline.git.branch >> }
     jobs:
       - gradle-build-unix
       - gradle-unit-test-unix
