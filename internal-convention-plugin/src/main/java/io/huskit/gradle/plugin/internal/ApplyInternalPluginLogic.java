@@ -46,7 +46,7 @@ public class ApplyInternalPluginLogic {
     SoftwareComponentContainer components;
     TaskContainer tasks;
     ConfigurationContainer configurations;
-    InternalEnvironment environment;
+    InternalEnvironment internalEnvironment;
     InternalProperties properties;
     String projectName;
     BuildServiceRegistry services;
@@ -71,7 +71,7 @@ public class ApplyInternalPluginLogic {
         });
 
         // Configure repositories
-        if (environment.isLocal()) {
+        if (internalEnvironment.isLocal()) {
             repositories.add(repositories.mavenLocal());
         }
         repositories.add(repositories.mavenCentral());
@@ -80,7 +80,7 @@ public class ApplyInternalPluginLogic {
         pluginManager.withPlugin("java", plugin -> {
             var java = (JavaPluginExtension) extensions.getByName("java");
             java.withSourcesJar();
-            if (environment.isCi()) {
+            if (internalEnvironment.isCi()) {
                 java.setSourceCompatibility(JavaLanguageVersion.of(targetJavaVersion));
                 java.setTargetCompatibility(JavaLanguageVersion.of(targetJavaVersion));
             } else {
@@ -96,7 +96,7 @@ public class ApplyInternalPluginLogic {
             var jetbrainsAnnotations = properties.getLib("jetbrains-annotations");
             dependencies.add(JavaPlugin.COMPILE_ONLY_CONFIGURATION_NAME, jetbrainsAnnotations);
             dependencies.add(JavaPlugin.TEST_COMPILE_ONLY_CONFIGURATION_NAME, jetbrainsAnnotations);
-            if (!environment.isTest() && !projectPath.equals(":common-test")) {
+            if (!internalEnvironment.isTest() && !projectPath.equals(":common-test")) {
                 dependencies.add(JavaPlugin.TEST_IMPLEMENTATION_CONFIGURATION_NAME, dependencies.project(Map.of("path", ":common-test")));
             }
             dependencies.add(JavaPlugin.TEST_IMPLEMENTATION_CONFIGURATION_NAME, properties.getLib("assertj-core"));
@@ -161,13 +161,14 @@ public class ApplyInternalPluginLogic {
                                 test.testLogging(logging -> {
                                     logging.setShowStandardStreams(true);
                                 });
-                                test.setFailFast(environment.isCi());
+                                test.setFailFast(internalEnvironment.isCi());
                                 test.usesService(syncBuildService);
                                 test.doFirst(new ConfigureOnBeforeTestStart(syncBuildService));
                                 var environment = new HashMap<>(test.getEnvironment());
                                 environment.put("TESTCONTAINERS_REUSE_ENABLE", "true");
                                 test.setEnvironment(environment);
                                 var memory = test.getName().equals(JavaPlugin.TEST_TASK_NAME) ? "128m" : "512m";
+                                test.systemProperty("junit.jupiter.execution.parallel.enabled", internalEnvironment.isLocal());
                                 test.setJvmArgs(
                                         Stream.of(
                                                         test.getName().equals("functionalTest") ?

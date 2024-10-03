@@ -1,10 +1,9 @@
-name: Setup gradle
-description: Setup gradle and java
-
+name: Setup java
+description: Setup java
 
 runs:
   using: "composite"
   steps:
-    - name: Docker read
-      run: ls -lah
+    - name: Replace gradle distribution url
+      run: sed -i 's/-all.zip/-bin.zip/' gradle/wrapper/gradle-wrapper.properties
       shell: bash

@@ -46,8 +46,8 @@ import static org.mockito.Mockito.*;
 
 public class HuskitContainersPluginIntegrationTest implements GradleIntegrationTest {
 
-    Integer anyFixedPort = 42;
-    Integer anyHostPort = 421;
+    Integer anyFixedPort = 21213;
+    Integer anyHostPort = 21242;
     String anyConnectionString = "anyConnectionString";
     String anyDbName = "anyDbName";
     String anyImage = "anyImage";

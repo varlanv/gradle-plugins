@@ -1,10 +1,15 @@
 version: 2.1
 
+executors:
+  jdk-executor:
+    docker:
+      - image: cimg/openjdk:11.0.22
+
 jobs:
   #       ------------------ UNIX ------------------
   gradle-build-unix:
+    executor: jdk-executor
     docker:
-      - image: cimg/openjdk:11.0.22
     steps:
       - checkout
       - restore_cache:
@@ -24,6 +29,7 @@ jobs:
           key: gradle-cache-{{ checksum "build.gradle.kts" }}-{{ checksum "settings.gradle.kts" }}
 
   gradle-build-test-unix:
+    executor: jdk-executor
     docker:
       - image: cimg/openjdk:11.0.22
     steps:
@@ -45,8 +51,7 @@ jobs:
           path: ~/test-results
 
   gradle-unit-test-unix:
-    docker:
-      - image: cimg/openjdk:11.0.22
+    executor: jdk-executor
     steps:
       - checkout
       - restore_cache:
@@ -66,8 +71,7 @@ jobs:
           path: ~/test-results
 
   gradle-integration-test-unix:
-    docker:
-      - image: cimg/openjdk:11.0.22
+    executor: jdk-executor
     steps:
       - setup_remote_docker:
           docker_layer_caching: true
@@ -89,8 +93,7 @@ jobs:
           path: ~/test-results
 
   gradle-functional-test-unix:
-    docker:
-      - image: cimg/openjdk:11.0.22
+    executor: jdk-executor
     steps:
       - setup_remote_docker:
           version: default
@@ -113,16 +116,6 @@ jobs:
           path: ~/test-results
 
 workflows:
-#  gradle-build-unix:
-#    jobs:
-#      - gradle-build-unix
-#  gradle-test-unix-fast:
-#    jobs:
-#      - gradle-unit-test-unix
-#      - gradle-integration-test-unix
-#  gradle-test-unix-slow:
-#    jobs:
-#      - gradle-functional-test-unix
   gradle-build-unix:
     jobs:
       - hold:

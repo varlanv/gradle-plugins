@@ -1,0 +1,32 @@
+name: Test
+description: Run specific tests
+
+inputs:
+  test-type:
+    description: The type of test to run - test, integrationTest or functionalTest
+    required: true
+
+runs:
+  using: "composite"
+  steps:
+    - name: Setup java
+      uses: ./.github/actions/setup-java
+    - name: Setup gradle
+      uses: ./.github/actions/setup-gradle
+    - name: Run test task - "${{ inputs.test-type }}"
+      shell: bash
+      run: |
+        ./gradlew ${{ inputs.test-type }} \
+          --no-configuration-cache \
+          --no-build-cache \
+          --no-configure-on-demand \
+          --stacktrace
+    - name: Store reports
+      if: failure()
+      uses: actions/upload-artifact@v3
+      with:
+        name: reports
+        path: |
+          **/build/reports/
+          **/build/test-results/
+      

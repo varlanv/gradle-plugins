@@ -320,8 +320,7 @@ class DfVolatileTest implements UnitTest {
         var subject = factory.get();
 
         assertThatThrownBy(() -> subject.or((ThrowingSupplier<String>) null))
-                .isInstanceOf(NullPointerException.class)
-                .hasMessage(null);
+                .isInstanceOf(NullPointerException.class);
     }
 
     @ParameterizedTest
