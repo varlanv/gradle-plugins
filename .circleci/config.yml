@@ -11,7 +11,25 @@ commands:
       - run:
           name: Replace distributionUrl
           command: sed -i 's/-all.zip/-bin.zip/' gradle/wrapper/gradle-wrapper.properties
-
+  restore-gradle-cache:
+    steps:
+      - restore_cache:
+          keys:
+            - gradle-wrapper-{{ checksum "gradle/wrapper/gradle-wrapper.properties" }}
+            - gradle-cache-{{ checksum "build.gradle.kts" }}-{{ checksum "settings.gradle.kts" }}
+  save-gradle-test-results:
+    steps:
+      - run:
+          name: "Save test results unix"
+          command: |
+            mkdir -p ~/test-results/junit/
+            find . -type f -regex ".*/build/test-results/.*xml" -exec cp {} ~/test-results/junit/ \;
+          when: always
+  run-gradle-command:
+    steps:
+      - run:
+          name: "Run gradle command ${{ inputs.command }}"
+          command: "./gradlew ${{ inputs.command }} --no-configuration-cache --no-build-cache --no-configure-on-demand --stacktrace"
 
 jobs:
   #       ------------------ UNIX ------------------
@@ -20,105 +38,50 @@ jobs:
     steps:
       - checkout
       - prepare-gradle
-      - restore_cache:
-          keys:
-            - gradle-wrapper-{{ checksum "gradle/wrapper/gradle-wrapper.properties" }}
-            - gradle-cache-{{ checksum "build.gradle.kts" }}-{{ checksum "settings.gradle.kts" }}
-      - run:
-          name: "gradle assemble unix"
-          command: "./gradlew assemble --no-configuration-cache --no-build-cache --no-configure-on-demand --stacktrace"
-      - save_cache:
-          paths:
-            - ~/.gradle/wrapper/
-          key: gradle-wrapper-{{ checksum "gradle/wrapper/gradle-wrapper.properties" }}
-      - save_cache:
-          paths:
-            - ~/.gradle/caches/
-          key: gradle-cache-{{ checksum "build.gradle.kts" }}-{{ checksum "settings.gradle.kts" }}
+      - restore-gradle-cache
+      - run-gradle-command:
+          command: "assemble"
+      - save-gradle-test-results
 
   gradle-build-test-unix:
     executor: jdk-executor
     steps:
       - checkout
       - prepare-gradle
-      - restore_cache:
-          keys:
-            - gradle-wrapper-{{ checksum "gradle/wrapper/gradle-wrapper.properties" }}
-            - gradle-cache-{{ checksum "build.gradle.kts" }}-{{ checksum "settings.gradle.kts" }}
-      - run:
-          name: "Testing of the internal-convention-plugin"
-          command: "./gradlew :internal-convention-plugin:test --no-configuration-cache --no-build-cache --no-configure-on-demand --stacktrace"
-      - run:
-          name: "Save test results unix"
-          command: |
-            mkdir -p ~/test-results/junit/
-            find . -type f -regex ".*/build/test-results/.*xml" -exec cp {} ~/test-results/junit/ \;
-          when: always
-      - store_test_results:
-          path: ~/test-results
+      - restore-gradle-cache
+      - run-gradle-command:
+          command: ":internal-convention-plugin:test"
+      - save-gradle-test-results
 
   gradle-unit-test-unix:
     executor: jdk-executor
     steps:
       - checkout
       - prepare-gradle
-      - restore_cache:
-          keys:
-            - gradle-wrapper-{{ checksum "gradle/wrapper/gradle-wrapper.properties" }}
-            - gradle-cache-{{ checksum "build.gradle.kts" }}-{{ checksum "settings.gradle.kts" }}
-      - run:
-          name: "Run unit tests in unix"
-          command: "./gradlew test --no-configuration-cache --no-build-cache --no-configure-on-demand --stacktrace"
-      - run:
-          name: "Save test results unix"
-          command: |
-            mkdir -p ~/test-results/junit/
-            find . -type f -regex ".*/build/test-results/.*xml" -exec cp {} ~/test-results/junit/ \;
-          when: always
-      - store_test_results:
-          path: ~/test-results
+      - restore-gradle-cache
+      - run-gradle-command:
+          command: "test"
+      - save-gradle-test-results
 
   gradle-integration-test-unix:
     executor: jdk-executor
     steps:
       - checkout
       - setup_remote_docker
-      - restore_cache:
-          keys:
-            - gradle-wrapper-{{ checksum "gradle/wrapper/gradle-wrapper.properties" }}
-            - gradle-cache-{{ checksum "build.gradle.kts" }}-{{ checksum "settings.gradle.kts" }}
-      - run:
-          name: "Run integration tests in unix"
-          command: "./gradlew integrationTest --no-configuration-cache --no-build-cache --no-configure-on-demand --stacktrace"
-      - run:
-          name: "Save test results unix"
-          command: |
-            mkdir -p ~/test-results/junit/
-            find . -type f -regex ".*/build/test-results/.*xml" -exec cp {} ~/test-results/junit/ \;
-          when: always
-      - store_test_results:
-          path: ~/test-results
+      - restore-gradle-cache
+      - run-gradle-command:
+          command: "integrationTest"
+      - save-gradle-test-results
 
   gradle-functional-test-unix:
     executor: jdk-executor
     steps:
       - checkout
       - setup_remote_docker
-      - restore_cache:
-          keys:
-            - gradle-wrapper-{{ checksum "gradle/wrapper/gradle-wrapper.properties" }}
-            - gradle-cache-{{ checksum "build.gradle.kts" }}-{{ checksum "settings.gradle.kts" }}
-      - run:
-          name: "Run functional tests in unix"
-          command: "./gradlew functionalTest --no-configuration-cache --no-build-cache --no-configure-on-demand --stacktrace"
-      - run:
-          name: "Save test results unix"
-          command: |
-            mkdir -p ~/test-results/junit/
-            find . -type f -regex ".*/build/test-results/.*xml" -exec cp {} ~/test-results/junit/ \;
-          when: always
-      - store_test_results:
-          path: ~/test-results
+      - restore-gradle-cache
+      - run-gradle-command:
+          command: "functionalTest"
+      - save-gradle-test-results
 
 workflows:
   Verify:
