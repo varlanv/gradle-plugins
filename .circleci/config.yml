@@ -130,7 +130,7 @@ branch-filters: &branch-filters
       - dev
 
 workflows:
-  gradle-build-unix:
+  gradle-build-unix-wf:
     jobs:
       - gradle-build-unix:
           filters: *branch-filters
