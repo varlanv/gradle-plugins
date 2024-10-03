@@ -18,7 +18,7 @@ github-docker = "3.4.0"
 json = "20240303"
 gradle-shadow-plugin = "8.3.3"
 immutables = "2.10.1"
-proguard = "7.5.0"
+proguard = "7.6.0"
 mongoDriver = "5.2.0"
 
 [libraries]
