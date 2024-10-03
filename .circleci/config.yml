@@ -5,12 +5,21 @@ executors:
     docker:
       - image: cimg/openjdk:11.0.22
 
+commands:
+  prepare-gradle:
+    steps:
+      - run:
+          name: Replace distributionUrl
+          command: sed -i 's/-all.zip/-bin.zip/' gradle/wrapper/gradle-wrapper.properties
+
+
 jobs:
   #       ------------------ UNIX ------------------
   gradle-build-unix:
     executor: jdk-executor
     steps:
       - checkout
+      - prepare-gradle
       - restore_cache:
           keys:
             - gradle-wrapper-{{ checksum "gradle/wrapper/gradle-wrapper.properties" }}
@@ -31,6 +40,7 @@ jobs:
     executor: jdk-executor
     steps:
       - checkout
+      - prepare-gradle
       - restore_cache:
           keys:
             - gradle-wrapper-{{ checksum "gradle/wrapper/gradle-wrapper.properties" }}
@@ -51,6 +61,7 @@ jobs:
     executor: jdk-executor
     steps:
       - checkout
+      - prepare-gradle
       - restore_cache:
           keys:
             - gradle-wrapper-{{ checksum "gradle/wrapper/gradle-wrapper.properties" }}
@@ -70,8 +81,8 @@ jobs:
   gradle-integration-test-unix:
     executor: jdk-executor
     steps:
-#      - setup_remote_docker:
-#          docker_layer_caching: true
+      #      - setup_remote_docker:
+      #          docker_layer_caching: true
       - checkout
       - restore_cache:
           keys:
@@ -92,8 +103,8 @@ jobs:
   gradle-functional-test-unix:
     executor: jdk-executor
     steps:
-#      - setup_remote_docker:
-#          docker_layer_caching: true
+      #      - setup_remote_docker:
+      #          docker_layer_caching: true
       - checkout
       - restore_cache:
           keys:
