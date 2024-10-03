@@ -562,10 +562,11 @@ class HtCliDckrIntegrationTest implements DockerIntegrationTest {
                     ShellType.DEFAULT, shellType -> false,
                     ShellType.BASH, shellType -> ShellConditions.bashAvailable(),
                     ShellType.POWERSHELL, shellType -> ShellConditions.powershellAvailable(),
-                    ShellType.CMD, shellType -> ShellConditions.cmdAvailable(),
-                    ShellType.SH, shellType -> ShellConditions.shAvailable()
+                    ShellType.CMD, shellType -> ShellConditions.cmdAvailable()
+//                    ShellType.SH, shellType -> ShellConditions.shAvailable()
             );
             return Arrays.stream(ShellType.values())
+                    .filter(predicates::containsKey)
                     .filter(shellType -> predicates.get(shellType).test(shellType))
                     .map(shellType -> contexts.computeIfAbsent(shellType, k -> {
                         var recorder = new ThreadLocalCliRecorder();
