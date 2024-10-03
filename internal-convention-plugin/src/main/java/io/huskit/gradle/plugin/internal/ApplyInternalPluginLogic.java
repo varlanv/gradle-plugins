@@ -168,7 +168,7 @@ public class ApplyInternalPluginLogic {
                                 environment.put("TESTCONTAINERS_REUSE_ENABLE", "true");
                                 test.setEnvironment(environment);
                                 var memory = test.getName().equals(JavaPlugin.TEST_TASK_NAME) ? "128m" : "512m";
-                                test.systemProperty("junit.jupiter.execution.parallel.enabled", internalEnvironment.isLocal());
+//                                test.systemProperty("junit.jupiter.execution.parallel.enabled", internalEnvironment.isLocal());
                                 test.setJvmArgs(
                                         Stream.of(
                                                         test.getName().equals("functionalTest") ?
