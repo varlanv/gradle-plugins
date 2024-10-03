@@ -113,9 +113,9 @@ public class HtCli {
         private <T> T read(HtCommand command, Function<CommandResult, T> resultConsumer) {
             var commandString = String.join(" ", command.value());
             var lines = new ArrayList<String>();
-            var line = shell.outLine();
+            var line = shell.outLine().strip();
             while (!line.endsWith(RUN_LINE_MARKER)) {
-                if (!line.isEmpty()) {
+                if (!line.isBlank()) {
                     if (command.terminatePredicate().test(line)) {
                         shell.close();
                         lines.add(line);
