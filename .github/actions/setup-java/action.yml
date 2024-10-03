@@ -1,6 +1,5 @@
-name: Setup gradle
-description: Setup gradle and java
-
+name: Setup java
+description: Setup java
 
 runs:
   using: "composite"

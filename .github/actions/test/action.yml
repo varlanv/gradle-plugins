@@ -9,13 +9,14 @@ inputs:
 runs:
   using: "composite"
   steps:
-    - name: Setup gradle
-      uses: ./.github/actions/setup-gradle
+    - name: Setup java
+      uses: ./.github/actions/setup-java
     - name: Run test task - "${{ inputs.test-type }}"
       shell: bash
+      env:
+        GRADLE_OPTS: -Dorg.gradle.wrapper.distributionUrl=https://services.gradle.org/distributions/gradle-8.10.2-bin.zip
       run: |
-        ./gradlew -Dorg.gradle.wrapper.distributionUrl=https://services.gradle.org/distributions/gradle-8.10.2-bin.zip \
-          ${{ inputs.test-type }} \
+        ./gradlew ${{ inputs.test-type }} \
           --no-configuration-cache \
           --no-build-cache \
           --no-configure-on-demand \
