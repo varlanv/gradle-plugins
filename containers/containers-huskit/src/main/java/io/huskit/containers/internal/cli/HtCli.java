@@ -6,6 +6,7 @@ import io.huskit.containers.api.cli.CliRecorder;
 import io.huskit.containers.api.cli.CommandType;
 import io.huskit.containers.api.cli.HtCliDckrSpec;
 import io.huskit.containers.api.cli.HtCommand;
+import io.huskit.containers.model.Constants;
 import lombok.Locked;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
@@ -114,14 +115,16 @@ public class HtCli {
             var commandString = String.join(" ", command.value());
             var lines = new ArrayList<String>();
             var line = shell.outLine().strip();
+            var terminatePredicate = command.terminatePredicate();
+            var linePredicate = command.linePredicate();
             while (!line.endsWith(RUN_LINE_MARKER)) {
                 if (!line.isEmpty()) {
-                    if (command.terminatePredicate().test(line)) {
+                    if (terminatePredicate.test(line)) {
                         shell.close();
                         lines.add(line);
                         break;
                     }
-                    if (!line.endsWith(commandString) && command.linePredicate().test(line)) {
+                    if (!line.endsWith(commandString) && linePredicate.test(line)) {
                         lines.add(line);
                     }
                 }
@@ -134,8 +137,8 @@ public class HtCli {
                         new CliCommand(
                                 CommandType.CONTAINERS_LOGS_FOLLOW,
                                 List.of("docker", "logs", "-f", containerId),
-                                l -> command.terminatePredicate().test(l),
-                                l -> true,
+                                terminatePredicate,
+                                Constants.Predicates.alwaysTrue(),
                                 Duration.ZERO
                         ),
                         Function.identity());
