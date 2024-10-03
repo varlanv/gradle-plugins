@@ -131,7 +131,12 @@ workflows:
   Verify:
     jobs:
       - gradle-build-unix:
-          filters: *branch-filters
+          filters:
+            branches:
+              only:
+                - feature/*
+                - fix/*
+                - dev
       - gradle-unit-test-unix:
           filters: *branch-filters
       - gradle-integration-test-unix:
