@@ -122,22 +122,28 @@ jobs:
       - store_test_results:
           path: ~/test-results
 
-
 workflows:
   gradle-build-unix:
     jobs:
-#      - hold:
-#          type: approval
-#      - gradle-build-unix:
-      - gradle-build-unix
-#          requires:
-#            - hold
-#      - gradle-unit-test-unix:
-#          requires:
-#            - hold
-#      - gradle-integration-test-unix:
-#          requires:
-#            - hold
-#      - gradle-functional-test-unix:
-#          requires:
-#            - hold
+      - gradle-build-unix:
+          filters:
+            branches:
+              only: *branch-filters
+      - gradle-unit-test-unix:
+          filters:
+            branches:
+              only: *branch-filters
+      - gradle-integration-test-unix:
+          filters:
+            branches:
+              only: *branch-filters
+      - gradle-functional-test-unix:
+          filters:
+            branches:
+              only: *branch-filters
+
+parameters:
+  branch-filters: &branch-filters
+    - feature/*
+    - fix/*
+    - dev
