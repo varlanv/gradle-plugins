@@ -122,6 +122,12 @@ jobs:
       - store_test_results:
           path: ~/test-results
 
+parameters:
+  branch-filters: &branch-filters
+    - feature/*
+    - fix/*
+    - dev
+
 workflows:
   gradle-build-unix:
     jobs:
@@ -141,9 +147,3 @@ workflows:
           filters:
             branches:
               only: *branch-filters
-
-parameters:
-  branch-filters: &branch-filters
-    - feature/*
-    - fix/*
-    - dev
