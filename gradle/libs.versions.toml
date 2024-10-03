@@ -1,6 +1,6 @@
 [versions]
 spock = "2.3-groovy-3.0"
-groovy = "3.0.17"
+groovy = "3.0.22"
 testContainers = "1.19.0"
 junitJupiter = "5.11.0"
 junitPlatform = "1.11.0"
