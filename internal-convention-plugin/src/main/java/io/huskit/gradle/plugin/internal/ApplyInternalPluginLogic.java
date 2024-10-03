@@ -161,7 +161,7 @@ public class ApplyInternalPluginLogic {
                                 test.testLogging(logging -> {
                                     logging.setShowStandardStreams(true);
                                 });
-                                test.setFailFast(environment.isCi());
+//                                test.setFailFast(environment.isCi());
                                 test.usesService(syncBuildService);
                                 test.doFirst(new ConfigureOnBeforeTestStart(syncBuildService));
                                 var environment = new HashMap<>(test.getEnvironment());
