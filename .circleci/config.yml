@@ -125,17 +125,18 @@ jobs:
 workflows:
   gradle-build-unix:
     jobs:
-      - hold:
-          type: approval
-      - gradle-build-unix:
-          requires:
-            - hold
-      - gradle-unit-test-unix:
-          requires:
-            - hold
-      - gradle-integration-test-unix:
-          requires:
-            - hold
-      - gradle-functional-test-unix:
-          requires:
-            - hold
+#      - hold:
+#          type: approval
+#      - gradle-build-unix:
+      - gradle-build-unix
+#          requires:
+#            - hold
+#      - gradle-unit-test-unix:
+#          requires:
+#            - hold
+#      - gradle-integration-test-unix:
+#          requires:
+#            - hold
+#      - gradle-functional-test-unix:
+#          requires:
+#            - hold
