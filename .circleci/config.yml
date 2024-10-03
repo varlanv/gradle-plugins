@@ -55,7 +55,8 @@ commands:
     steps:
       - checkout
       - when:
-          condition: << parameters.setup-docker >>
+          condition:
+            equal: [ true, << parameters.setup-docker >> ]
           steps:
             - setup_remote_docker
       - restore-gradle-cache
