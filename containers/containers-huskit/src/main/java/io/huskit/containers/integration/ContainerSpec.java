@@ -4,5 +4,9 @@ public interface ContainerSpec {
 
     EnvSpec env();
 
+    LabelSpec labels();
+
     WaitSpec await();
+
+    ReuseSpec reuse();
 }

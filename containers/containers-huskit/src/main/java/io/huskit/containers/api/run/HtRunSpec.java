@@ -11,6 +11,10 @@ public interface HtRunSpec {
 
     HtRunSpec withRemove();
 
+    HtRunSpec withPortBinding(Number hostPort, Number containerPort);
+
+    HtRunSpec withPortBindings(Map<? extends Number, ? extends Number> portBindings);
+
     HtRunSpec withCommand(CharSequence command, Object... args);
 
     HtRunSpec withLookFor(CharSequence text, Duration timeout);

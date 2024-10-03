@@ -1,9 +1,9 @@
 package io.huskit.gradle.containers.plugin.internal.spec;
 
-import io.huskit.containers.model.port.ContainerPort;
-import io.huskit.containers.model.port.DynamicContainerPort;
-import io.huskit.containers.model.port.FixedContainerPort;
-import io.huskit.containers.model.port.FixedRangePort;
+import io.huskit.common.port.ContainerPort;
+import io.huskit.common.port.DynamicContainerPort;
+import io.huskit.common.port.FixedContainerPort;
+import io.huskit.common.port.FixedRangePort;
 import io.huskit.gradle.containers.plugin.api.ContainerPortSpecView;
 import io.huskit.gradle.containers.plugin.api.FixedContainerPortSpecView;
 import org.gradle.api.Action;

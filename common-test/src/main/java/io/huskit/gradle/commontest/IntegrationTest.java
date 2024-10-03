@@ -1,4 +1,3 @@
-
 package io.huskit.gradle.commontest;
 
 import org.junit.jupiter.api.Tag;

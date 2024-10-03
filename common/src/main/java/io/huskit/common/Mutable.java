@@ -3,10 +3,19 @@ package io.huskit.common;
 import io.huskit.common.function.ThrowingConsumer;
 import io.huskit.common.function.ThrowingPredicate;
 import io.huskit.common.function.ThrowingSupplier;
+import io.huskit.common.internal.DfMutable;
 
 import java.util.Optional;
 
 public interface Mutable<T> {
+
+    static <T> Mutable<T> of(T value) {
+        return new DfMutable<>(value);
+    }
+
+    static <T> Mutable<T> of() {
+        return new DfMutable<>();
+    }
 
     void set(T value);
 

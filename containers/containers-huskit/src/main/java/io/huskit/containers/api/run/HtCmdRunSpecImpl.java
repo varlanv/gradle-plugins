@@ -1,6 +1,6 @@
 package io.huskit.containers.api.run;
 
-import io.huskit.common.Volatile;
+import io.huskit.common.Mutable;
 import io.huskit.containers.api.HtDockerImageName;
 import io.huskit.containers.api.cli.CommandType;
 import lombok.Getter;
@@ -20,13 +20,14 @@ import java.util.stream.Stream;
 public class HtCmdRunSpecImpl implements HtRunSpec {
 
     HtDockerImageName imgName;
-    Volatile<Map<String, String>> labels = Volatile.of();
-    Volatile<Map<String, String>> env = Volatile.of();
-    Volatile<Boolean> remove = Volatile.of(false);
-    Volatile<RunCommand> command = Volatile.of();
+    Mutable<Map<String, String>> labels = Mutable.of();
+    Mutable<Map<String, String>> env = Mutable.of();
+    Mutable<Map<Integer, Integer>> ports = Mutable.of();
+    Mutable<Boolean> remove = Mutable.of(false);
+    Mutable<RunCommand> command = Mutable.of();
     @Getter
-    Volatile<String> lookFor = Volatile.of();
-    Volatile<Duration> timeout = Volatile.of(Duration.ZERO);
+    Mutable<String> lookFor = Mutable.of();
+    Mutable<Duration> timeout = Mutable.of(Duration.ZERO);
 
     @Override
     public HtCmdRunSpecImpl withLabels(Map<String, ?> labels) {
@@ -67,6 +68,27 @@ public class HtCmdRunSpecImpl implements HtRunSpec {
     }
 
     @Override
+    public HtRunSpec withPortBinding(Number hostPort, Number containerPort) {
+        return withPortBindings(Collections.singletonMap(hostPort, containerPort));
+    }
+
+    @Override
+    public HtRunSpec withPortBindings(Map<? extends Number, ? extends Number> portBindings) {
+        this.ports.set(
+                Collections.unmodifiableMap(
+                        portBindings.entrySet().stream()
+                                .collect(
+                                        Collectors.toMap(
+                                                entry -> entry.getKey().intValue(),
+                                                entry -> entry.getValue().intValue()
+                                        )
+                                )
+                )
+        );
+        return this;
+    }
+
+    @Override
     public HtCmdRunSpecImpl withCommand(CharSequence command, Object... args) {
         this.command.set(
                 new RunCommand(
@@ -86,7 +108,7 @@ public class HtCmdRunSpecImpl implements HtRunSpec {
         return this;
     }
 
-    public List<String> build() {
+    public List<String> toCommand() {
         var processCmd = new ArrayList<String>(4);
         processCmd.add("docker");
         processCmd.add("run");
@@ -103,6 +125,10 @@ public class HtCmdRunSpecImpl implements HtRunSpec {
         env.ifPresent(envMap -> envMap.forEach((k, v) -> {
             processCmd.add("-e");
             processCmd.add("\"" + k + "=" + v + "\"");
+        }));
+        ports.ifPresent(portMap -> portMap.forEach((k, v) -> {
+            processCmd.add("-p");
+            processCmd.add(k + ":" + v);
         }));
 
         processCmd.add(imgName.id());

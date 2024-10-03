@@ -4,6 +4,7 @@ import io.huskit.containers.api.HtContainer;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
+import java.time.Instant;
 import java.util.Map;
 import java.util.function.Supplier;
 
@@ -22,5 +23,15 @@ public class HtLazyContainer implements HtContainer {
     @Override
     public Map<String, String> labels() {
         return delegate.get().labels();
+    }
+
+    @Override
+    public Instant createdAt() {
+        return delegate.get().createdAt();
+    }
+
+    @Override
+    public Integer firstMappedPort() {
+        return delegate.get().firstMappedPort();
     }
 }

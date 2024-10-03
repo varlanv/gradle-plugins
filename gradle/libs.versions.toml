@@ -19,6 +19,7 @@ json = "20240303"
 gradle-shadow-plugin = "8.3.1"
 immutables = "2.10.1"
 proguard = "7.5.0"
+mongoDriver = "5.2.0"
 
 [libraries]
 testcontainers-core = { group = "org.testcontainers", name = "testcontainers", version.ref = "testContainers" }
@@ -49,6 +50,7 @@ immutables-value = { group = "org.immutables", name = "value", version.ref = "im
 immutables-annotations = { group = "org.immutables", name = "value-annotations", version.ref = "immutables" }
 immutables-builder = { group = "org.immutables", name = "builder", version.ref = "immutables" }
 proguard-gradle = { group = "com.guardsquare", name = "proguard-gradle", version.ref = "proguard" }
+mongoDriver = { group = "org.mongodb", name = "mongodb-driver-sync", version.ref = "mongoDriver" }
 
 [bundles]
 testcontainers = ["testcontainers-core", "testcontainers-mongodb", "testcontainers-postgresql", "testcontainers-kafka", "testcontainers-rabbitmq"]

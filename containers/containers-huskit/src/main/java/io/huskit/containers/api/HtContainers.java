@@ -10,12 +10,17 @@ import io.huskit.containers.internal.cli.HtCliRmSpec;
 
 import java.util.Collection;
 import java.util.function.Consumer;
+import java.util.stream.Stream;
 
 public interface HtContainers {
 
     HtListContainers list();
 
     HtListContainers list(Consumer<HtListContainersArgsSpec> argsAction);
+
+    Stream<HtContainer> inspect(Iterable<? extends CharSequence> containerIds);
+
+    HtContainer inspect(CharSequence containerId);
 
     HtLogs logs(CharSequence containerId);
 

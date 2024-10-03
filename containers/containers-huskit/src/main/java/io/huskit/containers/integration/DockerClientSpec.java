@@ -4,5 +4,5 @@ import io.huskit.containers.api.HtDocker;
 
 public interface DockerClientSpec {
 
-    HtContainer withDocker(HtDocker docker);
+    HtServiceContainer withDocker(HtDocker docker);
 }

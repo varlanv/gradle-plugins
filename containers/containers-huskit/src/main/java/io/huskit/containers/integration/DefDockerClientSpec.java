@@ -9,12 +9,12 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class DefDockerClientSpec implements DockerClientSpec {
 
-    HtContainer parent;
+    HtServiceContainer parent;
     @Getter
     Mutable<HtDocker> docker = Volatile.of();
 
     @Override
-    public HtContainer withDocker(HtDocker docker) {
+    public HtServiceContainer withDocker(HtDocker docker) {
         this.docker.set(docker);
         return parent;
     }

@@ -1,6 +1,6 @@
 package io.huskit.containers.model.started;
 
-import io.huskit.containers.model.port.ContainerPort;
+import io.huskit.common.port.ContainerPort;
 
 import java.util.Map;
 

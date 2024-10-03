@@ -8,23 +8,23 @@ import java.util.HashMap;
 import java.util.Map;
 
 @RequiredArgsConstructor
-public class DefEnvSpec implements EnvSpec {
+public class DefLabelSpec implements LabelSpec {
 
     ContainerSpec parent;
     @Getter
-    Mutable<Map<String, String>> envMap = Mutable.of(new HashMap<>());
+    Mutable<Map<String, String>> labelMap = Mutable.of(new HashMap<>());
 
     @Override
     public ContainerSpec pair(CharSequence key, Object value) {
-        envMap.require().put(key.toString(), value.toString());
+        labelMap.require().put(key.toString(), value.toString());
         return parent;
     }
 
     @Override
     public ContainerSpec map(Map<String, ?> map) {
-        var envMap = this.envMap.require();
+        var labelMap = this.labelMap.require();
         for (var entry : map.entrySet()) {
-            envMap.put(entry.getKey(), entry.getValue().toString());
+            labelMap.put(entry.getKey(), entry.getValue().toString());
         }
         return parent;
     }

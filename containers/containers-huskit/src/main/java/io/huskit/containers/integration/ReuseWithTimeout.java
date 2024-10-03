@@ -11,8 +11,8 @@ import java.time.Duration;
 @ToString
 @EqualsAndHashCode
 @RequiredArgsConstructor
-public class TextWait {
+public class ReuseWithTimeout {
 
-    String text;
-    Duration duration;
+    Boolean enabled;
+    Duration cleanupAfter;
 }

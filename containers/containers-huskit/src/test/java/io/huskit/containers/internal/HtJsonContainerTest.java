@@ -8,12 +8,12 @@ import java.util.Map;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-class HtContainerFromMapTest implements UnitTest {
+class HtJsonContainerTest implements UnitTest {
 
     @Test
     void id__should__get_id_from_map() {
         // given
-        var container = new HtContainerFromMap(Map.of("Id", "someId"));
+        var container = new HtJsonContainer(Map.of("Id", "someId"));
 
         // then
         assertThat(container.id()).isEqualTo("someId");
@@ -22,7 +22,7 @@ class HtContainerFromMapTest implements UnitTest {
     @Test
     void id__if__id_is_null__should__throw_exception() {
         // given
-        var container = new HtContainerFromMap(Map.of());
+        var container = new HtJsonContainer(Map.of());
 
         // then
         assertThatThrownBy(container::id)
@@ -33,7 +33,7 @@ class HtContainerFromMapTest implements UnitTest {
     @Test
     void name__should__get_name_from_map() {
         // given
-        var container = new HtContainerFromMap(Map.of("Name", "someName"));
+        var container = new HtJsonContainer(Map.of("Name", "someName"));
 
         // then
         assertThat(container.name()).isEqualTo("someName");
@@ -42,7 +42,7 @@ class HtContainerFromMapTest implements UnitTest {
     @Test
     void name__if__name_is_null__should__throw_exception() {
         // given
-        var container = new HtContainerFromMap(Map.of());
+        var container = new HtJsonContainer(Map.of());
 
         // then
         assertThatThrownBy(container::name)
@@ -53,7 +53,7 @@ class HtContainerFromMapTest implements UnitTest {
     @Test
     void labels__should__get_labels_from_map() {
         // given
-        var container = new HtContainerFromMap(Map.of(
+        var container = new HtJsonContainer(Map.of(
                 "Config", Map.of("Labels", Map.of("key", "value"))
         ));
 
@@ -64,7 +64,7 @@ class HtContainerFromMapTest implements UnitTest {
     @Test
     void labels__if__labels_is_null__should__throw_exception() {
         // given
-        var container = new HtContainerFromMap(Map.of(
+        var container = new HtJsonContainer(Map.of(
                 "Config", Map.of()
         ));
 
@@ -77,7 +77,7 @@ class HtContainerFromMapTest implements UnitTest {
     @Test
     void labels__if__config_is_null__should__throw_exception() {
         // given
-        var container = new HtContainerFromMap(Map.of());
+        var container = new HtJsonContainer(Map.of());
 
         // then
         assertThatThrownBy(container::labels)

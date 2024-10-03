@@ -9,6 +9,9 @@ import java.util.function.Predicate;
 @NoArgsConstructor(access = lombok.AccessLevel.PRIVATE)
 public class Constants {
 
+    public static final String CONTAINER_HASH_LABEL = "HTCT_REUSABLE_HASH";
+    public static final String CONTAINER_CLEANUP_AFTER_LABEL = "HTCT_CLEANUP_AFTER";
+    public static final String CONTAINER_STARTED_AT_LABEL = "HTCT_STARTED_AT";
     public static final String KEY_LABEL = "huskit_key";
 
     @NoArgsConstructor(access = lombok.AccessLevel.PRIVATE)
@@ -45,5 +48,6 @@ public class Constants {
         public static final String DEFAULT_PORT_ENV = "MONGO_PORT";
         public static final String DEFAULT_IMAGE = "mongo:4.4.8";
         public static final String DEFAULT_DB_NAME = "mongoHuskitContainerDb";
+        public static final String CONNECTION_STRING_PATTERN = "mongodb://%s:%d";
     }
 }

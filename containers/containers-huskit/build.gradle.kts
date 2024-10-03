@@ -22,6 +22,7 @@ dependencies {
     implementation(projects.containers.containersModel)
     implementation(projects.logging.loggingApi)
     implementation(libs.json)
+//    implementation(libs.mongoDriver)
 //    implementation(libs.apache.commons.lang)
 //    implementation(libs.apache.commons.io)
 //    implementation(libs.bundles.testcontainers)

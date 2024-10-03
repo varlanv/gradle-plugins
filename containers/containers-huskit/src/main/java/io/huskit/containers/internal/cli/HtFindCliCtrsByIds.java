@@ -2,7 +2,7 @@ package io.huskit.containers.internal.cli;
 
 import io.huskit.containers.api.HtContainer;
 import io.huskit.containers.api.cli.CommandType;
-import io.huskit.containers.internal.HtContainerFromMap;
+import io.huskit.containers.internal.HtJsonContainer;
 import io.huskit.containers.internal.HtJson;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
@@ -28,7 +28,7 @@ public class HtFindCliCtrsByIds {
                     result -> {
                         return result.lines().stream()
                                 .map(HtJson::toMap)
-                                .map(map -> (HtContainer) new HtContainerFromMap(map))
+                                .map(map -> (HtContainer) new HtJsonContainer(map))
                                 .collect(Collectors.toList());
                     });
             return containers.stream();

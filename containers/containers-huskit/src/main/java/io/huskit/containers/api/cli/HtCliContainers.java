@@ -1,5 +1,6 @@
 package io.huskit.containers.api.cli;
 
+import io.huskit.containers.api.HtContainer;
 import io.huskit.containers.api.HtContainers;
 import io.huskit.containers.api.HtDockerImageName;
 import io.huskit.containers.api.list.HtListContainers;
@@ -13,9 +14,9 @@ import io.huskit.containers.api.run.HtRunSpec;
 import io.huskit.containers.internal.cli.*;
 import lombok.RequiredArgsConstructor;
 
-import java.util.Collection;
-import java.util.List;
+import java.util.*;
 import java.util.function.Consumer;
+import java.util.stream.Stream;
 
 @RequiredArgsConstructor
 public class HtCliContainers implements HtContainers {
@@ -31,6 +32,26 @@ public class HtCliContainers implements HtContainers {
     @Override
     public HtListContainers list(Consumer<HtListContainersArgsSpec> args) {
         return new HtCliListCtrs(cli, List.of()).withArgs(args);
+    }
+
+    @Override
+    public Stream<HtContainer> inspect(Iterable<? extends CharSequence> containerIds) {
+        var ids = new LinkedHashSet<String>();
+        for (var containerId : containerIds) {
+            ids.add(containerId.toString());
+        }
+        if (ids.isEmpty()) {
+            return Stream.empty();
+        }
+        return list().asStream()
+                .filter(cnt -> ids.contains(cnt.id()));
+    }
+
+    @Override
+    public HtContainer inspect(CharSequence containerId) {
+        return this.inspect(Collections.singletonList(containerId))
+                .findFirst()
+                .orElseThrow(() -> new NoSuchElementException("No container found with id: " + containerId));
     }
 
     @Override

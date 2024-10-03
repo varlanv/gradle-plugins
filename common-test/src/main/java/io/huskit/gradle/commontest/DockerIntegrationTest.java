@@ -1,4 +1,3 @@
-
 package io.huskit.gradle.commontest;
 
 import org.junit.jupiter.api.AfterEach;
@@ -15,7 +14,7 @@ public interface DockerIntegrationTest extends IntegrationTest {
     AtomicBoolean IS_INITIALIZED = new AtomicBoolean(false);
 
     @BeforeAll
-    static void cleanupDockerOnce() {
+    default void cleanupDockerOnce() {
         if (IS_INITIALIZED.compareAndSet(false, true)) {
             DockerUtil.cleanupDocker();
         }

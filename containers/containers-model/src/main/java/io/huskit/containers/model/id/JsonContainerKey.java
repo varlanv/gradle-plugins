@@ -14,16 +14,16 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 @ToString(of = "properties")
 @EqualsAndHashCode(of = "properties")
-class JsonMapContainerKey implements ContainerKey {
+class JsonContainerKey implements ContainerKey {
 
     NavigableMap<String, Object> properties;
     MemoizedSupplier<String> memoizedSupplier = new MemoizedSupplier<>(this::buildJson);
 
-    JsonMapContainerKey() {
+    JsonContainerKey() {
         this(Collections.emptyNavigableMap());
     }
 
-    JsonMapContainerKey(Map<String, Object> properties) {
+    JsonContainerKey(Map<String, Object> properties) {
         this(new TreeMap<>(properties));
     }
 
@@ -39,16 +39,16 @@ class JsonMapContainerKey implements ContainerKey {
     }
 
     @Override
-    public JsonMapContainerKey with(String key, Object value) {
+    public JsonContainerKey with(String key, Object value) {
         var newProperties = new TreeMap<>(properties);
         newProperties.put(key, value);
-        return new JsonMapContainerKey(newProperties);
+        return new JsonContainerKey(newProperties);
     }
 
     @Override
-    public JsonMapContainerKey with(Map<String, Object> map) {
+    public JsonContainerKey with(Map<String, Object> map) {
         var newProperties = new TreeMap<>(properties);
         newProperties.putAll(map);
-        return new JsonMapContainerKey(newProperties);
+        return new JsonContainerKey(newProperties);
     }
 }

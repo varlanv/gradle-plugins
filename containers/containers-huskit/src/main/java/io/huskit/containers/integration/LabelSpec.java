@@ -2,7 +2,7 @@ package io.huskit.containers.integration;
 
 import java.util.Map;
 
-public interface EnvSpec {
+public interface LabelSpec {
 
     ContainerSpec pair(CharSequence key, Object value);
 

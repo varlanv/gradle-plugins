@@ -1,5 +1,6 @@
 package io.huskit.containers.api;
 
+import java.time.Instant;
 import java.util.Map;
 
 public interface HtContainer {
@@ -9,4 +10,8 @@ public interface HtContainer {
     String name();
 
     Map<String, String> labels();
+
+    Instant createdAt();
+
+    Integer firstMappedPort();
 }

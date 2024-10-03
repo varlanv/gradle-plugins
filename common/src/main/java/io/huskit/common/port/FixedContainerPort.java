@@ -1,4 +1,4 @@
-package io.huskit.containers.model.port;
+package io.huskit.common.port;
 
 import io.huskit.common.function.MemoizedSupplier;
 import lombok.Getter;

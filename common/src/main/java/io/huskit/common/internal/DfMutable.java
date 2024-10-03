@@ -1,6 +1,6 @@
 package io.huskit.common.internal;
 
-import io.huskit.common.Volatile;
+import io.huskit.common.Mutable;
 import io.huskit.common.function.ThrowingConsumer;
 import io.huskit.common.function.ThrowingPredicate;
 import io.huskit.common.function.ThrowingSupplier;
@@ -8,7 +8,6 @@ import lombok.*;
 import lombok.experimental.NonFinal;
 import org.checkerframework.checker.nullness.qual.Nullable;
 
-import java.io.Serializable;
 import java.util.NoSuchElementException;
 import java.util.Objects;
 import java.util.Optional;
@@ -17,40 +16,15 @@ import java.util.Optional;
 @AllArgsConstructor
 @ToString(of = "value")
 @EqualsAndHashCode(of = "value")
-public class DfVolatile<T> implements Volatile<T>, Serializable {
+public class DfMutable<T> implements Mutable<T> {
 
     @Nullable
     @NonFinal
-    private volatile T value;
-
-    public DfVolatile(Volatile<T> another) {
-        another.ifPresent(this::set);
-    }
+    private T value;
 
     @Override
     public void set(T value) {
         this.value = Objects.requireNonNull(value, "value");
-    }
-
-    @Override
-    @SneakyThrows
-    public T syncSetOrGet(ThrowingSupplier<T> valueSupplier) {
-        var val = this.value;
-        if (val == null) {
-            synchronized (this) {
-                val = this.value;
-                if (val == null) {
-                    val = Objects.requireNonNull(valueSupplier.get());
-                    this.value = val;
-                }
-            }
-        }
-        return val;
-    }
-
-    @SuppressWarnings("PMD.NullAssignment")
-    public void reset() {
-        this.value = null;
     }
 
     @Override
@@ -72,37 +46,32 @@ public class DfVolatile<T> implements Volatile<T>, Serializable {
 
     @Override
     public T or(T other) {
-        var val = value;
-        return val != null ? val : Objects.requireNonNull(other, "other");
+        var value = this.value;
+        return value != null ? value : Objects.requireNonNull(other, "other");
     }
 
     @Override
     @SneakyThrows
     public T or(ThrowingSupplier<T> supplier) {
-        var val = value;
-        return val != null ? val : Objects.requireNonNull(supplier.get(), "supplier");
+        var value = this.value;
+        return value != null ? value : Objects.requireNonNull(supplier.get(), "supplier");
     }
 
     @Override
     @SneakyThrows
     public void ifPresent(ThrowingConsumer<T> consumer) {
-        var val = value;
-        if (val != null) {
-            consumer.accept(val);
+        var value = this.value;
+        if (value != null) {
+            consumer.accept(value);
         }
     }
 
     @Override
     public T require() {
-        var val = value;
-        if (val != null) {
-            return val;
+        var value = this.value;
+        if (value == null) {
+            throw new NoSuchElementException("No value present");
         }
-        throw new NoSuchElementException("No value present");
-    }
-
-    @Nullable
-    public T get() {
         return value;
     }
 }

@@ -11,6 +11,6 @@ public interface ContainerKey {
     ContainerKey with(Map<String, Object> map);
 
     static ContainerKey of(Map<String, Object> map) {
-        return new JsonMapContainerKey(map);
+        return new JsonContainerKey(map);
     }
 }

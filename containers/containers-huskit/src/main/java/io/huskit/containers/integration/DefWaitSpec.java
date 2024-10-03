@@ -1,7 +1,6 @@
 package io.huskit.containers.integration;
 
 import io.huskit.common.Mutable;
-import io.huskit.common.Volatile;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
@@ -12,7 +11,7 @@ import java.time.Duration;
 public class DefWaitSpec implements WaitSpec {
 
     ContainerSpec parent;
-    Mutable<TextWait> textWait = Volatile.of();
+    Mutable<TextWait> textWait = Mutable.of();
 
     @Override
     public ContainerSpec forLogMessageContaining(CharSequence text, Duration timeout) {

@@ -7,7 +7,6 @@ import io.huskit.containers.api.run.HtCmdRunSpecImpl;
 import io.huskit.containers.api.run.HtRun;
 import io.huskit.containers.internal.HtLazyContainer;
 import lombok.RequiredArgsConstructor;
-import lombok.SneakyThrows;
 import lombok.With;
 
 import java.util.Set;
@@ -22,12 +21,11 @@ public class HtCliRun implements HtRun {
     HtCliDckrSpec dockerSpec;
 
     @Override
-    @SneakyThrows
     public HtContainer exec() {
         var id = cli.sendCommand(
                 new CliCommand(
                         runSpec.commandType(),
-                        runSpec.build(),
+                        runSpec.toCommand(),
                         line -> runSpec.lookFor().check(line::contains),
                         Predicate.not(String::isBlank),
                         runSpec.timeout()

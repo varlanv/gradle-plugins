@@ -1,15 +1,22 @@
 package io.huskit.common.internal;
 
+import io.huskit.common.Mutable;
 import io.huskit.common.function.ThrowingSupplier;
 import io.huskit.gradle.commontest.UnitTest;
 import lombok.SneakyThrows;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 
 import java.io.IOException;
 import java.util.NoSuchElementException;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.Function;
+import java.util.function.Supplier;
+import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -18,18 +25,20 @@ class DfVolatileTest implements UnitTest {
 
     String subjectValue = "value";
 
-    @Test
-    void set__when_value_was_null__sets_value() {
-        var subject = new DfVolatile<String>();
+    @ParameterizedTest
+    @MethodSource("emptyMutableFactories")
+    void set__when_value_was_null__sets_value(Supplier<Mutable<String>> factory) {
+        var subject = factory.get();
 
         subject.set(subjectValue);
 
         assertThat(subject.require()).isEqualTo(subjectValue);
     }
 
-    @Test
-    void set__when_switching_value__sets_new_value() {
-        var subject = new DfVolatile<String>();
+    @ParameterizedTest
+    @MethodSource("emptyMutableFactories")
+    void set__when_switching_value__sets_new_value(Supplier<Mutable<String>> factory) {
+        var subject = factory.get();
 
         subject.set(subjectValue);
         subject.set("new value");
@@ -37,9 +46,10 @@ class DfVolatileTest implements UnitTest {
         assertThat(subject.require()).isEqualTo("new value");
     }
 
-    @Test
-    void set__when_pass_null__throws_exception() {
-        var subject = new DfVolatile<String>();
+    @ParameterizedTest
+    @MethodSource("emptyMutableFactories")
+    void set__when_pass_null__throws_exception(Supplier<Mutable<String>> factory) {
+        var subject = factory.get();
 
         assertThatThrownBy(() -> subject.set(null))
                 .isInstanceOf(NullPointerException.class)
@@ -73,26 +83,29 @@ class DfVolatileTest implements UnitTest {
         assertThat(subject.get()).isEqualTo(subjectValue);
     }
 
-    @Test
-    void require__when_value_was_set__returns_value() {
-        var subject = new DfVolatile<String>();
+    @ParameterizedTest
+    @MethodSource("emptyMutableFactories")
+    void require__when_value_was_set__returns_value(Supplier<Mutable<String>> factory) {
+        var subject = factory.get();
         subject.set(subjectValue);
 
         assertThat(subject.require()).isEqualTo(subjectValue);
     }
 
-    @Test
-    void require__when_value_was_not_set__throws_exception() {
-        var subject = new DfVolatile<String>();
+    @ParameterizedTest
+    @MethodSource("emptyMutableFactories")
+    void require__when_value_was_not_set__throws_exception(Supplier<Mutable<String>> factory) {
+        var subject = factory.get();
 
         assertThatThrownBy(subject::require)
                 .isInstanceOf(NoSuchElementException.class)
                 .hasMessage("No value present");
     }
 
-    @Test
-    void ifPresent__when_value_was_set__executes_consumer() {
-        var subject = new DfVolatile<String>();
+    @ParameterizedTest
+    @MethodSource("emptyMutableFactories")
+    void ifPresent__when_value_was_set__executes_consumer(Supplier<Mutable<String>> factory) {
+        var subject = factory.get();
         subject.set(subjectValue);
         var wasCalled = new AtomicBoolean();
 
@@ -103,47 +116,53 @@ class DfVolatileTest implements UnitTest {
         assertThat(wasCalled).isTrue();
     }
 
-    @Test
-    void maybe__when_value_was_set__returns_optional_with_value() {
-        var subject = new DfVolatile<String>();
+    @ParameterizedTest
+    @MethodSource("emptyMutableFactories")
+    void maybe__when_value_was_set__returns_optional_with_value(Supplier<Mutable<String>> factory) {
+        var subject = factory.get();
         subject.set(subjectValue);
 
         assertThat(subject.maybe()).contains(subjectValue);
     }
 
-    @Test
-    void maybe__when_value_was_not_set__returns_empty_optional() {
-        var subject = new DfVolatile<String>();
+    @ParameterizedTest
+    @MethodSource("emptyMutableFactories")
+    void maybe__when_value_was_not_set__returns_empty_optional(Supplier<Mutable<String>> factory) {
+        var subject = factory.get();
 
         assertThat(subject.maybe()).isEmpty();
     }
 
-    @Test
-    void isEmpty__when_value_was_set__returns_false() {
-        var subject = new DfVolatile<String>();
+    @ParameterizedTest
+    @MethodSource("emptyMutableFactories")
+    void isEmpty__when_value_was_set__returns_false(Supplier<Mutable<String>> factory) {
+        var subject = factory.get();
         subject.set(subjectValue);
 
         assertThat(subject.isEmpty()).isFalse();
     }
 
-    @Test
-    void isEmpty__when_value_was_not_set__returns_true() {
-        var subject = new DfVolatile<String>();
+    @ParameterizedTest
+    @MethodSource("emptyMutableFactories")
+    void isEmpty__when_value_was_not_set__returns_true(Supplier<Mutable<String>> factory) {
+        var subject = factory.get();
 
         assertThat(subject.isEmpty()).isTrue();
     }
 
-    @Test
-    void isPresent__when_value_was_set__returns_true() {
-        var subject = new DfVolatile<String>();
+    @ParameterizedTest
+    @MethodSource("emptyMutableFactories")
+    void isPresent__when_value_was_set__returns_true(Supplier<Mutable<String>> factory) {
+        var subject = factory.get();
         subject.set(subjectValue);
 
         assertThat(subject.isPresent()).isTrue();
     }
 
-    @Test
-    void isPresent__when_value_was_not_set__returns_false() {
-        var subject = new DfVolatile<String>();
+    @ParameterizedTest
+    @MethodSource("emptyMutableFactories")
+    void isPresent__when_value_was_not_set__returns_false(Supplier<Mutable<String>> factory) {
+        var subject = factory.get();
 
         assertThat(subject.isPresent()).isFalse();
     }
@@ -233,121 +252,149 @@ class DfVolatileTest implements UnitTest {
         assertThat(subject.get()).isEqualTo(subjectValue);
     }
 
-    @Test
-    void or__when_value_is_present__returns_value() {
-        var subject = new DfVolatile<String>();
+    @ParameterizedTest
+    @MethodSource("emptyMutableFactories")
+    void or__when_value_is_present__returns_value(Supplier<Mutable<String>> factory) {
+        var subject = factory.get();
         subject.set(subjectValue);
 
         assertThat(subject.or("other")).isEqualTo(subjectValue);
     }
 
-    @Test
-    void or__when_value_is_not_present__returns_other() {
-        var subject = new DfVolatile<String>();
+    @ParameterizedTest
+    @MethodSource("emptyMutableFactories")
+    void or__when_value_is_not_present__returns_other(Supplier<Mutable<String>> factory) {
+        var subject = factory.get();
 
         assertThat(subject.or("other")).isEqualTo("other");
     }
 
-    @Test
-    void or__when_other_is_null__and_value_is_present__returns_value() {
-        var subject = new DfVolatile<String>();
+    @ParameterizedTest
+    @MethodSource("emptyMutableFactories")
+    void or__when_other_is_null__and_value_is_present__returns_value(Supplier<Mutable<String>> factory) {
+        var subject = factory.get();
         subject.set(subjectValue);
 
         assertThat(subject.or((String) null)).isEqualTo(subjectValue);
     }
 
-    @Test
-    void or__when_other_is_null__and_value_is_not_present__throws_exception() {
-        var subject = new DfVolatile<String>();
+    @ParameterizedTest
+    @MethodSource("emptyMutableFactories")
+    void or__when_other_is_null__and_value_is_not_present__throws_exception(Supplier<Mutable<String>> factory) {
+        var subject = factory.get();
 
         assertThatThrownBy(() -> subject.or((String) null))
                 .isInstanceOf(NullPointerException.class)
                 .hasMessage("other");
     }
 
-    @Test
-    void or__when_supplier_is_present__returns_value() {
-        var subject = new DfVolatile<String>();
+    @ParameterizedTest
+    @MethodSource("emptyMutableFactories")
+    void or__when_supplier_is_present__returns_value(Supplier<Mutable<String>> factory) {
+        var subject = factory.get();
         subject.set(subjectValue);
 
         assertThat(subject.or(() -> "other")).isEqualTo(subjectValue);
     }
 
-    @Test
-    void or__when_supplier_is_not_present__returns_other() {
-        var subject = new DfVolatile<String>();
+    @ParameterizedTest
+    @MethodSource("emptyMutableFactories")
+    void or__when_supplier_is_not_present__returns_other(Supplier<Mutable<String>> factory) {
+        var subject = factory.get();
 
         assertThat(subject.or(() -> "other")).isEqualTo("other");
     }
 
-    @Test
-    void or__when_supplier_is_null__and_value_is_present__returns_value() {
-        var subject = new DfVolatile<String>();
+    @ParameterizedTest
+    @MethodSource("emptyMutableFactories")
+    void or__when_supplier_is_null__and_value_is_present__returns_value(Supplier<Mutable<String>> factory) {
+        var subject = factory.get();
         subject.set(subjectValue);
 
         assertThat(subject.or((ThrowingSupplier<String>) null)).isEqualTo(subjectValue);
     }
 
-    @Test
-    void or__when_supplier_is_null__and_value_is_not_present__throws_exception() {
-        var subject = new DfVolatile<String>();
+    @ParameterizedTest
+    @MethodSource("emptyMutableFactories")
+    void or__when_supplier_is_null__and_value_is_not_present__throws_exception(Supplier<Mutable<String>> factory) {
+        var subject = factory.get();
 
         assertThatThrownBy(() -> subject.or((ThrowingSupplier<String>) null))
                 .isInstanceOf(NullPointerException.class)
                 .hasMessage(null);
     }
 
-    @Test
-    void or__when_supplier_throws_exception__should_not_be_ignored() {
-        var subject = new DfVolatile<String>();
+    @ParameterizedTest
+    @MethodSource("emptyMutableFactories")
+    void or__when_supplier_throws_exception__should_not_be_ignored(Supplier<Mutable<String>> factory) {
+        var subject = factory.get();
 
         assertThatThrownBy(() -> subject.or(() -> {
             throw new IOException("msg");
         })).isInstanceOf(IOException.class).hasMessage("msg");
     }
 
-    @Test
-    void or__when_supplier_returns_null__throws_exception() {
-        var subject = new DfVolatile<String>();
+    @ParameterizedTest
+    @MethodSource("emptyMutableFactories")
+    void or__when_supplier_returns_null__throws_exception(Supplier<Mutable<String>> factory) {
+        var subject = factory.get();
 
         assertThatThrownBy(() -> subject.or(() -> null))
                 .isInstanceOf(NullPointerException.class)
                 .hasMessage("supplier");
     }
 
-    @Test
-    void check__when_value_is_present__and_predicate_returns_true__returns_true() {
-        var subject = new DfVolatile<String>();
+    @ParameterizedTest
+    @MethodSource("emptyMutableFactories")
+    void check__when_value_is_present__and_predicate_returns_true__returns_true(Supplier<Mutable<String>> factory) {
+        var subject = factory.get();
         subject.set(subjectValue);
 
         assertThat(subject.check(val -> val.equals(subjectValue))).isTrue();
     }
 
-    @Test
-    void check__when_value_is_present__and_predicate_returns_false__returns_false() {
-        var subject = new DfVolatile<String>();
+    @ParameterizedTest
+    @MethodSource("emptyMutableFactories")
+    void check__when_value_is_present__and_predicate_returns_false__returns_false(Supplier<Mutable<String>> factory) {
+        var subject = factory.get();
         subject.set(subjectValue);
 
         assertThat(subject.check("other"::equals)).isFalse();
     }
 
-    @Test
-    void check__when_value_is_not_present__returns_false_and_does_not_call_predicate() {
-        var subject = new DfVolatile<String>();
+    @ParameterizedTest
+    @MethodSource("emptyMutableFactories")
+    void check__when_value_is_not_present__returns_false_and_does_not_call_predicate(Supplier<Mutable<String>> factory) {
+        var subject = factory.get();
 
         assertThat(subject.check(val -> {
             throw new IllegalStateException("Should not be called");
         })).isFalse();
     }
 
-    @Test
-    void check__when_predicate_throws_exception__should_not_be_ignored() {
-        var subject = new DfVolatile<>("value");
+    @ParameterizedTest
+    @MethodSource("mutableFactories")
+    void check__when_predicate_throws_exception__should_not_be_ignored(Function<String, Mutable<String>> factory) {
+        var subject = factory.apply("value");
 
         assertThatThrownBy(() ->
                 subject.check(val -> {
                     throw new IOException("msg");
                 })
         ).isInstanceOf(IOException.class).hasMessage("msg");
+    }
+
+    Stream<Arguments> mutableFactories() {
+        return Stream.of(
+                Arguments.of((Function<String, Mutable<String>>) DfVolatile::new),
+                Arguments.of((Function<String, Mutable<String>>) DfMutable::new)
+        );
+    }
+
+    Stream<Arguments> emptyMutableFactories() {
+        return Stream.of(
+                Arguments.of((Supplier<Mutable<String>>) DfVolatile::new),
+                Arguments.of((Supplier<Mutable<String>>) DfMutable::new)
+        );
     }
 }
