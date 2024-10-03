@@ -129,6 +129,7 @@ branch-filters: &branch-filters
       - fix/*
       - dev
 
+
 workflows:
   gradle-build-unix:
     jobs:
