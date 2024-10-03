@@ -74,7 +74,7 @@ jobs:
       - prepare-gradle
       - restore-gradle-cache
       - run-gradle-command:
-          command: "assemble"
+          command: "integrationTestClasses"
       - save-gradle-cache
 
   gradle-build-test-unix:
