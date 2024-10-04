@@ -1,6 +1,7 @@
 package io.huskit.containers.api.run;
 
 import io.huskit.common.Mutable;
+import io.huskit.common.HtStrings;
 import io.huskit.containers.api.HtImgName;
 import io.huskit.containers.api.cli.CommandType;
 import lombok.Getter;
@@ -8,12 +9,8 @@ import lombok.RequiredArgsConstructor;
 import lombok.With;
 
 import java.time.Duration;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 @With
 @RequiredArgsConstructor
@@ -90,12 +87,19 @@ public class HtCmdRunSpecImpl implements HtRunSpec {
 
     @Override
     public HtCmdRunSpecImpl withCommand(CharSequence command, Object... args) {
+        return withCommand(command, Arrays.asList(args));
+    }
+
+    @Override
+    public HtCmdRunSpecImpl withCommand(CharSequence command, Iterable<?> args) {
+        var argsList = new ArrayList<String>(4);
+        for (var arg : args) {
+            argsList.add(arg.toString());
+        }
         this.command.set(
                 new RunCommand(
                         command.toString(),
-                        Stream.of(args)
-                                .map(Object::toString)
-                                .collect(Collectors.toList())
+                        argsList
                 )
         );
         return this;
@@ -120,21 +124,23 @@ public class HtCmdRunSpecImpl implements HtRunSpec {
         });
         labels.ifPresent(labelMap -> labelMap.forEach((k, v) -> {
             processCmd.add("--label");
-            processCmd.add("\"" + k + "=" + v + "\"");
+            processCmd.add(HtStrings.doubleQuotedParam(k, v));
         }));
         env.ifPresent(envMap -> envMap.forEach((k, v) -> {
             processCmd.add("-e");
-            processCmd.add("\"" + k + "=" + v + "\"");
+            processCmd.add(HtStrings.doubleQuotedParam(k, v));
         }));
         ports.ifPresent(portMap -> portMap.forEach((k, v) -> {
             processCmd.add("-p");
-            processCmd.add(k + ":" + v);
+            processCmd.add(HtStrings.doubleQuote(k + ":" + v));
         }));
 
         processCmd.add(imgName.reference());
         command.ifPresent(runCmd -> {
             processCmd.add(runCmd.command());
-            processCmd.addAll(runCmd.args());
+            for (var arg : runCmd.args()) {
+                processCmd.add(HtStrings.doubleQuoteIfNotAlready(arg));
+            }
         });
         return processCmd;
     }

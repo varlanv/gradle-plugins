@@ -17,6 +17,8 @@ public interface HtRunSpec {
 
     HtRunSpec withCommand(CharSequence command, Object... args);
 
+    HtRunSpec withCommand(CharSequence command, Iterable<?> args);
+
     HtRunSpec withLookFor(CharSequence text, Duration timeout);
 
     default HtRunSpec withLookFor(CharSequence text) {

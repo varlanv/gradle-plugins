@@ -62,6 +62,7 @@ public class HtCliContainers implements HtContainers {
     @Override
     public HtRun run(CharSequence dockerImageName) {
         return new HtCliRun(
+                this,
                 cli,
                 new HtCmdRunSpecImpl(HtImgName.ofPrefix(dockerSpec.imagePrefix(), dockerImageName)),
                 dockerSpec
@@ -73,6 +74,7 @@ public class HtCliContainers implements HtContainers {
         var runSpec = new HtCmdRunSpecImpl(HtImgName.ofPrefix(dockerSpec.imagePrefix(), dockerImageName));
         spec.accept(runSpec);
         return new HtCliRun(
+                this,
                 cli,
                 runSpec,
                 dockerSpec

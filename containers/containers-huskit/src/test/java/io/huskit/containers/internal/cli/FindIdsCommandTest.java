@@ -1,5 +1,6 @@
 package io.huskit.containers.internal.cli;
 
+import io.huskit.common.HtStrings;
 import io.huskit.containers.api.cli.HtArg;
 import io.huskit.gradle.commontest.UnitTest;
 import org.junit.jupiter.api.Test;
@@ -19,7 +20,7 @@ class FindIdsCommandTest implements UnitTest {
                 "docker",
                 "ps",
                 "--format",
-                "\"{{.ID}}\""
+                HtStrings.doubleQuote("{{.ID}}")
         ));
     }
 
@@ -36,7 +37,7 @@ class FindIdsCommandTest implements UnitTest {
                 "argName",
                 "argValue",
                 "--format",
-                "\"{{.ID}}\""
+                HtStrings.doubleQuote("{{.ID}}")
         ));
     }
 }

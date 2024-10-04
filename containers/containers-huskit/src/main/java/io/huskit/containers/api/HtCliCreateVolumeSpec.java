@@ -1,6 +1,7 @@
 package io.huskit.containers.api;
 
 import io.huskit.common.StringTuples;
+import io.huskit.common.HtStrings;
 
 import java.util.List;
 import java.util.Map;
@@ -27,7 +28,7 @@ public class HtCliCreateVolumeSpec implements HtCreateVolumeSpec {
 
     @Override
     public HtCliCreateVolumeSpec withDriverOpts(CharSequence driverOptsKey, CharSequence driverOptsValue) {
-        args.add("--opt", "\"%s=%s\"", driverOptsKey.toString(), driverOptsValue.toString());
+        args.add("--opt", HtStrings.doubleQuotedParam(driverOptsKey, driverOptsValue));
         return this;
     }
 
@@ -39,7 +40,7 @@ public class HtCliCreateVolumeSpec implements HtCreateVolumeSpec {
 
     @Override
     public HtCliCreateVolumeSpec withLabel(CharSequence key, CharSequence value) {
-        args.add("--label", "\"%s=%s\"", key.toString(), value.toString());
+        args.add("--label", HtStrings.doubleQuotedParam(key, value));
         return this;
     }
 

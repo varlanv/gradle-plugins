@@ -6,15 +6,12 @@ import io.huskit.containers.api.cli.CliRecorder;
 import io.huskit.containers.api.cli.CommandType;
 import io.huskit.containers.api.cli.HtCliDckrSpec;
 import io.huskit.containers.api.cli.HtCommand;
-import io.huskit.containers.model.Constants;
 import lombok.Locked;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.With;
 
-import java.time.Duration;
 import java.util.ArrayList;
-import java.util.List;
 import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -107,7 +104,7 @@ public class HtCli {
         private void doSendCommand(HtCommand command) {
             recorder.record(command);
             shell.clearBuffer(CLEAR_LINE_MARKER);
-            shell.write(String.join(" ", command.value()));
+            shell.write(command.value());
         }
 
         @SneakyThrows
@@ -130,25 +127,11 @@ public class HtCli {
                 }
                 line = shell.outLine();
             }
-            if (command.type() == CommandType.CONTAINERS_RUN_FOLLOW) {
-                var containerId = lines.get(0);
-                containerIdsForCleanup.add(containerId);
-                sendCommand(
-                        new CliCommand(
-                                CommandType.CONTAINERS_LOGS_FOLLOW,
-                                List.of("docker", "logs", "-f", containerId),
-                                terminatePredicate,
-                                Constants.Predicates.alwaysTrue(),
-                                Duration.ZERO
-                        ),
-                        Function.identity());
-                return resultConsumer.apply(new CommandResult(List.of(containerId)));
-            } else {
-                if (command.type() == CommandType.CONTAINERS_RUN) {
-                    containerIdsForCleanup.add(lines.get(0));
-                }
-                return resultConsumer.apply(new CommandResult(lines));
+
+            if (command.type() == CommandType.CONTAINERS_RUN) {
+                containerIdsForCleanup.add(lines.get(0));
             }
+            return resultConsumer.apply(new CommandResult(lines));
         }
 
         private void stop() {

@@ -1,10 +1,10 @@
 package io.huskit.containers.api;
 
 import io.huskit.common.StringTuples;
+import io.huskit.common.HtStrings;
 
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 
 public class HtCliListVolumesSpec implements HtListVolumesSpec {
 
@@ -16,26 +16,26 @@ public class HtCliListVolumesSpec implements HtListVolumesSpec {
 
     @Override
     public HtListVolumesSpec withFilterByDangling(Boolean dangling) {
-        args.add("--filter", "\"dangling=%s\"", dangling.toString());
+        args.add("--filter", HtStrings.doubleQuotedParam("dangling", dangling));
         return this;
     }
 
     @Override
     public HtListVolumesSpec withFilterByLabelExists(CharSequence labelKey) {
-        args.add("--filter", "\"label=%s\"", labelKey);
+        args.add("--filter", HtStrings.doubleQuotedParam("label", labelKey));
         return this;
     }
 
     @Override
     public HtListVolumesSpec withFilterByLabel(CharSequence labelKey, CharSequence labelValue) {
-        args.add("--filter", "\"label=%s=%s\"", labelKey, labelValue);
+        args.add("--filter", HtStrings.doubleQuotedParam("label", labelKey, labelValue));
         return this;
     }
 
     @Override
     public HtListVolumesSpec withFilterByLabels(Map<String, String> labels) {
         for (var entry : labels.entrySet()) {
-            args.add("--filter", "\"label=%s=%s\"", entry.getKey(), Objects.requireNonNull(entry.getValue()));
+            args.add("--filter", HtStrings.doubleQuotedParam("label", entry.getKey(), entry.getValue()));
         }
         return this;
     }

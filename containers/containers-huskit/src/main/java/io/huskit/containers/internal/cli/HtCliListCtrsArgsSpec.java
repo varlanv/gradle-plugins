@@ -1,5 +1,6 @@
 package io.huskit.containers.internal.cli;
 
+import io.huskit.common.HtStrings;
 import io.huskit.common.Volatile;
 import io.huskit.containers.api.cli.HtArg;
 import io.huskit.containers.api.list.HtListContainersFilterType;
@@ -53,12 +54,12 @@ public class HtCliListCtrsArgsSpec implements HtListContainersArgsSpec {
         }
         for (var psFilter : filters.entrySet()) {
             var filterEntry = psFilter.getValue();
-            result.add(HtArg.of("--filter", "\"" + filterEntry.getKey() + "=" + filterEntry.getValue() + "\""));
+            result.add(HtArg.of("--filter", HtStrings.doubleQuotedParam(filterEntry.getKey(), filterEntry.getValue())));
         }
         for (var label : labels.entrySet()) {
-            result.add(HtArg.of("--filter", "\"label=" + label.getKey() + "=" + label.getValue() + "\""));
+            result.add(HtArg.of("--filter", HtStrings.doubleQuotedParam("label", label.getKey(), label.getValue())));
         }
-        result.add(HtArg.of("--format", "\"{{json .}}\""));
+        result.add(HtArg.of("--format", HtStrings.doubleQuote("{{json .}}")));
         return Collections.unmodifiableList(result);
     }
 }

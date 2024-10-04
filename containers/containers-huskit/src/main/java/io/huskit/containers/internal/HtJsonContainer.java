@@ -1,10 +1,15 @@
 package io.huskit.containers.internal;
 
+import io.huskit.common.collection.HtCollections;
 import io.huskit.containers.api.HtContainer;
+import io.huskit.containers.api.HtContainerNetwork;
+import io.huskit.containers.api.JsonHtContainerConfig;
+import io.huskit.containers.api.JsonHtContainerNetwork;
 import lombok.RequiredArgsConstructor;
 
 import java.time.Instant;
-import java.util.*;
+import java.util.Map;
+import java.util.Objects;
 
 @RequiredArgsConstructor
 public class HtJsonContainer implements HtContainer {
@@ -13,42 +18,26 @@ public class HtJsonContainer implements HtContainer {
 
     @Override
     public String id() {
-        return getFromMap("Id", source);
+        return HtCollections.getFromMap("Id", source);
     }
 
     @Override
     public String name() {
-        return getFromMap("Name", source);
+        return HtCollections.getFromMap("Name", source);
     }
 
     @Override
-    public Map<String, String> labels() {
-        Map<String, Object> config = getFromMap("Config", source);
-        Map<String, String> labels = getFromMap("Labels", config);
-        return Collections.unmodifiableMap(labels);
+    public JsonHtContainerConfig config() {
+        return new JsonHtContainerConfig(HtCollections.getFromMap("Config", source));
+    }
+
+    @Override
+    public HtContainerNetwork network() {
+        return new JsonHtContainerNetwork(HtCollections.getFromMap("NetworkSettings", source));
     }
 
     @Override
     public Instant createdAt() {
         return Instant.parse(Objects.requireNonNull((String) source.get("Created"), "CreatedAt info is not present"));
-    }
-
-    @Override
-    @SuppressWarnings({"unchecked"})
-    public Integer firstMappedPort() {
-        Map<String, Object> networkSettings = getFromMap("NetworkSettings", source);
-        Map<String, Object> ports = getFromMap("Ports", networkSettings);
-        var entries = ports.entrySet();
-        var mappedPorts = entries.iterator().next();
-        var values = (List<Map<String, String>>) mappedPorts.getValue();
-        var mappedPort = values.get(0);
-        return Integer.parseInt(mappedPort.get("HostPort"));
-    }
-
-    @SuppressWarnings({"unchecked"})
-    private <T> T getFromMap(String key, Map<String, Object> map) {
-        return (T) Optional.ofNullable(map.get(key))
-                .orElseThrow(() ->
-                        new IllegalStateException(String.format("Could not find key [%s] in container map %s", key, map)));
     }
 }

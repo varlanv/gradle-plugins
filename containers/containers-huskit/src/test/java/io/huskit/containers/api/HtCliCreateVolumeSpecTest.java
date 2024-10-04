@@ -1,5 +1,6 @@
 package io.huskit.containers.api;
 
+import io.huskit.common.HtStrings;
 import io.huskit.gradle.commontest.UnitTest;
 import org.junit.jupiter.api.Test;
 
@@ -37,7 +38,7 @@ class HtCliCreateVolumeSpecTest implements UnitTest {
 
         var actual = subject.toCommand();
 
-        assertThat(actual).containsExactly("docker", "volume", "create", "--opt", "\"key=value\"", volumeId);
+        assertThat(actual).containsExactly("docker", "volume", "create", "--opt", HtStrings.doubleQuote("key=value"), volumeId);
     }
 
     @Test
@@ -57,7 +58,7 @@ class HtCliCreateVolumeSpecTest implements UnitTest {
 
         var actual = subject.toCommand();
 
-        assertThat(actual).containsExactly("docker", "volume", "create", "--label", "\"labelKey=labelValue\"", volumeId);
+        assertThat(actual).containsExactly("docker", "volume", "create", "--label", HtStrings.doubleQuote("labelKey=labelValue"), volumeId);
     }
 
     @Test
@@ -71,8 +72,8 @@ class HtCliCreateVolumeSpecTest implements UnitTest {
 
         assertThat(actual).containsExactly(
                 "docker", "volume", "create",
-                "--label", "\"labelKey1=labelValue1\"",
-                "--label", "\"labelKey2=labelValue2\"",
+                "--label", HtStrings.doubleQuote("labelKey1=labelValue1"),
+                "--label", HtStrings.doubleQuote("labelKey2=labelValue2"),
                 volumeId
         );
     }
@@ -94,11 +95,11 @@ class HtCliCreateVolumeSpecTest implements UnitTest {
         assertThat(actual).containsExactly(
                 "docker", "volume", "create",
                 "--driver", "driver",
-                "--opt", "\"key=value\"",
+                "--opt", HtStrings.doubleQuote("key=value"),
                 "--label", "label",
-                "--label", "\"labelKey=labelValue\"",
-                "--label", "\"labelKey1=labelValue1\"",
-                "--label", "\"labelKey2=labelValue2\"",
+                "--label", HtStrings.doubleQuote("labelKey=labelValue"),
+                "--label", HtStrings.doubleQuote("labelKey1=labelValue1"),
+                "--label", HtStrings.doubleQuote("labelKey2=labelValue2"),
                 volumeId
         );
     }

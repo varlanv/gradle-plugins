@@ -1,5 +1,6 @@
 package io.huskit.containers.internal.cli;
 
+import io.huskit.common.HtStrings;
 import io.huskit.gradle.commontest.UnitTest;
 import org.junit.jupiter.api.Test;
 
@@ -40,7 +41,7 @@ class HtCliListImagesSpecTest implements UnitTest {
 
         var actual = subject.toCommand();
 
-        assertThat(actual).containsExactly("docker", "images", "-q", "--filter", "\"before=image\"");
+        assertThat(actual).containsExactly("docker", "images", "-q", "--filter", HtStrings.doubleQuote("before=image"));
     }
 
     @Test
@@ -49,7 +50,7 @@ class HtCliListImagesSpecTest implements UnitTest {
 
         var actual = subject.toCommand();
 
-        assertThat(actual).containsExactly("docker", "images", "-q", "--filter", "\"since=image\"");
+        assertThat(actual).containsExactly("docker", "images", "-q", "--filter", HtStrings.doubleQuote("since=image"));
     }
 
     @Test
@@ -58,7 +59,7 @@ class HtCliListImagesSpecTest implements UnitTest {
 
         var actual = subject.toCommand();
 
-        assertThat(actual).containsExactly("docker", "images", "-q", "--filter", "\"reference=ref\"");
+        assertThat(actual).containsExactly("docker", "images", "-q", "--filter", HtStrings.doubleQuote("reference=ref"));
     }
 
     @Test
@@ -67,7 +68,7 @@ class HtCliListImagesSpecTest implements UnitTest {
 
         var actual = subject.toCommand();
 
-        assertThat(actual).containsExactly("docker", "images", "-q", "--filter", "\"until=image\"");
+        assertThat(actual).containsExactly("docker", "images", "-q", "--filter", HtStrings.doubleQuote("until=image"));
     }
 
     @Test
@@ -76,7 +77,7 @@ class HtCliListImagesSpecTest implements UnitTest {
 
         var actual = subject.toCommand();
 
-        assertThat(actual).containsExactly("docker", "images", "-q", "--filter", "dangling=true");
+        assertThat(actual).containsExactly("docker", "images", "-q", "--filter", HtStrings.doubleQuote("dangling=true"));
     }
 
     @Test
@@ -85,7 +86,7 @@ class HtCliListImagesSpecTest implements UnitTest {
 
         var actual = subject.toCommand();
 
-        assertThat(actual).containsExactly("docker", "images", "-q", "--filter", "\"label=key\"");
+        assertThat(actual).containsExactly("docker", "images", "-q", "--filter", HtStrings.doubleQuote("label=key"));
     }
 
     @Test
@@ -94,7 +95,7 @@ class HtCliListImagesSpecTest implements UnitTest {
 
         var actual = subject.toCommand();
 
-        assertThat(actual).containsExactly("docker", "images", "-q", "--filter", "\"label=key=value\"");
+        assertThat(actual).containsExactly("docker", "images", "-q", "--filter", HtStrings.doubleQuote("label=key=value"));
     }
 
     @Test
@@ -115,13 +116,13 @@ class HtCliListImagesSpecTest implements UnitTest {
                 "docker", "images",
                 "-q",
                 "--all",
-                "--filter", "\"before=before\"",
-                "--filter", "\"since=since\"",
-                "--filter", "\"reference=reference\"",
-                "--filter", "\"until=until\"",
-                "--filter", "dangling=true",
-                "--filter", "\"label=key\"",
-                "--filter", "\"label=key=value\""
+                "--filter", HtStrings.doubleQuote("before=before"),
+                "--filter", HtStrings.doubleQuote("since=since"),
+                "--filter", HtStrings.doubleQuote("reference=reference"),
+                "--filter", HtStrings.doubleQuote("until=until"),
+                "--filter", HtStrings.doubleQuote("dangling=true"),
+                "--filter", HtStrings.doubleQuote("label=key"),
+                "--filter", HtStrings.doubleQuote("label=key=value")
         );
     }
 }

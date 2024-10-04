@@ -1,5 +1,6 @@
 package io.huskit.containers.internal.cli;
 
+import io.huskit.common.HtStrings;
 import io.huskit.containers.api.HtContainer;
 import io.huskit.containers.api.cli.CommandType;
 import io.huskit.containers.internal.HtJsonContainer;
@@ -33,7 +34,7 @@ public class HtFindCliCtrsByIds {
                     });
             return containers.stream();
         } catch (Exception e) {
-            throw new IllegalStateException("Failed to find containers by ids", e);
+            throw new IllegalStateException(String.format("Failed to find containers by ids - %s", ids), e);
         }
     }
 
@@ -43,7 +44,7 @@ public class HtFindCliCtrsByIds {
         command.add("docker");
         command.add("inspect");
         command.add("--format");
-        command.add("\"{{json .}}\"");
+        command.add(HtStrings.doubleQuote("{{json .}}"));
         command.addAll(ids);
         return command;
     }

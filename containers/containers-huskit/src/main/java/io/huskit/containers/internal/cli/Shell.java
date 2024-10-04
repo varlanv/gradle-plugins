@@ -2,14 +2,13 @@ package io.huskit.containers.internal.cli;
 
 import io.huskit.containers.api.cli.ShellType;
 
-import java.util.List;
 import java.util.Objects;
 
 public interface Shell {
 
     void write(String command);
 
-    default void write(List<String> commands) {
+    default void write(Iterable<String> commands) {
         this.write(String.join(" ", commands));
     }
 

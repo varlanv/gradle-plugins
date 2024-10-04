@@ -1,5 +1,6 @@
 package io.huskit.containers.internal.cli;
 
+import io.huskit.common.HtStrings;
 import io.huskit.containers.api.cli.HtArg;
 import lombok.RequiredArgsConstructor;
 
@@ -21,7 +22,7 @@ public class FindIdsCommand {
             command.addAll(arg.values());
         });
         command.add("--format");
-        command.add("\"{{.ID}}\"");
+        command.add(HtStrings.doubleQuote("{{.ID}}"));
         return command;
     }
 }

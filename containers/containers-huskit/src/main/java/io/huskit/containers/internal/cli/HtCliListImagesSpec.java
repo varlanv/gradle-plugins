@@ -1,6 +1,7 @@
 package io.huskit.containers.internal.cli;
 
 import io.huskit.common.StringTuples;
+import io.huskit.common.HtStrings;
 
 import java.util.List;
 
@@ -20,43 +21,43 @@ public class HtCliListImagesSpec implements HtListImagesSpec {
 
     @Override
     public HtCliListImagesSpec withFilterByBefore(String image) {
-        args.add("--filter", "\"before=%s\"", image);
+        args.add("--filter", HtStrings.doubleQuotedParam("before", image), image);
         return this;
     }
 
     @Override
     public HtCliListImagesSpec withFilterBySince(String image) {
-        args.add("--filter", "\"since=%s\"", image);
+        args.add("--filter", HtStrings.doubleQuotedParam("since", image));
         return this;
     }
 
     @Override
     public HtCliListImagesSpec withFilterByReference(String reference) {
-        args.add("--filter", "\"reference=%s\"", reference);
+        args.add("--filter", HtStrings.doubleQuotedParam("reference", reference));
         return this;
     }
 
     @Override
     public HtCliListImagesSpec withFilterByUntil(String image) {
-        args.add("--filter", "\"until=%s\"", image);
+        args.add("--filter", HtStrings.doubleQuotedParam("until", image));
         return this;
     }
 
     @Override
     public HtCliListImagesSpec withFilterByDangling(Boolean dangling) {
-        args.add("--filter", "dangling=" + dangling);
+        args.add("--filter", HtStrings.doubleQuotedParam("dangling", dangling));
         return this;
     }
 
     @Override
     public HtCliListImagesSpec withFilterByLabel(String key) {
-        args.add("--filter", "\"label=%s\"", key);
+        args.add("--filter", HtStrings.doubleQuotedParam("label", key));
         return this;
     }
 
     @Override
     public HtCliListImagesSpec withFilterByLabel(String key, String value) {
-        args.add("--filter", "\"label=%s=%s\"", key, value);
+        args.add("--filter", HtStrings.doubleQuotedParam("label", key, value));
         return this;
     }
 

@@ -1,5 +1,6 @@
 package io.huskit.containers.api;
 
+import io.huskit.common.HtStrings;
 import io.huskit.gradle.commontest.UnitTest;
 import org.junit.jupiter.api.Test;
 
@@ -36,7 +37,7 @@ class HtCliPruneVolumesSpecTest implements UnitTest {
 
         var actual = subject.toCommand();
 
-        assertThat(actual).containsExactly("docker", "volume", "prune", "-f", "--filter", "\"dangling=true\"");
+        assertThat(actual).containsExactly("docker", "volume", "prune", "-f", "--filter", HtStrings.doubleQuote("dangling=true"));
     }
 
     @Test
@@ -47,7 +48,7 @@ class HtCliPruneVolumesSpecTest implements UnitTest {
 
         var actual = subject.toCommand();
 
-        assertThat(actual).containsExactly("docker", "volume", "prune", "-f", "--all", "--filter", "\"dangling=true\"");
+        assertThat(actual).containsExactly("docker", "volume", "prune", "-f", "--all", "--filter", HtStrings.doubleQuote("dangling=true"));
     }
 
     @Test
@@ -56,7 +57,7 @@ class HtCliPruneVolumesSpecTest implements UnitTest {
 
         var actual = subject.toCommand();
 
-        assertThat(actual).containsExactly("docker", "volume", "prune", "-f", "--filter", "\"label=label\"");
+        assertThat(actual).containsExactly("docker", "volume", "prune", "-f", "--filter", HtStrings.doubleQuote("label=label"));
     }
 
     @Test
@@ -67,7 +68,11 @@ class HtCliPruneVolumesSpecTest implements UnitTest {
 
         var actual = subject.toCommand();
 
-        assertThat(actual).containsExactly("docker", "volume", "prune", "-f", "--filter", "\"label=label1\"", "--filter", "\"label=label2\"");
+        assertThat(actual).containsExactly("docker", "volume", "prune",
+                "-f",
+                "--filter", HtStrings.doubleQuote("label=label1"),
+                "--filter", HtStrings.doubleQuote("label=label2")
+        );
     }
 
     @Test
@@ -76,7 +81,7 @@ class HtCliPruneVolumesSpecTest implements UnitTest {
 
         var actual = subject.toCommand();
 
-        assertThat(actual).containsExactly("docker", "volume", "prune", "-f", "--filter", "\"label=label=value\"");
+        assertThat(actual).containsExactly("docker", "volume", "prune", "-f", "--filter", HtStrings.doubleQuote("label=label=value"));
     }
 
     @Test
@@ -85,7 +90,7 @@ class HtCliPruneVolumesSpecTest implements UnitTest {
 
         var actual = subject.toCommand();
 
-        assertThat(actual).containsExactly("docker", "volume", "prune", "-f", "--filter", "\"label=key=value\"");
+        assertThat(actual).containsExactly("docker", "volume", "prune", "-f", "--filter", HtStrings.doubleQuote("label=key=value"));
     }
 
     @Test
@@ -101,9 +106,9 @@ class HtCliPruneVolumesSpecTest implements UnitTest {
         assertThat(actual).containsExactly(
                 "docker", "volume", "prune",
                 "-f",
-                "--filter", "\"label=key1=value1\"",
-                "--filter", "\"label=key2=value2\"",
-                "--filter", "\"label=key3=value3\""
+                "--filter", HtStrings.doubleQuote("label=key1=value1"),
+                "--filter", HtStrings.doubleQuote("label=key2=value2"),
+                "--filter", HtStrings.doubleQuote("label=key3=value3")
         );
     }
 

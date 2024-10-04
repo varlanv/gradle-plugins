@@ -81,7 +81,7 @@ public class HtMongo implements HtServiceContainer {
                     ).exec();
         });
         return new DfMongoStartedContainer(
-                String.format(Constants.Mongo.CONNECTION_STRING_PATTERN, "localhost", container.firstMappedPort())
+                String.format(Constants.Mongo.CONNECTION_STRING_PATTERN, "localhost", container.network().firstMappedPort())
         );
     }
 

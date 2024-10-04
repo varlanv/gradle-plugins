@@ -1,11 +1,12 @@
 package io.huskit.containers.internal;
 
 import io.huskit.containers.api.HtContainer;
+import io.huskit.containers.api.HtContainerConfig;
+import io.huskit.containers.api.HtContainerNetwork;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
 import java.time.Instant;
-import java.util.Map;
 import java.util.function.Supplier;
 
 @RequiredArgsConstructor
@@ -21,8 +22,13 @@ public class HtLazyContainer implements HtContainer {
     }
 
     @Override
-    public Map<String, String> labels() {
-        return delegate.get().labels();
+    public HtContainerConfig config() {
+        return delegate.get().config();
+    }
+
+    @Override
+    public HtContainerNetwork network() {
+        return delegate.get().network();
     }
 
     @Override
@@ -31,7 +37,7 @@ public class HtLazyContainer implements HtContainer {
     }
 
     @Override
-    public Integer firstMappedPort() {
-        return delegate.get().firstMappedPort();
+    public String toString() {
+        return delegate.get().toString();
     }
 }

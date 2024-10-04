@@ -5,6 +5,7 @@ import lombok.experimental.UtilityClass;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 
 @UtilityClass
 public class HtCollections {
@@ -33,5 +34,14 @@ public class HtCollections {
             newList.addAll(elements);
             return newList;
         }
+    }
+
+    @SuppressWarnings({"unchecked"})
+    public static <T> T getFromMap(String key, Map<String, Object> map) {
+        var val = map.get(key);
+        if (val == null) {
+            throw new IllegalStateException(String.format("Could not find key [%s] in container map", key));
+        }
+        return (T) val;
     }
 }

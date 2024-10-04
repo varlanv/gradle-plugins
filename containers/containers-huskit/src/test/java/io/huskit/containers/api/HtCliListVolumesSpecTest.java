@@ -1,5 +1,6 @@
 package io.huskit.containers.api;
 
+import io.huskit.common.HtStrings;
 import io.huskit.gradle.commontest.UnitTest;
 import org.junit.jupiter.api.Test;
 
@@ -26,7 +27,7 @@ class HtCliListVolumesSpecTest implements UnitTest {
 
         var actual = subject.toCommand();
 
-        assertThat(actual).containsExactly("docker", "volume", "ls", "-q", "--filter", "\"dangling=true\"");
+        assertThat(actual).containsExactly("docker", "volume", "ls", "-q", "--filter", HtStrings.doubleQuote("dangling=true"));
     }
 
     @Test
@@ -37,7 +38,7 @@ class HtCliListVolumesSpecTest implements UnitTest {
 
         var actual = subject.toCommand();
 
-        assertThat(actual).containsExactly("docker", "volume", "ls", "-q", "--filter", "\"label=label_key\"");
+        assertThat(actual).containsExactly("docker", "volume", "ls", "-q", "--filter", HtStrings.doubleQuote("label=label_key"));
     }
 
     @Test
@@ -48,7 +49,7 @@ class HtCliListVolumesSpecTest implements UnitTest {
 
         var actual = subject.toCommand();
 
-        assertThat(actual).containsExactly("docker", "volume", "ls", "-q", "--filter", "\"label=label_key=label_value\"");
+        assertThat(actual).containsExactly("docker", "volume", "ls", "-q", "--filter", HtStrings.doubleQuote("label=label_key=label_value"));
     }
 
     @Test
@@ -59,6 +60,6 @@ class HtCliListVolumesSpecTest implements UnitTest {
 
         var actual = subject.toCommand();
 
-        assertThat(actual).containsExactly("docker", "volume", "ls", "-q", "--filter", "\"label=label_key=label_value\"");
+        assertThat(actual).containsExactly("docker", "volume", "ls", "-q", "--filter", HtStrings.doubleQuote("label=label_key=label_value"));
     }
 }

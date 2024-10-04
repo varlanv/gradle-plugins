@@ -58,7 +58,7 @@ class HtJsonContainerTest implements UnitTest {
         ));
 
         // then
-        assertThat(container.labels()).containsOnly(Map.entry("key", "value"));
+        assertThat(container.config().labels()).containsOnly(Map.entry("key", "value"));
     }
 
     @Test
@@ -69,7 +69,7 @@ class HtJsonContainerTest implements UnitTest {
         ));
 
         // then
-        assertThatThrownBy(container::labels)
+        assertThatThrownBy(container.config()::labels)
                 .isInstanceOf(IllegalStateException.class)
                 .hasMessageContainingAll("Labels");
     }
@@ -80,7 +80,7 @@ class HtJsonContainerTest implements UnitTest {
         var container = new HtJsonContainer(Map.of());
 
         // then
-        assertThatThrownBy(container::labels)
+        assertThatThrownBy(() -> container.config().labels())
                 .isInstanceOf(IllegalStateException.class)
                 .hasMessageContainingAll("Config");
     }

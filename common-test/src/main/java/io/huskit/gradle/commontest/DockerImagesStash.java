@@ -1,8 +1,11 @@
 package io.huskit.gradle.commontest;
 
 import lombok.AccessLevel;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.RequiredArgsConstructor;
 
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Queue;
@@ -17,6 +20,17 @@ public class DockerImagesStash {
     private static final String REPOSITORY = "public.ecr.aws/docker/library/";
     private static final Queue<String> SMALL_IMAGES = new ConcurrentLinkedQueue<>(
             Stream.of(
+                            "3.17.0",
+                            "3.17.1",
+                            "3.17.2",
+                            "3.17.3",
+                            "3.17.4",
+                            "3.17.5",
+                            "3.17.7",
+                            "3.17.8",
+                            "3.17.9",
+                            "3.17.10",
+                            "3.18.0",
                             "3.19.0",
                             "3.19.1",
                             "3.19.2",
@@ -24,7 +38,8 @@ public class DockerImagesStash {
                             "3.19.4",
                             "3.20.0",
                             "3.20.1",
-                            "3.20.2"
+                            "3.20.2",
+                            "3.20.3"
                     )
                     .map(tag -> REPOSITORY + "alpine:" + tag)
                     .collect(Collectors.toSet()));
@@ -41,6 +56,22 @@ public class DockerImagesStash {
                 System.err.println(message);
             }
         }));
+    }
+
+    @Getter
+    @RequiredArgsConstructor
+    public static class Command {
+
+        String command;
+        List<String> args;
+
+        public List<String> commandWithArgs() {
+            return Stream.concat(Stream.of(command), args.stream()).collect(Collectors.toList());
+        }
+    }
+
+    public static Command smallImageBusyCommand() {
+        return new Command("sh", List.of("-c", "echo 'Hello World 1' && echo 'Hello World 2' && tail -f /dev/null"));
     }
 
     public static String defaultSmall() {

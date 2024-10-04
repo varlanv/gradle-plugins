@@ -1,5 +1,6 @@
 package io.huskit.containers.internal.cli;
 
+import io.huskit.common.HtStrings;
 import io.huskit.containers.api.cli.HtArg;
 import io.huskit.gradle.commontest.UnitTest;
 import org.junit.jupiter.api.Test;
@@ -138,17 +139,17 @@ class HtCliListCtrsArgsSpecTest implements UnitTest {
 
     private void verifyName(HtArg htArg, String name) {
         assertThat(htArg.name()).isEqualTo("--filter");
-        assertThat(htArg.singleValue()).isEqualTo("\"name=%s\"", name);
+        assertThat(htArg.singleValue()).isEqualTo(HtStrings.doubleQuote("name=%s"), name);
     }
 
     private void verifyLabel(HtArg htArg, String label, String value) {
         assertThat(htArg.name()).isEqualTo("--filter");
-        assertThat(htArg.singleValue()).isEqualTo("\"label=%s=%s\"", label, value);
+        assertThat(htArg.singleValue()).isEqualTo(HtStrings.doubleQuote("label=%s=%s"), label, value);
     }
 
     private void verifyFilter(HtArg htArg, String id) {
         assertThat(htArg.name()).isEqualTo("--filter");
-        assertThat(htArg.singleValue()).isEqualTo("\"id=%s\"", id);
+        assertThat(htArg.singleValue()).isEqualTo(HtStrings.doubleQuote("id=%s"), id);
     }
 
     private void verifyAll(HtArg arg) {
@@ -158,6 +159,6 @@ class HtCliListCtrsArgsSpecTest implements UnitTest {
 
     private void verifyFormat(HtArg arg) {
         assertThat(arg.name()).isEqualTo("--format");
-        assertThat(arg.singleValue()).isEqualTo("\"{{json .}}\"");
+        assertThat(arg.singleValue()).isEqualTo(HtStrings.doubleQuote("{{json .}}"));
     }
 }

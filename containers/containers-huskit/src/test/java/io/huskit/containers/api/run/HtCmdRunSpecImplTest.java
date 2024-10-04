@@ -1,5 +1,6 @@
 package io.huskit.containers.api.run;
 
+import io.huskit.common.HtStrings;
 import io.huskit.containers.api.HtImgName;
 import io.huskit.gradle.commontest.UnitTest;
 import org.junit.jupiter.api.Test;
@@ -19,9 +20,7 @@ class HtCmdRunSpecImplTest implements UnitTest {
         var actual = subject.toCommand();
 
         assertThat(actual).containsExactly(
-                "docker",
-                "run",
-                "-d",
+                "docker", "run", "-d",
                 imageName.reference()
         );
     }
@@ -34,11 +33,8 @@ class HtCmdRunSpecImplTest implements UnitTest {
         var actual = subject.toCommand();
 
         assertThat(actual).containsExactly(
-                "docker",
-                "run",
-                "-d",
-                "--label",
-                "\"key=value\"",
+                "docker", "run", "-d",
+                "--label", HtStrings.doubleQuote("key=value"),
                 imageName.reference()
         );
     }
@@ -51,13 +47,9 @@ class HtCmdRunSpecImplTest implements UnitTest {
         var actual = subject.toCommand();
 
         assertThat(actual).containsExactly(
-                "docker",
-                "run",
-                "-d",
-                "--label",
-                "\"key1=value1\"",
-                "--label",
-                "\"key2=value2\"",
+                "docker", "run", "-d",
+                "--label", HtStrings.doubleQuote("key1=value1"),
+                "--label", HtStrings.doubleQuote("key2=value2"),
                 imageName.reference()
         );
     }
@@ -70,10 +62,7 @@ class HtCmdRunSpecImplTest implements UnitTest {
         var actual = subject.toCommand();
 
         assertThat(actual).containsExactly(
-                "docker",
-                "run",
-                "-d",
-                "--rm",
+                "docker", "run", "-d", "--rm",
                 imageName.reference()
         );
     }
@@ -86,11 +75,8 @@ class HtCmdRunSpecImplTest implements UnitTest {
         var actual = subject.toCommand();
 
         assertThat(actual).containsExactly(
-                "docker",
-                "run",
-                "-d",
-                "-e",
-                "\"key=value\"",
+                "docker", "run", "-d",
+                "-e", HtStrings.doubleQuote("key=value"),
                 imageName.reference()
         );
     }
@@ -103,13 +89,9 @@ class HtCmdRunSpecImplTest implements UnitTest {
         var actual = subject.toCommand();
 
         assertThat(actual).containsExactly(
-                "docker",
-                "run",
-                "-d",
-                "-e",
-                "\"key1=value1\"",
-                "-e",
-                "\"key2=value2\"",
+                "docker", "run", "-d",
+                "-e", HtStrings.doubleQuote("key1=value1"),
+                "-e", HtStrings.doubleQuote("key2=value2"),
                 imageName.reference()
         );
     }
@@ -122,13 +104,9 @@ class HtCmdRunSpecImplTest implements UnitTest {
         var actual = subject.toCommand();
 
         assertThat(actual).containsExactly(
-                "docker",
-                "run",
-                "-d",
+                "docker", "run", "-d",
                 imageName.reference(),
-                "command",
-                "arg1",
-                "arg2"
+                "command", HtStrings.doubleQuote("arg1"), HtStrings.doubleQuote("arg2")
         );
     }
 
@@ -142,16 +120,10 @@ class HtCmdRunSpecImplTest implements UnitTest {
         var actual = subject.toCommand();
 
         assertThat(actual).containsExactly(
-                "docker",
-                "run",
-                "-d",
-                "--rm",
-                "--label",
-                "\"key=value\"",
+                "docker", "run", "-d", "--rm",
+                "--label", HtStrings.doubleQuote("key=value"),
                 imageName.reference(),
-                "command",
-                "arg1",
-                "arg2"
+                "command", HtStrings.doubleQuote("arg1"), HtStrings.doubleQuote("arg2")
         );
     }
 }
