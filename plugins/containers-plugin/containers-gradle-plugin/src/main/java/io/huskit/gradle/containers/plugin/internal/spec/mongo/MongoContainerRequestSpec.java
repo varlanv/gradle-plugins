@@ -1,6 +1,6 @@
 package io.huskit.gradle.containers.plugin.internal.spec.mongo;
 
-import io.huskit.containers.model.Constants;
+import io.huskit.containers.model.HtConstants;
 import io.huskit.containers.model.ContainerType;
 import io.huskit.containers.model.image.DefaultContainerImage;
 import io.huskit.containers.model.request.DefaultMongoRequestedContainer;
@@ -105,27 +105,27 @@ public interface MongoContainerRequestSpec extends ContainerRequestSpec, MongoCo
     default void configure(HuskitContainersExtension extension, Action<MongoContainerRequestSpecView> action) {
         var objects = extension.getObjects();
         var cleanupSpec = objects.newInstance(CleanupSpec.class);
-        cleanupSpec.getCleanupAfter().convention(Constants.Cleanup.DEFAULT_CLEANUP_AFTER);
+        cleanupSpec.getCleanupAfter().convention(HtConstants.Cleanup.DEFAULT_CLEANUP_AFTER);
         var reuse = objects.newInstance(MongoContainerReuseSpec.class);
         reuse.getEnabled().convention(false);
         reuse.getNewDatabaseForEachTask().convention(false);
         reuse.getReuseBetweenBuilds().convention(false);
         reuse.getCleanupSpec().convention(cleanupSpec);
         var exposedEnvironment = objects.newInstance(MongoExposedEnvironmentSpec.class);
-        exposedEnvironment.getConnectionString().convention(Constants.Mongo.DEFAULT_CONNECTION_STRING_ENV);
-        exposedEnvironment.getDatabaseName().convention(Constants.Mongo.DEFAULT_DB_NAME_ENV);
-        exposedEnvironment.getPort().convention(Constants.Mongo.DEFAULT_PORT_ENV);
+        exposedEnvironment.getConnectionString().convention(HtConstants.Mongo.DEFAULT_CONNECTION_STRING_ENV);
+        exposedEnvironment.getDatabaseName().convention(HtConstants.Mongo.DEFAULT_DB_NAME_ENV);
+        exposedEnvironment.getPort().convention(HtConstants.Mongo.DEFAULT_PORT_ENV);
         var port = objects.newInstance(ContainerPortSpec.class);
         var fixedPort = objects.newInstance(FixedContainerPortSpec.class);
         port.getFixed().convention(fixedPort);
         port.getDynamic().convention(true);
-        port.getContainerDefaultPort().set(Constants.Mongo.DEFAULT_PORT);
+        port.getContainerDefaultPort().set(HtConstants.Mongo.DEFAULT_PORT);
         getReuse().convention(reuse);
-        getDatabaseName().convention(Constants.Mongo.DEFAULT_DB_NAME);
+        getDatabaseName().convention(HtConstants.Mongo.DEFAULT_DB_NAME);
         getRootProjectName().convention(extension.getRootProjectName());
         getProjectPath().convention(extension.getProjectPath());
         getProjectName().convention(extension.getProjectName());
-        getImage().convention(Constants.Mongo.DEFAULT_IMAGE);
+        getImage().convention(HtConstants.Mongo.DEFAULT_IMAGE);
         getExposedEnvironment().convention(exposedEnvironment);
         getPort().convention(port);
         action.execute(this);

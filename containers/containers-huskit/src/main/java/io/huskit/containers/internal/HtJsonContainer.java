@@ -1,15 +1,12 @@
 package io.huskit.containers.internal;
 
 import io.huskit.common.collection.HtCollections;
-import io.huskit.containers.api.HtContainer;
-import io.huskit.containers.api.HtContainerNetwork;
-import io.huskit.containers.api.JsonHtContainerConfig;
-import io.huskit.containers.api.JsonHtContainerNetwork;
+import io.huskit.containers.api.*;
 import lombok.RequiredArgsConstructor;
 
 import java.time.Instant;
+import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 
 @RequiredArgsConstructor
 public class HtJsonContainer implements HtContainer {
@@ -38,6 +35,66 @@ public class HtJsonContainer implements HtContainer {
 
     @Override
     public Instant createdAt() {
-        return Instant.parse(Objects.requireNonNull((String) source.get("Created"), "CreatedAt info is not present"));
+        return Instant.parse(HtCollections.getFromMap("Created", source));
+    }
+
+    @Override
+    public List<String> args() {
+        return HtCollections.getFromMap("Args", source);
+    }
+
+    @Override
+    public String path() {
+        return HtCollections.getFromMap("Path", source);
+    }
+
+    @Override
+    public String processLabel() {
+        return HtCollections.getFromMap("ProcessLabel", source);
+    }
+
+    @Override
+    public String platform() {
+        return HtCollections.getFromMap("Platform", source);
+    }
+
+    @Override
+    public String driver() {
+        return HtCollections.getFromMap("Driver", source);
+    }
+
+    @Override
+    public String hostsPath() {
+        return HtCollections.getFromMap("HostsPath", source);
+    }
+
+    @Override
+    public String hostnamePath() {
+        return HtCollections.getFromMap("HostnamePath", source);
+    }
+
+    @Override
+    public Integer restartCount() {
+        return HtCollections.getFromMap("RestartCount", source);
+    }
+
+    @Override
+    public String mountLabel() {
+        return HtCollections.getFromMap("MountLabel", source);
+    }
+
+    @Override
+    public HtContainerState state() {
+        return new JsonHtContainerState(HtCollections.getFromMap("State", source));
+    }
+
+    @Override
+    public String resolvConfPath() {
+        return HtCollections.getFromMap("ResolvConfPath", source);
+    }
+
+    @Override
+    public String logPath() {
+        return HtCollections.getFromMap("LogPath", source);
     }
 }

@@ -6,7 +6,7 @@ import io.huskit.containers.api.HtContainers;
 import io.huskit.containers.api.HtDocker;
 import io.huskit.containers.api.HtImgName;
 import io.huskit.containers.integration.*;
-import io.huskit.containers.model.Constants;
+import io.huskit.containers.model.HtConstants;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
@@ -65,7 +65,7 @@ public class HtMongo implements HtServiceContainer {
             return docker;
         });
         var container = findExisting(htDocker.containers(), reuseEnabled).orElseGet(() -> {
-            containerSpec.labels().pair(Constants.CONTAINER_STARTED_AT_LABEL, System.currentTimeMillis());
+            containerSpec.labels().pair(HtConstants.CONTAINER_STARTED_AT_LABEL, System.currentTimeMillis());
             var containers = htDocker.containers();
             var hostPort = new DynamicContainerPort().hostValue();
             return containers
@@ -76,12 +76,12 @@ public class HtMongo implements HtServiceContainer {
                                 labelSpec.labelMap().ifPresent(runSpec::withLabels);
                                 var waitSpec = containerSpec.waitSpec();
                                 waitSpec.textWait().ifPresent(waiter -> runSpec.withLookFor(waiter.text(), waiter.duration()));
-                                runSpec.withPortBinding(hostPort, Constants.Mongo.DEFAULT_PORT);
+                                runSpec.withPortBinding(hostPort, HtConstants.Mongo.DEFAULT_PORT);
                             }
                     ).exec();
         });
         return new DfMongoStartedContainer(
-                String.format(Constants.Mongo.CONNECTION_STRING_PATTERN, "localhost", container.network().firstMappedPort())
+                String.format(HtConstants.Mongo.CONNECTION_STRING_PATTERN, "localhost", container.network().firstMappedPort())
         );
     }
 
@@ -91,7 +91,7 @@ public class HtMongo implements HtServiceContainer {
         } else {
             var reuseWithTimeout = containerSpec.reuseSpec().value().require();
             var hash = containerHash.compute();
-            var containers = htContainers.list(listSpec -> listSpec.withLabelFilter(Constants.CONTAINER_HASH_LABEL, hash))
+            var containers = htContainers.list(listSpec -> listSpec.withLabelFilter(HtConstants.CONTAINER_HASH_LABEL, hash))
                     .asList();
             if (containers.size() == 1) {
                 var container = containers.get(0);
@@ -110,8 +110,8 @@ public class HtMongo implements HtServiceContainer {
             }
             containerSpec.labels()
                     .map(Map.of(
-                            Constants.CONTAINER_HASH_LABEL, hash,
-                            Constants.CONTAINER_CLEANUP_AFTER_LABEL, reuseWithTimeout.cleanupAfter().toSeconds()
+                            HtConstants.CONTAINER_HASH_LABEL, hash,
+                            HtConstants.CONTAINER_CLEANUP_AFTER_LABEL, reuseWithTimeout.cleanupAfter().toSeconds()
                     ));
             return Optional.empty();
         }
@@ -132,7 +132,7 @@ public class HtMongo implements HtServiceContainer {
     @SuppressWarnings("all")
     public static void main(String[] args) {
         var fullTime = System.currentTimeMillis();
-        var mongo = HtMongo.fromImage(Constants.Mongo.DEFAULT_IMAGE)
+        var mongo = HtMongo.fromImage(HtConstants.Mongo.DEFAULT_IMAGE)
                 .withContainerSpec(containerSpec -> containerSpec
                         .reuse().enabledWithCleanupAfter(Duration.ofSeconds(60))
                         .env().pair("KEaA", "vaka")

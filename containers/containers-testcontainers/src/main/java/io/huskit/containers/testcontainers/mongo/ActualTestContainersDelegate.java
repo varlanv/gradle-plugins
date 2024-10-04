@@ -3,7 +3,7 @@ package io.huskit.containers.testcontainers.mongo;
 import com.github.dockerjava.api.DockerClient;
 import com.github.dockerjava.api.model.Container;
 import io.huskit.common.function.MemoizedSupplier;
-import io.huskit.containers.model.Constants;
+import io.huskit.containers.model.HtConstants;
 import io.huskit.containers.model.DefaultExistingContainer;
 import io.huskit.containers.model.ExistingContainer;
 import io.huskit.containers.model.id.ContainerKey;
@@ -64,7 +64,7 @@ public class ActualTestContainersDelegate implements TestContainersDelegate, Ser
     public Optional<ExistingContainer> getExistingContainer(ContainerKey key) {
         var keyJson = key.json();
         try (var listContainersCmd = dockerClient.get().listContainersCmd();) {
-            var huskitContainers = listContainersCmd.withLabelFilter(Map.of(Constants.KEY_LABEL, keyJson)).exec();
+            var huskitContainers = listContainersCmd.withLabelFilter(Map.of(HtConstants.KEY_LABEL, keyJson)).exec();
             if (huskitContainers.size() == 1) {
                 var container = huskitContainers.get(0);
                 var labels = container.getLabels();

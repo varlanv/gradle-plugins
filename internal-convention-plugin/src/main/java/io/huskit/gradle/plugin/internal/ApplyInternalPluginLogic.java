@@ -157,7 +157,7 @@ public class ApplyInternalPluginLogic {
                         });
                         jvmTestSuite.getTargets().all(target -> {
                             target.getTestTask().configure(test -> {
-                                test.getOutputs().upToDateWhen(task -> false);
+//                                test.getOutputs().upToDateWhen(task -> false);
                                 test.testLogging(logging -> {
                                     logging.setShowStandardStreams(true);
                                 });

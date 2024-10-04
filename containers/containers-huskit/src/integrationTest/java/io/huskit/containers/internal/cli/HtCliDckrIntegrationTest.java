@@ -5,6 +5,7 @@ import io.huskit.common.function.MemoizedSupplier;
 import io.huskit.common.port.DynamicContainerPort;
 import io.huskit.common.port.MappedPort;
 import io.huskit.containers.api.HtContainer;
+import io.huskit.containers.api.HtContainerStatus;
 import io.huskit.containers.api.HtDocker;
 import io.huskit.containers.api.cli.HtCliDocker;
 import io.huskit.containers.api.cli.ShellType;
@@ -36,6 +37,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 /**
  * Test suite using a shared {@link HtCliDocker} instance across most of the tests.
@@ -108,6 +110,8 @@ class HtCliDckrIntegrationTest implements DockerIntegrationTest {
             {
                 var inspected = subject.containers().inspect(containerRef.require().id());
                 assertThat(inspected.id()).isEqualTo(containerRef.require().id());
+                assertThat(inspected.args()).containsExactlyElementsOf(DockerImagesStash.smallImageBusyCommand().args());
+
                 var containerConfig = inspected.config();
                 assertThat(containerConfig.labels()).containsAllEntriesOf(containerLabels);
                 assertThat(containerConfig.env()).containsAllEntriesOf(containerEnv);
@@ -122,6 +126,19 @@ class HtCliDckrIntegrationTest implements DockerIntegrationTest {
 
                 var containerNetwork = inspected.network();
                 assertThat(containerNetwork.ports()).containsExactly(mappedPort1, mappedPort2);
+
+                var containerState = inspected.state();
+                assertThat(containerState.status()).isEqualTo(HtContainerStatus.RUNNING);
+                assertThat(containerState.pid()).isPositive();
+                assertThat(containerState.exitCode()).isZero();
+                assertThat(containerState.startedAt()).isNotNull();
+                assertThatThrownBy(containerState::finishedAt).hasMessageContaining("not yet finished");
+                assertThat(containerState.error()).isEmpty();
+                assertThat(containerState.running()).isTrue();
+                assertThat(containerState.paused()).isFalse();
+                assertThat(containerState.restarting()).isFalse();
+                assertThat(containerState.oomKilled()).isFalse();
+                assertThat(containerState.dead()).isFalse();
             }
 //            var container = containerRef.require();
         } finally {

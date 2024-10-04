@@ -12,7 +12,7 @@ public class ContainerLabels {
 
     public Map<String, String> asMap() {
         return Map.of(
-                Constants.KEY_LABEL, key.json(),
+                HtConstants.KEY_LABEL, key.json(),
                 "huskit_container", "true"
         );
     }

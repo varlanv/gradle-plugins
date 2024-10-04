@@ -1,6 +1,7 @@
 package io.huskit.containers.api;
 
 import java.time.Instant;
+import java.util.List;
 
 public interface HtContainer {
 
@@ -13,4 +14,28 @@ public interface HtContainer {
     HtContainerNetwork network();
 
     Instant createdAt();
+
+    List<String> args();
+
+    String path();
+
+    String processLabel();
+
+    String platform();
+
+    String driver();
+
+    String hostsPath();
+
+    String hostnamePath();
+
+    Integer restartCount();
+
+    String mountLabel();
+
+    HtContainerState state();
+
+    String resolvConfPath();
+
+    String logPath();
 }

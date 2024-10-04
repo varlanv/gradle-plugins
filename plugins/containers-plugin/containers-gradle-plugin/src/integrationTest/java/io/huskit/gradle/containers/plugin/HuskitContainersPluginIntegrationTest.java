@@ -1,7 +1,7 @@
 package io.huskit.gradle.containers.plugin;
 
 import io.huskit.common.Sneaky;
-import io.huskit.containers.model.Constants;
+import io.huskit.containers.model.HtConstants;
 import io.huskit.containers.model.exception.NonUniqueContainerException;
 import io.huskit.containers.testcontainers.mongo.TestContainersDelegate;
 import io.huskit.gradle.commontest.GradleIntegrationTest;
@@ -224,7 +224,7 @@ public class HuskitContainersPluginIntegrationTest implements GradleIntegrationT
             project.getPlugins().apply(HuskitContainersPlugin.class);
             var containersExtension = (HuskitContainersExtension) project.getExtensions().getByType(ContainersExtension.class);
             containersExtension.mongo(mongo -> mongo.port(portSpec -> portSpec.fixed(fixedPortSpec -> {
-                fixedPortSpec.containerValue(Constants.Mongo.DEFAULT_PORT);
+                fixedPortSpec.containerValue(HtConstants.Mongo.DEFAULT_PORT);
                 fixedPortSpec.hostValue(anyHostPort);
             })));
 
@@ -235,7 +235,7 @@ public class HuskitContainersPluginIntegrationTest implements GradleIntegrationT
             var portSpec = requestedContainer.getPort().get();
             var fixedPortSpec = portSpec.getFixed().get();
             assertThat(fixedPortSpec.getHostValue().get()).isEqualTo(anyHostPort);
-            assertThat(fixedPortSpec.getContainerValue().get()).isEqualTo(Constants.Mongo.DEFAULT_PORT);
+            assertThat(fixedPortSpec.getContainerValue().get()).isEqualTo(HtConstants.Mongo.DEFAULT_PORT);
             assertThat(fixedPortSpec.getHostRange().isPresent()).isFalse();
             assertThat(portSpec.getDynamic().get()).isFalse();
         });
@@ -369,9 +369,9 @@ public class HuskitContainersPluginIntegrationTest implements GradleIntegrationT
             assertThat(environment).isNotEmpty();
             assertThat(environment).containsExactlyEntriesOf(
                     Map.of(
-                            Constants.Mongo.DEFAULT_CONNECTION_STRING_ENV, anyConnectionString,
-                            Constants.Mongo.DEFAULT_PORT_ENV, String.valueOf(anyFixedPort),
-                            Constants.Mongo.DEFAULT_DB_NAME_ENV, Constants.Mongo.DEFAULT_DB_NAME
+                            HtConstants.Mongo.DEFAULT_CONNECTION_STRING_ENV, anyConnectionString,
+                            HtConstants.Mongo.DEFAULT_PORT_ENV, String.valueOf(anyFixedPort),
+                            HtConstants.Mongo.DEFAULT_DB_NAME_ENV, HtConstants.Mongo.DEFAULT_DB_NAME
                     )
             );
         });
@@ -436,7 +436,7 @@ public class HuskitContainersPluginIntegrationTest implements GradleIntegrationT
                     Map.of(
                             anyExposedConnectionStringEnv, anyConnectionString,
                             anyExposedPortEnv, String.valueOf(anyFixedPort),
-                            anyExposedDbNameEnv, Constants.Mongo.DEFAULT_DB_NAME
+                            anyExposedDbNameEnv, HtConstants.Mongo.DEFAULT_DB_NAME
                     )
             );
         });
@@ -500,9 +500,9 @@ public class HuskitContainersPluginIntegrationTest implements GradleIntegrationT
             assertThat(environment).isNotEmpty();
             assertThat(environment).containsExactlyInAnyOrderEntriesOf(
                     Map.of(
-                            Constants.Mongo.DEFAULT_CONNECTION_STRING_ENV, anyConnectionString + "/" + Constants.Mongo.DEFAULT_DB_NAME + "_1",
-                            Constants.Mongo.DEFAULT_PORT_ENV, String.valueOf(anyFixedPort),
-                            Constants.Mongo.DEFAULT_DB_NAME_ENV, Constants.Mongo.DEFAULT_DB_NAME + "_1"
+                            HtConstants.Mongo.DEFAULT_CONNECTION_STRING_ENV, anyConnectionString + "/" + HtConstants.Mongo.DEFAULT_DB_NAME + "_1",
+                            HtConstants.Mongo.DEFAULT_PORT_ENV, String.valueOf(anyFixedPort),
+                            HtConstants.Mongo.DEFAULT_DB_NAME_ENV, HtConstants.Mongo.DEFAULT_DB_NAME + "_1"
                     )
             );
         });
@@ -562,7 +562,7 @@ public class HuskitContainersPluginIntegrationTest implements GradleIntegrationT
             verify(fixture.testContainersDelegateMock()).getConnectionString(any());
             verify(fixture.testContainersDelegateMock()).start(any());
             verify(fixture.testContainersDelegateMock()).getFirstMappedPort(any());
-            verify(fixture.testContainersDelegateMock()).execInContainer(any(), eq("/bin/sh"), eq("-c"), eq(Constants.Mongo.DROP_COMMAND));
+            verify(fixture.testContainersDelegateMock()).execInContainer(any(), eq("/bin/sh"), eq("-c"), eq(HtConstants.Mongo.DROP_COMMAND));
             verify(fixture.testContainersDelegateMock()).getExistingContainer(any());
             verify(fixture.testContainersDelegateMock()).setReuse();
             verifyNoMoreInteractions(fixture.testContainersDelegateMock());
@@ -595,9 +595,9 @@ public class HuskitContainersPluginIntegrationTest implements GradleIntegrationT
             assertThat(environment).isNotEmpty();
             assertThat(environment).containsExactlyEntriesOf(
                     Map.of(
-                            Constants.Mongo.DEFAULT_CONNECTION_STRING_ENV, anyConnectionString,
-                            Constants.Mongo.DEFAULT_PORT_ENV, String.valueOf(anyFixedPort),
-                            Constants.Mongo.DEFAULT_DB_NAME_ENV, Constants.Mongo.DEFAULT_DB_NAME
+                            HtConstants.Mongo.DEFAULT_CONNECTION_STRING_ENV, anyConnectionString,
+                            HtConstants.Mongo.DEFAULT_PORT_ENV, String.valueOf(anyFixedPort),
+                            HtConstants.Mongo.DEFAULT_DB_NAME_ENV, HtConstants.Mongo.DEFAULT_DB_NAME
                     )
             );
         });
@@ -657,9 +657,9 @@ public class HuskitContainersPluginIntegrationTest implements GradleIntegrationT
             // THEN
             assertThat(taskEnvironment).containsExactlyInAnyOrderEntriesOf(
                     Map.of(
-                            Constants.Mongo.DEFAULT_CONNECTION_STRING_ENV, anyConnectionString,
-                            Constants.Mongo.DEFAULT_PORT_ENV, String.valueOf(anyFixedPort),
-                            Constants.Mongo.DEFAULT_DB_NAME_ENV, Constants.Mongo.DEFAULT_DB_NAME
+                            HtConstants.Mongo.DEFAULT_CONNECTION_STRING_ENV, anyConnectionString,
+                            HtConstants.Mongo.DEFAULT_PORT_ENV, String.valueOf(anyFixedPort),
+                            HtConstants.Mongo.DEFAULT_DB_NAME_ENV, HtConstants.Mongo.DEFAULT_DB_NAME
                     )
             );
         });
@@ -725,9 +725,9 @@ public class HuskitContainersPluginIntegrationTest implements GradleIntegrationT
             assertThat(taskEnvironment).isNotEmpty();
             assertThat(taskEnvironment).containsExactlyEntriesOf(
                     Map.of(
-                            Constants.Mongo.DEFAULT_CONNECTION_STRING_ENV, anyConnectionString,
-                            Constants.Mongo.DEFAULT_PORT_ENV, String.valueOf(anyFixedPort),
-                            Constants.Mongo.DEFAULT_DB_NAME_ENV, Constants.Mongo.DEFAULT_DB_NAME
+                            HtConstants.Mongo.DEFAULT_CONNECTION_STRING_ENV, anyConnectionString,
+                            HtConstants.Mongo.DEFAULT_PORT_ENV, String.valueOf(anyFixedPort),
+                            HtConstants.Mongo.DEFAULT_DB_NAME_ENV, HtConstants.Mongo.DEFAULT_DB_NAME
                     )
             );
         });
@@ -795,9 +795,9 @@ public class HuskitContainersPluginIntegrationTest implements GradleIntegrationT
             // THEN
             assertThat(taskEnvironment).containsExactlyInAnyOrderEntriesOf(
                     Map.of(
-                            Constants.Mongo.DEFAULT_CONNECTION_STRING_ENV, anyConnectionString,
-                            Constants.Mongo.DEFAULT_PORT_ENV, String.valueOf(anyFixedPort),
-                            Constants.Mongo.DEFAULT_DB_NAME_ENV, Constants.Mongo.DEFAULT_DB_NAME
+                            HtConstants.Mongo.DEFAULT_CONNECTION_STRING_ENV, anyConnectionString,
+                            HtConstants.Mongo.DEFAULT_PORT_ENV, String.valueOf(anyFixedPort),
+                            HtConstants.Mongo.DEFAULT_DB_NAME_ENV, HtConstants.Mongo.DEFAULT_DB_NAME
                     )
             );
         });
@@ -868,7 +868,7 @@ public class HuskitContainersPluginIntegrationTest implements GradleIntegrationT
             var portSpec = requestedContainer.getPort().get();
             var fixedPortSpec = portSpec.getFixed().get();
             assertThat(fixedPortSpec.getHostValue().get()).isEqualTo(anyHostPort);
-            assertThat(fixedPortSpec.getContainerValue().get()).isEqualTo(Constants.Mongo.DEFAULT_PORT);
+            assertThat(fixedPortSpec.getContainerValue().get()).isEqualTo(HtConstants.Mongo.DEFAULT_PORT);
             assertThat(fixedPortSpec.getHostRange().isPresent()).isFalse();
             assertThat(portSpec.getDynamic().getOrNull()).isFalse();
         });
@@ -1237,8 +1237,8 @@ public class HuskitContainersPluginIntegrationTest implements GradleIntegrationT
 
             // AND
             var mongoDbContainer = mongoContainerCaptor.getValue();
-            assertThat(mongoDbContainer.getDockerImageName()).isEqualTo(Constants.Mongo.DEFAULT_IMAGE);
-            assertThat(mongoDbContainer.getExposedPorts()).containsExactly(Constants.Mongo.DEFAULT_PORT);
+            assertThat(mongoDbContainer.getDockerImageName()).isEqualTo(HtConstants.Mongo.DEFAULT_IMAGE);
+            assertThat(mongoDbContainer.getExposedPorts()).containsExactly(HtConstants.Mongo.DEFAULT_PORT);
         });
     }
 
@@ -1271,9 +1271,9 @@ public class HuskitContainersPluginIntegrationTest implements GradleIntegrationT
             assertThat(taskEnvironment).isNotEmpty();
             assertThat(taskEnvironment).containsExactlyEntriesOf(
                     Map.of(
-                            Constants.Mongo.DEFAULT_CONNECTION_STRING_ENV, anyConnectionString,
-                            Constants.Mongo.DEFAULT_PORT_ENV, String.valueOf(anyFixedPort),
-                            Constants.Mongo.DEFAULT_DB_NAME_ENV, Constants.Mongo.DEFAULT_DB_NAME
+                            HtConstants.Mongo.DEFAULT_CONNECTION_STRING_ENV, anyConnectionString,
+                            HtConstants.Mongo.DEFAULT_PORT_ENV, String.valueOf(anyFixedPort),
+                            HtConstants.Mongo.DEFAULT_DB_NAME_ENV, HtConstants.Mongo.DEFAULT_DB_NAME
                     )
             );
         });

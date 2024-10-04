@@ -1,6 +1,6 @@
 package io.huskit.containers.model.request;
 
-import io.huskit.containers.model.Constants;
+import io.huskit.containers.model.HtConstants;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
@@ -21,7 +21,7 @@ public interface MongoExposedEnvironment {
         String port;
 
         public Default() {
-            this(Constants.Mongo.DEFAULT_CONNECTION_STRING_ENV, Constants.Mongo.DEFAULT_DB_NAME_ENV, Constants.Mongo.DEFAULT_PORT_ENV);
+            this(HtConstants.Mongo.DEFAULT_CONNECTION_STRING_ENV, HtConstants.Mongo.DEFAULT_DB_NAME_ENV, HtConstants.Mongo.DEFAULT_PORT_ENV);
         }
     }
 }

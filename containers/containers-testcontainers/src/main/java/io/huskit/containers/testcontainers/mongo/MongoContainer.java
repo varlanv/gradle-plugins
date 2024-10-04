@@ -54,7 +54,7 @@ public final class MongoContainer implements MongoStartedContainer {
             if (mongoDbContainerSupplier.isInitialized()) {
                 if (request.reuseOptions().enabled() && request.reuseOptions().reuseBetweenBuilds()) {
                     // if container is reused - drop all databases except the default ones, instead of stopping the container
-                    testContainersDelegate.execInContainer(mongoDbContainerSupplier, "/bin/sh", "-c", Constants.Mongo.DROP_COMMAND);
+                    testContainersDelegate.execInContainer(mongoDbContainerSupplier, "/bin/sh", "-c", HtConstants.Mongo.DROP_COMMAND);
                     log.info("Dropped all databases except the default ones in mongo container [{}]", request.key().json());
                 } else {
                     var before = System.currentTimeMillis();

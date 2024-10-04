@@ -8,7 +8,7 @@ import io.huskit.containers.api.logs.LookFor;
 import io.huskit.containers.api.run.HtCmdRunSpecImpl;
 import io.huskit.containers.api.run.HtRun;
 import io.huskit.containers.internal.HtLazyContainer;
-import io.huskit.containers.model.Constants;
+import io.huskit.containers.model.HtConstants;
 import lombok.RequiredArgsConstructor;
 import lombok.With;
 
@@ -29,7 +29,7 @@ public class HtCliRun implements HtRun {
                 new CliCommand(
                         runSpec.commandType(),
                         runSpec.toCommand(),
-                        Constants.Predicates.alwaysFalse(),
+                        HtConstants.Predicates.alwaysFalse(),
                         Predicate.not(String::isBlank),
                         runSpec.timeout()
                 ),

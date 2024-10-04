@@ -7,8 +7,9 @@ import java.time.temporal.ChronoUnit;
 import java.util.function.Predicate;
 
 @NoArgsConstructor(access = lombok.AccessLevel.PRIVATE)
-public class Constants {
+public class HtConstants {
 
+    public static final Long ZERO_INSTANT_MILLIS = -62135596800000L;
     public static final String CONTAINER_HASH_LABEL = "HTCT_REUSABLE_HASH";
     public static final String CONTAINER_CLEANUP_AFTER_LABEL = "HTCT_CLEANUP_AFTER";
     public static final String CONTAINER_STARTED_AT_LABEL = "HTCT_STARTED_AT";

@@ -2,7 +2,7 @@ package io.huskit.containers.internal.cli;
 
 import io.huskit.containers.api.cli.CommandType;
 import io.huskit.containers.api.cli.HtCommand;
-import io.huskit.containers.model.Constants;
+import io.huskit.containers.model.HtConstants;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.With;
@@ -29,8 +29,8 @@ public class CliCommand implements HtCommand {
         this(
                 type,
                 value,
-                Constants.Predicates.alwaysFalse(),
-                Constants.Predicates.alwaysTrue(),
+                HtConstants.Predicates.alwaysFalse(),
+                HtConstants.Predicates.alwaysTrue(),
                 Duration.ZERO
         );
     }
@@ -39,8 +39,8 @@ public class CliCommand implements HtCommand {
         this(
                 type,
                 List.copyOf(value),
-                Constants.Predicates.alwaysFalse(),
-                Constants.Predicates.alwaysTrue(),
+                HtConstants.Predicates.alwaysFalse(),
+                HtConstants.Predicates.alwaysTrue(),
                 Duration.ZERO
         );
     }
