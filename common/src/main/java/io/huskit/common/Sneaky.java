@@ -1,6 +1,10 @@
 package io.huskit.common;
 
 import io.huskit.common.function.ThrowingRunnable;
+import io.huskit.common.function.ThrowingSupplier;
+import lombok.SneakyThrows;
+
+import java.util.function.Supplier;
 
 public interface Sneaky {
 
@@ -18,5 +22,14 @@ public interface Sneaky {
                 // no-op
             }
         };
+    }
+
+    static <T> ThrowingSupplier<T> thrown(ThrowingSupplier<? extends Throwable> e) {
+        return () -> hide(e);
+    }
+
+    @SneakyThrows
+    private static <T> T hide(ThrowingSupplier<? extends Throwable> supplier) {
+        throw supplier.get();
     }
 }

@@ -20,7 +20,16 @@ public interface MemoizedSupplier<T> extends Supplier<T>, ThrowingSupplier<T> {
     void reset();
 
     static <T> MemoizedSupplier<T> of(ThrowingSupplier<T> supplier) {
-        return new ValMemoizedSupplier<>(supplier);
+        return new StrategyMemoizedSupplier<>(() -> {
+            try {
+                var val = supplier.get();
+                return () -> val;
+            } catch (Exception e) {
+                return () -> {
+                    throw e;
+                };
+            }
+        });
     }
 
     static <T> MemoizedSupplier<T> ofStrategy(ThrowingSupplier<ThrowingSupplier<T>> supplier) {

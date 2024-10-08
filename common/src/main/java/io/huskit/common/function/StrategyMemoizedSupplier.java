@@ -1,9 +1,9 @@
 package io.huskit.common.function;
 
-import io.huskit.common.internal.DfVolatile;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
+import lombok.experimental.NonFinal;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Objects;
@@ -13,31 +13,33 @@ public class StrategyMemoizedSupplier<T> implements MemoizedSupplier<T> {
 
     @NonNull
     ThrowingSupplier<ThrowingSupplier<T>> delegate;
-    DfVolatile<ThrowingSupplier<T>> volatileValue = new DfVolatile<>();
+    @NonFinal
+    @Nullable
+    volatile ThrowingSupplier<T> memoizedStrategy;
 
     @Override
     @SneakyThrows
     public T get() {
-        @Nullable var val = volatileValue.get();
-        if (val == null) {
+        @Nullable var strategy = memoizedStrategy;
+        if (strategy == null) {
             synchronized (this) {
-                val = volatileValue.get();
-                if (val == null) {
-                    val = Objects.requireNonNull(delegate.get(), "Supplier returned null strategy");
-                    volatileValue.set(val);
+                strategy = memoizedStrategy;
+                if (strategy == null) {
+                    strategy = Objects.requireNonNull(delegate.get(), "Supplier returned null strategy");
+                    memoizedStrategy = strategy;
                 }
             }
         }
-        return Objects.requireNonNull(val.get(), "Strategy returned null value");
+        return Objects.requireNonNull(strategy.get(), "Supplier returned null value");
     }
 
     @Override
     public boolean isInitialized() {
-        return volatileValue.isPresent();
+        return memoizedStrategy != null;
     }
 
     @Override
     public void reset() {
-        volatileValue.reset();
+        memoizedStrategy = null;
     }
 }
