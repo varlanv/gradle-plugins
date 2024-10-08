@@ -1,7 +1,7 @@
 package io.huskit.gradle.common.function;
 
 import io.huskit.common.Tuple;
-import io.huskit.common.function.MemoizedSupplier;
+import io.huskit.common.function.ValMemoizedSupplier;
 import io.huskit.common.function.ThrowingSupplier;
 import io.huskit.gradle.commontest.UnitTest;
 import lombok.Lombok;
@@ -17,13 +17,13 @@ import java.util.concurrent.atomic.AtomicReference;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-class MemoizedSupplierTest implements UnitTest {
+class ValMemoizedSupplierTest implements UnitTest {
 
     @Test
     @DisplayName("calling get() multiple times should return the same value")
     void get_when_call_multiple_times_should_return_the_same_value() {
         // Given
-        var subject = new MemoizedSupplier<>(() -> 1);
+        var subject = new ValMemoizedSupplier<>(() -> 1);
 
         // Expect
         assertThat(subject.get()).isEqualTo(1);
@@ -33,7 +33,7 @@ class MemoizedSupplierTest implements UnitTest {
     @Test
     @DisplayName("if passed supplier returns null, exception should be thrown")
     void if_passed_supplier_returns_null_exception_should_be_thrown() {
-        assertThatThrownBy(() -> new MemoizedSupplier<>(() -> null).get())
+        assertThatThrownBy(() -> new ValMemoizedSupplier<>(() -> null).get())
                 .isInstanceOf(NullPointerException.class);
     }
 
@@ -42,7 +42,7 @@ class MemoizedSupplierTest implements UnitTest {
     void if_two_threads_call_get_at_the_same_time_computation_should_be_performed_only_once() throws Exception {
         var latch = new CountDownLatch(1);
         var counter = new AtomicInteger();
-        var subject = new MemoizedSupplier<>(() -> {
+        var subject = new ValMemoizedSupplier<>(() -> {
             try {
                 latch.await();
             } catch (InterruptedException e) {
@@ -97,7 +97,7 @@ class MemoizedSupplierTest implements UnitTest {
     void reset_should_clear_memoized_value() {
         // Given
         var firstRef = new AtomicReference<>();
-        var subject = new MemoizedSupplier<>(Object::new);
+        var subject = new ValMemoizedSupplier<>(Object::new);
         firstRef.set(subject.get());
         assertThat(subject.isInitialized()).isTrue();
         assertThat(subject.get()).isSameAs(firstRef.get());
@@ -113,7 +113,7 @@ class MemoizedSupplierTest implements UnitTest {
     @DisplayName("calling reset() if the value is not memoized should do nothing")
     void reset_if_value_not_memoized_should_do_nothing() {
         // Given
-        var subject = new MemoizedSupplier<>(Object::new);
+        var subject = new ValMemoizedSupplier<>(Object::new);
 
         // When
         subject.reset();
@@ -125,7 +125,7 @@ class MemoizedSupplierTest implements UnitTest {
     @Test
     @DisplayName("calling isInitialized() should return true if the value is memoized")
     void isInitialized_should_return_true_if_value_is_memoized() {
-        var subject = new MemoizedSupplier<>(Object::new);
+        var subject = new ValMemoizedSupplier<>(Object::new);
         assertThat(subject.isInitialized()).isFalse();
         subject.get();
         assertThat(subject.isInitialized()).isTrue();

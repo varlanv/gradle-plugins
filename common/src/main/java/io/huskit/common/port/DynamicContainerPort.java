@@ -10,7 +10,7 @@ import java.util.Optional;
 @RequiredArgsConstructor
 public final class DynamicContainerPort implements ContainerPort {
 
-    MemoizedSupplier<Integer> value = new MemoizedSupplier<>(this::randomPort);
+    MemoizedSupplier<Integer> value = MemoizedSupplier.of(this::randomPort);
 
     @Override
     public Integer hostValue() {

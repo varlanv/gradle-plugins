@@ -17,7 +17,7 @@ public enum Os {
 
     String pattern;
 
-    private static final Supplier<Os> CURRENT = new MemoizedSupplier<>(Os::initOs);
+    private static final Supplier<Os> CURRENT = MemoizedSupplier.of(Os::initOs);
 
     public boolean isCurrent() {
         return Objects.equals(this, current());

@@ -9,7 +9,7 @@ public class LazyShell implements Shell {
     MemoizedSupplier<Shell> shellDelegate;
 
     public LazyShell(ThrowingSupplier<Shell> shellDelegate) {
-        this.shellDelegate = new MemoizedSupplier<>(shellDelegate);
+        this.shellDelegate = MemoizedSupplier.of(shellDelegate);
     }
 
     @Override

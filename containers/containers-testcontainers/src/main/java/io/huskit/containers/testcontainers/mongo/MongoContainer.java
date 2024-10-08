@@ -4,10 +4,10 @@ import com.github.dockerjava.api.model.ExposedPort;
 import com.github.dockerjava.api.model.PortBinding;
 import com.github.dockerjava.api.model.Ports;
 import io.huskit.common.function.MemoizedSupplier;
-import io.huskit.containers.model.*;
-import io.huskit.containers.model.id.ContainerKey;
 import io.huskit.common.port.ContainerPort;
 import io.huskit.common.port.ResolvedPort;
+import io.huskit.containers.model.*;
+import io.huskit.containers.model.id.ContainerKey;
 import io.huskit.containers.model.request.MongoRequestedContainer;
 import io.huskit.containers.model.started.NonStartedContainer;
 import io.huskit.log.Log;
@@ -30,10 +30,10 @@ public final class MongoContainer implements MongoStartedContainer {
     TestContainersDelegate testContainersDelegate;
     MongoRequestedContainer request;
     AtomicInteger databaseNameCounter = new AtomicInteger();
-    MemoizedSupplier<MongoDBContainer> mongoDbContainerSupplier = new MemoizedSupplier<>(this::getMongoDbContainer);
-    MemoizedSupplier<ContainerPort> portSupplier = new MemoizedSupplier<>(this::resolvePort);
-    MemoizedSupplier<String> connectionStringBaseSupplier = new MemoizedSupplier<>(this::connectionStringBase);
-    MemoizedSupplier<Optional<ExistingContainer>> existingContainerSupplier = new MemoizedSupplier<>(this::existingContainer);
+    MemoizedSupplier<MongoDBContainer> mongoDbContainerSupplier =  MemoizedSupplier.of(this::getMongoDbContainer);
+    MemoizedSupplier<ContainerPort> portSupplier = MemoizedSupplier.of(this::resolvePort);
+    MemoizedSupplier<String> connectionStringBaseSupplier = MemoizedSupplier.of(this::connectionStringBase);
+    MemoizedSupplier<Optional<ExistingContainer>> existingContainerSupplier = MemoizedSupplier.of(this::existingContainer);
 
     AtomicBoolean isStarted = new AtomicBoolean();
 

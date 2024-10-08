@@ -9,7 +9,7 @@ import java.util.Objects;
 public class ContainerHash {
 
     List<Object> hashObjects = new ArrayList<>();
-    MemoizedSupplier<String> hashSupplier = new MemoizedSupplier<>(this::initHash);
+    MemoizedSupplier<String> hashSupplier = MemoizedSupplier.of(this::initHash);
 
     public String compute() {
         var hash = hashSupplier.get();

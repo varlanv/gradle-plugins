@@ -645,7 +645,7 @@ class HtCliDckrIntegrationTest implements DockerIntegrationTest {
             ShellType shellType;
             HtCliDocker subject;
             ThreadLocalCliRecorder recorder;
-            MemoizedSupplier<OneContainerFixture> oneContainerFixture = new MemoizedSupplier<>(this::buildOneContainerFixture);
+            MemoizedSupplier<OneContainerFixture> oneContainerFixture = MemoizedSupplier.of(this::buildOneContainerFixture);
 
             private OneContainerFixture buildOneContainerFixture() {
                 var labelIdKey = "labelId";

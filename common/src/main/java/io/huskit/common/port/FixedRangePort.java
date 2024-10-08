@@ -17,7 +17,7 @@ public class FixedRangePort implements ContainerPort {
     Integer rangeTo;
     @NonNull
     Integer containerValue;
-    MemoizedSupplier<Integer> value = new MemoizedSupplier<>(this::randomPort);
+    MemoizedSupplier<Integer> value = MemoizedSupplier.of(this::randomPort);
 
     @Override
     public Integer hostValue() {

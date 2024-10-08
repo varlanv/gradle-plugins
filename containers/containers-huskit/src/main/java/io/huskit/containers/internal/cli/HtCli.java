@@ -24,7 +24,7 @@ public class HtCli {
     @With
     HtCliDckrSpec dockerSpec;
     Shells shells;
-    MemoizedSupplier<DockerShell> process = new MemoizedSupplier<>(this::createProcess);
+    MemoizedSupplier<DockerShell> process = MemoizedSupplier.of(this::createProcess);
     AtomicBoolean isClosed = new AtomicBoolean();
 
     public void sendCommand(HtCommand command) {

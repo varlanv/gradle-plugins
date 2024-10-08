@@ -3,9 +3,9 @@ package io.huskit.containers.testcontainers.mongo;
 import com.github.dockerjava.api.DockerClient;
 import com.github.dockerjava.api.model.Container;
 import io.huskit.common.function.MemoizedSupplier;
-import io.huskit.containers.model.HtConstants;
 import io.huskit.containers.model.DefaultExistingContainer;
 import io.huskit.containers.model.ExistingContainer;
+import io.huskit.containers.model.HtConstants;
 import io.huskit.containers.model.id.ContainerKey;
 import io.huskit.log.Log;
 import io.huskit.log.ProfileLog;
@@ -29,7 +29,7 @@ import java.util.stream.Collectors;
 public class ActualTestContainersDelegate implements TestContainersDelegate, Serializable {
 
     private static final AtomicBoolean reuseInitialized = new AtomicBoolean();
-    private static final Supplier<DockerClient> dockerClient = new MemoizedSupplier<>(() ->
+    private static final Supplier<DockerClient> dockerClient = MemoizedSupplier.of(() ->
             ProfileLog.withProfile("Testcontainers initialize", () ->
                     DockerClientFactory.instance().client()));
     Log log;

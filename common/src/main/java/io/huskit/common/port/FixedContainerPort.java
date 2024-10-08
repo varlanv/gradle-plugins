@@ -16,7 +16,7 @@ public final class FixedContainerPort implements ContainerPort {
     Integer hostValue;
     @NonNull
     Integer containerValue;
-    MemoizedSupplier<Integer> value = new MemoizedSupplier<>(this::portValue);
+    MemoizedSupplier<Integer> value = MemoizedSupplier.of(this::portValue);
 
     @Override
     public Integer hostValue() {

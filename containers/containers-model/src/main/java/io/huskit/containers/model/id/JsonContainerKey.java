@@ -17,7 +17,7 @@ import java.util.stream.Collectors;
 class JsonContainerKey implements ContainerKey {
 
     NavigableMap<String, Object> properties;
-    MemoizedSupplier<String> memoizedSupplier = new MemoizedSupplier<>(this::buildJson);
+    MemoizedSupplier<String> memoizedSupplier = MemoizedSupplier.of(this::buildJson);
 
     JsonContainerKey() {
         this(Collections.emptyNavigableMap());

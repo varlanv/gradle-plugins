@@ -1,10 +1,5 @@
 package io.huskit.common.function;
 
-import io.huskit.common.internal.DfVolatile;
-import lombok.RequiredArgsConstructor;
-import lombok.SneakyThrows;
-
-import java.util.Objects;
 import java.util.function.Supplier;
 
 /**
@@ -16,33 +11,19 @@ import java.util.function.Supplier;
  *
  * @param <T> the type of results supplied by this supplier
  */
-@RequiredArgsConstructor
-public class MemoizedSupplier<T> implements Supplier<T>, ThrowingSupplier<T> {
+public interface MemoizedSupplier<T> extends Supplier<T>, ThrowingSupplier<T> {
 
-    ThrowingSupplier<T> delegate;
-    DfVolatile<T> volatileValue = new DfVolatile<>();
+    T get();
 
-    @Override
-    @SneakyThrows
-    public T get() {
-        var val = volatileValue.get();
-        if (val == null) {
-            synchronized (this) {
-                val = volatileValue.get();
-                if (val == null) {
-                    val = Objects.requireNonNull(delegate.get());
-                    volatileValue.set(val);
-                }
-            }
-        }
-        return val;
+    boolean isInitialized();
+
+    void reset();
+
+    static <T> MemoizedSupplier<T> of(ThrowingSupplier<T> supplier) {
+        return new ValMemoizedSupplier<>(supplier);
     }
 
-    public boolean isInitialized() {
-        return volatileValue.isPresent();
-    }
-
-    public void reset() {
-        volatileValue.reset();
+    static <T> MemoizedSupplier<T> ofStrategy(ThrowingSupplier<ThrowingSupplier<T>> supplier) {
+        return new StrategyMemoizedSupplier<>(supplier);
     }
 }

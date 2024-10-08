@@ -41,7 +41,7 @@ public class HtCliRun implements HtRun {
                 .await());
         return new HtLazyContainer(
                 id,
-                new MemoizedSupplier<>(() -> new HtFindCliCtrsByIds(cli, Set.of(id)).stream()
+                MemoizedSupplier.of(() -> new HtFindCliCtrsByIds(cli, Set.of(id)).stream()
                         .findFirst()
                         .orElseThrow())
         );
