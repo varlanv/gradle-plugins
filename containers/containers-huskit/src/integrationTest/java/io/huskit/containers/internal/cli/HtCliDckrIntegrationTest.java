@@ -109,38 +109,76 @@ class HtCliDckrIntegrationTest implements DockerIntegrationTest {
             }
             {
                 var inspected = subject.containers().inspect(containerRef.require().id());
-                assertThat(inspected.id()).isEqualTo(containerRef.require().id());
-                assertThat(inspected.args()).containsExactlyElementsOf(DockerImagesStash.smallImageBusyCommand().args());
-
-                var containerConfig = inspected.config();
-                assertThat(containerConfig.labels()).containsAllEntriesOf(containerLabels);
-                assertThat(containerConfig.env()).containsAllEntriesOf(containerEnv);
-                assertThat(containerConfig.cmd()).containsExactlyElementsOf(DockerImagesStash.smallImageBusyCommand().commandWithArgs());
-                assertThat(containerConfig.tty()).isFalse();
-                assertThat(containerConfig.attachStdin()).isFalse();
-                assertThat(containerConfig.attachStder()).isFalse();
-                assertThat(containerConfig.openStdin()).isFalse();
-                assertThat(containerConfig.entrypoint()).isEmpty();
-                assertThat(containerConfig.workingDir()).isEmpty();
-                assertThat(containerConfig.hostname()).isNotEmpty();
-
-                var containerNetwork = inspected.network();
-                assertThat(containerNetwork.ports()).containsExactly(mappedPort1, mappedPort2);
-
-                var containerState = inspected.state();
-                assertThat(containerState.status()).isEqualTo(HtContainerStatus.RUNNING);
-                assertThat(containerState.pid()).isPositive();
-                assertThat(containerState.exitCode()).isZero();
-                assertThat(containerState.startedAt()).isNotNull();
-                assertThatThrownBy(containerState::finishedAt).hasMessageContaining("not yet finished");
-                assertThat(containerState.error()).isEmpty();
-                assertThat(containerState.running()).isTrue();
-                assertThat(containerState.paused()).isFalse();
-                assertThat(containerState.restarting()).isFalse();
-                assertThat(containerState.oomKilled()).isFalse();
-                assertThat(containerState.dead()).isFalse();
+                {
+                    assertThat(inspected.id()).isEqualTo(containerRef.require().id());
+                    assertThat(inspected.name()).isNotEmpty();
+                    assertThat(inspected.createdAt()).is(today());
+                    assertThat(inspected.args()).containsExactlyElementsOf(DockerImagesStash.smallImageBusyCommand().args());
+                    assertThat(inspected.path()).isEqualTo(DockerImagesStash.smallImageBusyCommand().command());
+                    assertThat(inspected.processLabel()).isEmpty();
+                    assertThat(inspected.platform()).isEqualTo("linux");
+                    assertThat(inspected.driver()).isNotEmpty();
+                    assertThat(inspected.hostsPath()).isNotEmpty();
+                    assertThat(inspected.hostnamePath()).isNotEmpty();
+                    assertThat(inspected.restartCount()).isZero();
+                    assertThat(inspected.mountLabel()).isEmpty();
+                    assertThat(inspected.resolvConfPath()).isNotEmpty();
+                    assertThat(inspected.logPath()).isNotEmpty();
+                }
+                {
+                    var containerConfig = inspected.config();
+                    assertThat(containerConfig.labels()).containsAllEntriesOf(containerLabels);
+                    assertThat(containerConfig.env()).containsAllEntriesOf(containerEnv);
+                    assertThat(containerConfig.cmd()).containsExactlyElementsOf(DockerImagesStash.smallImageBusyCommand().commandWithArgs());
+                    assertThat(containerConfig.tty()).isFalse();
+                    assertThat(containerConfig.attachStdin()).isFalse();
+                    assertThat(containerConfig.attachStder()).isFalse();
+                    assertThat(containerConfig.openStdin()).isFalse();
+                    assertThat(containerConfig.entrypoint()).isEmpty();
+                    assertThat(containerConfig.workingDir()).isEmpty();
+                    assertThat(containerConfig.hostname()).isNotEmpty();
+                }
+                {
+                    var containerNetwork = inspected.network();
+                    assertThat(containerNetwork.ports()).containsExactly(mappedPort1, mappedPort2);
+                    assertThat(containerNetwork.gateway()).isNotEmpty();
+                    assertThat(containerNetwork.ipAddress()).isNotEmpty();
+                    assertThat(containerNetwork.ipPrefixLen()).isPositive();
+                    assertThat(containerNetwork.macAddress()).isNotEmpty();
+                    assertThat(containerNetwork.bridge()).isEmpty();
+                    assertThat(containerNetwork.globalIpv6PrefixLen()).isZero();
+                    assertThat(containerNetwork.globalIpv6Address()).isEmpty();
+                    assertThat(containerNetwork.linkLocalIpv6Address()).isEmpty();
+                    assertThat(containerNetwork.linkLocalIpv6PrefixLen()).isZero();
+                    assertThat(containerNetwork.ipv6Gateway()).isEmpty();
+                    assertThat(containerNetwork.hairpinMode()).isFalse();
+                    assertThat(containerNetwork.endpointId()).isNotEmpty();
+                    assertThat(containerNetwork.sandboxId()).isNotEmpty();
+                    assertThat(containerNetwork.sandboxKey()).isNotEmpty();
+                    assertThat(containerNetwork.secondaryIpAddresses()).isEmpty();
+                    assertThat(containerNetwork.secondaryIpV6Addresses()).isEmpty();
+                    assertThatThrownBy(containerNetwork::firstMappedPort).hasMessageContaining("multiple are present");
+                }
+                {
+                    var containerState = inspected.state();
+                    assertThat(containerState.status()).isEqualTo(HtContainerStatus.RUNNING);
+                    assertThat(containerState.pid()).isPositive();
+                    assertThat(containerState.exitCode()).isZero();
+                    assertThat(containerState.startedAt()).isNotNull();
+                    assertThatThrownBy(containerState::finishedAt).hasMessageContaining("not yet finished");
+                    assertThat(containerState.error()).isEmpty();
+                    assertThat(containerState.running()).isTrue();
+                    assertThat(containerState.paused()).isFalse();
+                    assertThat(containerState.restarting()).isFalse();
+                    assertThat(containerState.oomKilled()).isFalse();
+                    assertThat(containerState.dead()).isFalse();
+                }
+                {
+                    var containerGraphDriver = inspected.graphDriver();
+                    assertThat(containerGraphDriver.data()).isNotEmpty();
+                    assertThat(containerGraphDriver.name()).isNotEmpty();
+                }
             }
-//            var container = containerRef.require();
         } finally {
             containerRef.ifPresent(container -> subject.containers().remove(container.id(), spec -> spec.withForce().withVolumes()).exec());
         }

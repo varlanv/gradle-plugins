@@ -2,6 +2,7 @@ package io.huskit.containers.api;
 
 import java.time.Instant;
 import java.util.List;
+import java.util.Map;
 
 public interface HtContainer {
 
@@ -11,7 +12,7 @@ public interface HtContainer {
 
     HtContainerConfig config();
 
-    HtContainerNetwork network();
+    HtContainerNetworkSettings network();
 
     Instant createdAt();
 
@@ -24,6 +25,8 @@ public interface HtContainer {
     String platform();
 
     String driver();
+
+    HtContainerGraphDriver graphDriver();
 
     String hostsPath();
 
@@ -38,4 +41,8 @@ public interface HtContainer {
     String resolvConfPath();
 
     String logPath();
+
+
+
+    Map<String, Object> toJsonMap();
 }

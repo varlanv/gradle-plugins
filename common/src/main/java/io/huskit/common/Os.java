@@ -24,12 +24,13 @@ public enum Os {
     }
 
     private static Os initOs() {
-        var osName = System.getProperty("os.name").toLowerCase();
+        var osName = System.getProperty("os.name");
         if (osName == null || osName.isBlank()) {
             throw new IllegalStateException("Cannot determine os name because 'System.getProperty(\"os.name\")' is empty");
         }
+        var osNameLower = osName.toLowerCase();
         return Arrays.stream(values())
-                .filter(os -> osName.contains(os.pattern))
+                .filter(os -> osNameLower.contains(os.pattern))
                 .findFirst()
                 .orElseThrow(() -> new IllegalStateException("Cannot determine current os"));
     }

@@ -5,6 +5,7 @@ import io.huskit.containers.api.*;
 import lombok.RequiredArgsConstructor;
 
 import java.time.Instant;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
@@ -29,8 +30,8 @@ public class HtJsonContainer implements HtContainer {
     }
 
     @Override
-    public HtContainerNetwork network() {
-        return new JsonHtContainerNetwork(HtCollections.getFromMap("NetworkSettings", source));
+    public HtContainerNetworkSettings network() {
+        return new JsonHtContainerNetworkSettings(HtCollections.getFromMap("NetworkSettings", source));
     }
 
     @Override
@@ -61,6 +62,11 @@ public class HtJsonContainer implements HtContainer {
     @Override
     public String driver() {
         return HtCollections.getFromMap("Driver", source);
+    }
+
+    @Override
+    public HtContainerGraphDriver graphDriver() {
+        return new JsonHtContainerGraphDriver(HtCollections.getFromMap("GraphDriver", source));
     }
 
     @Override
@@ -96,5 +102,10 @@ public class HtJsonContainer implements HtContainer {
     @Override
     public String logPath() {
         return HtCollections.getFromMap("LogPath", source);
+    }
+
+    @Override
+    public Map<String, Object> toJsonMap() {
+        return Collections.unmodifiableMap(source);
     }
 }

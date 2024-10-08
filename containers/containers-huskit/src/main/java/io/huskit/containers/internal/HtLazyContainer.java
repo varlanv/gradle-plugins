@@ -1,14 +1,12 @@
 package io.huskit.containers.internal;
 
-import io.huskit.containers.api.HtContainer;
-import io.huskit.containers.api.HtContainerConfig;
-import io.huskit.containers.api.HtContainerNetwork;
-import io.huskit.containers.api.HtContainerState;
+import io.huskit.containers.api.*;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
 import java.time.Instant;
 import java.util.List;
+import java.util.Map;
 import java.util.function.Supplier;
 
 @RequiredArgsConstructor
@@ -29,7 +27,7 @@ public class HtLazyContainer implements HtContainer {
     }
 
     @Override
-    public HtContainerNetwork network() {
+    public HtContainerNetworkSettings network() {
         return delegate.get().network();
     }
 
@@ -61,6 +59,11 @@ public class HtLazyContainer implements HtContainer {
     @Override
     public String driver() {
         return delegate.get().driver();
+    }
+
+    @Override
+    public HtContainerGraphDriver graphDriver() {
+        return delegate.get().graphDriver();
     }
 
     @Override
@@ -96,6 +99,11 @@ public class HtLazyContainer implements HtContainer {
     @Override
     public String logPath() {
         return delegate.get().logPath();
+    }
+
+    @Override
+    public Map<String, Object> toJsonMap() {
+        return delegate.get().toJsonMap();
     }
 
     @Override
