@@ -1,7 +1,11 @@
 package io.huskit.gradle.containers.plugin.internal.spec.mongo;
 
-import io.huskit.containers.model.HtConstants;
+import io.huskit.common.Opt;
+import io.huskit.containers.api.HtImgName;
+import io.huskit.containers.integration.ContainerSpec;
+import io.huskit.containers.integration.DefContainerSpec;
 import io.huskit.containers.model.ContainerType;
+import io.huskit.containers.model.HtConstants;
 import io.huskit.containers.model.image.DefaultContainerImage;
 import io.huskit.containers.model.request.DefaultMongoRequestedContainer;
 import io.huskit.containers.model.request.MongoExposedEnvironment;
@@ -117,9 +121,11 @@ public interface MongoContainerRequestSpec extends ContainerRequestSpec, MongoCo
         exposedEnvironment.getPort().convention(HtConstants.Mongo.DEFAULT_PORT_ENV);
         var port = objects.newInstance(ContainerPortSpec.class);
         var fixedPort = objects.newInstance(FixedContainerPortSpec.class);
+        var containerDefaultPort = port.getContainerDefaultPort();
+        fixedPort.getContainerValue().convention(containerDefaultPort);
         port.getFixed().convention(fixedPort);
         port.getDynamic().convention(true);
-        port.getContainerDefaultPort().set(HtConstants.Mongo.DEFAULT_PORT);
+        containerDefaultPort.set(HtConstants.Mongo.DEFAULT_PORT);
         getReuse().convention(reuse);
         getDatabaseName().convention(HtConstants.Mongo.DEFAULT_DB_NAME);
         getRootProjectName().convention(extension.getRootProjectName());
@@ -129,5 +135,40 @@ public interface MongoContainerRequestSpec extends ContainerRequestSpec, MongoCo
         getExposedEnvironment().convention(exposedEnvironment);
         getPort().convention(port);
         action.execute(this);
+    }
+
+    @Override
+    default ContainerSpec toContainerSpec() {
+        var containerSpec = new DefContainerSpec(HtImgName.of(getImage().get()), containerType());
+        var reuseSpec = getReuse().get();
+        var cleanupSpec = reuseSpec.getCleanupSpec().get();
+        var reuseEnabled = reuseSpec.getEnabled().get();
+        if (reuseEnabled) {
+            containerSpec.reuse().enabledWithCleanupAfter(cleanupSpec.getCleanupAfter().get());
+        } else {
+            containerSpec.reuse().disabled();
+        }
+        var portSpec = getPort().get();
+        if (portSpec.getDynamic().get()) {
+            containerSpec.ports().dynamic(portSpec.getContainerDefaultPort().get());
+        } else {
+            var fixedPortSpec = portSpec.getFixed().get();
+            Opt.maybe(fixedPortSpec.getHostRange().getOrNull()).ifPresent(fixedRange ->
+                    containerSpec.ports().range(fixedRange.left(), fixedRange.right(), fixedPortSpec.getContainerValue().get()));
+            Opt.maybe(fixedPortSpec.getHostValue().getOrNull()).ifPresent(fixedValue ->
+                    containerSpec.ports().fixed(fixedValue, fixedPortSpec.getContainerValue().get()));
+        }
+        var labelsSpec = containerSpec.labels();
+        labelsSpec.pair(HtConstants.GRADLE_ROOT_PROJECT, getRootProjectName().get());
+        labelsSpec.pair(HtConstants.CONTAINER_LABEL, "true");
+        var exposedEnvironmentSpec = getExposedEnvironment().get();
+        containerSpec.addProperty(HtConstants.Mongo.DEFAULT_CONNECTION_STRING_ENV, exposedEnvironmentSpec.getConnectionString().get());
+        containerSpec.addProperty(HtConstants.Mongo.DEFAULT_DB_NAME_ENV, exposedEnvironmentSpec.getDatabaseName().get());
+        containerSpec.addProperty(HtConstants.Mongo.DEFAULT_PORT_ENV, exposedEnvironmentSpec.getPort().get());
+        containerSpec.addProperty(HtConstants.Mongo.NEW_DB_EACH_REQUEST, reuseSpec.getNewDatabaseForEachTask().get().toString());
+        if (!reuseEnabled) {
+            labelsSpec.pair(HtConstants.CONTAINER_PROJECT_KEY, getProjectName().get());
+        }
+        return containerSpec;
     }
 }

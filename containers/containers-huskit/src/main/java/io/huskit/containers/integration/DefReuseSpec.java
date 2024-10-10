@@ -1,6 +1,6 @@
 package io.huskit.containers.integration;
 
-import io.huskit.common.Volatile;
+import io.huskit.common.Mutable;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
@@ -11,7 +11,7 @@ import java.time.Duration;
 public class DefReuseSpec implements ReuseSpec {
 
     ContainerSpec parent;
-    Volatile<ReuseWithTimeout> value = Volatile.of();
+    Mutable<ReuseWithTimeout> value = Mutable.of();
 
     @Override
     public ContainerSpec disabled() {

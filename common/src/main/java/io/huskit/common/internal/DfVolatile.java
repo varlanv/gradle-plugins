@@ -6,7 +6,7 @@ import io.huskit.common.function.ThrowingPredicate;
 import io.huskit.common.function.ThrowingSupplier;
 import lombok.*;
 import lombok.experimental.NonFinal;
-import org.checkerframework.checker.nullness.qual.Nullable;
+import org.jetbrains.annotations.Nullable;
 
 import java.io.Serializable;
 import java.util.NoSuchElementException;

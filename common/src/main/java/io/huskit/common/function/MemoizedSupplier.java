@@ -13,6 +13,7 @@ import java.util.function.Supplier;
  */
 public interface MemoizedSupplier<T> extends Supplier<T>, ThrowingSupplier<T> {
 
+    @Override
     T get();
 
     boolean isInitialized();

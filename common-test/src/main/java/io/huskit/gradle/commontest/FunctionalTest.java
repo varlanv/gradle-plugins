@@ -72,12 +72,14 @@ public interface FunctionalTest extends BaseTest {
             args.add("--warning-mode=summary");
             args.add("-Dorg.gradle.logging.level=lifecycle");
             args.add("-Dorg.gradle.logging.stacktrace=all");
+            var env = new HashMap<>(System.getenv());
+            env.putAll(params.isCi() ? Map.of("CI", "true") : Map.of("CI", "false"));
             fixtureConsumer.accept(
                     new RunnerFunctionalFixture(
                             GradleRunner.create()
                                     .withPluginClasspath()
                                     .withProjectDir(parentFixture.subjectProjectDir())
-                                    .withEnvironment(params.isCi() ? Map.of("CI", "true") : Map.of("CI", "false"))
+                                    .withEnvironment(env)
                                     .withArguments(args)
                                     .forwardOutput()
                                     .withGradleVersion(params.gradleVersion()),

@@ -28,6 +28,10 @@ public interface HtContainers {
 
     HtRun run(CharSequence dockerImageName, Consumer<HtRunSpec> spec);
 
+    HtExec execInContainer(CharSequence containerId, CharSequence command, Iterable<? extends CharSequence> args);
+
+    HtExec execInContainer(CharSequence containerId, CharSequence command);
+
     HtRm remove(CharSequence... containerIds);
 
     HtRm remove(CharSequence containerId, Consumer<HtCliRmSpec> specAction);

@@ -3,6 +3,7 @@ package io.huskit.containers.api.cli;
 public enum CommandType {
 
     // CONTAINERS
+    CONTAINERS_EXEC,
     CONTAINERS_LOGS,
     CONTAINERS_LOGS_FOLLOW,
     CONTAINERS_RUN,

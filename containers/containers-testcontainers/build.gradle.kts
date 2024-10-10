@@ -7,6 +7,6 @@ plugins {
 dependencies {
     implementation(projects.logging.loggingApi)
     implementation(projects.common)
-    implementation(projects.containers.containersModel)
+    implementation(projects.containers.containersHuskit)
     implementation(libs.bundles.testcontainers)
 }

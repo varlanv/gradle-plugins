@@ -19,13 +19,12 @@ tasks.named<ShadowJar>("shadowJar", {
 
 dependencies {
     implementation(projects.common)
-    implementation(projects.containers.containersModel)
     implementation(projects.logging.loggingApi)
     implementation(libs.json)
     implementation(libs.github.docker.java)
     implementation(libs.github.docker.transport)
+    implementation(libs.bundles.testcontainers)
 //    implementation(libs.mongoDriver)
 //    implementation(libs.apache.commons.lang)
 //    implementation(libs.apache.commons.io)
-//    implementation(libs.bundles.testcontainers)
 }

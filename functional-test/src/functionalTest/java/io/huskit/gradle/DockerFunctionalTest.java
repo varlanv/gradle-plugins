@@ -9,9 +9,9 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Tag;
 import org.testcontainers.DockerClientFactory;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 @Tag(BaseTest.DOCKER_TEST_TAG)
 public interface DockerFunctionalTest extends FunctionalTest {
@@ -32,12 +32,7 @@ public interface DockerFunctionalTest extends FunctionalTest {
 
     default List<Container> findHuskitContainersForUseCase(String useCase) {
         var client = DockerClientFactory.instance().client();
-        var listContainersCmd = client.listContainersCmd().withLabelFilter(Map.of("huskit_container", "true"));
-        return listContainersCmd.exec().stream()
-                .filter(container -> {
-                    var idJson = container.getLabels().get("huskit_key");
-                    return idJson != null && getJsonField(idJson, "rootProjectName", String.class).equals(useCase);
-                })
-                .collect(Collectors.toList());
+        var listContainersCmd = client.listContainersCmd().withLabelFilter(Map.of("HTCT_CONTAINER", "true", "HTCT_GRADLE_ROOT_PROJECT", useCase));
+        return new ArrayList<>(listContainersCmd.exec());
     }
 }

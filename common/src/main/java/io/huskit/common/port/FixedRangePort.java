@@ -2,8 +2,10 @@ package io.huskit.common.port;
 
 import io.huskit.common.Volatile;
 import io.huskit.common.function.MemoizedSupplier;
+import lombok.EqualsAndHashCode;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import lombok.ToString;
 
 import java.io.IOException;
 import java.net.ServerSocket;
@@ -11,6 +13,8 @@ import java.util.Optional;
 import java.util.concurrent.ThreadLocalRandom;
 
 @RequiredArgsConstructor
+@ToString(of = {"rangeFrom", "rangeTo", "containerValue"})
+@EqualsAndHashCode(of = {"rangeFrom", "rangeTo", "containerValue"})
 public class FixedRangePort implements ContainerPort {
 
     Integer rangeFrom;

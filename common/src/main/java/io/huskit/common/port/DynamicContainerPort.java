@@ -33,4 +33,14 @@ public final class DynamicContainerPort implements ContainerPort {
             return socket.getLocalPort();
         }
     }
+
+    @Override
+    public int hashCode() {
+        return value.get();
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        return obj instanceof DynamicContainerPort && value.get().equals(((DynamicContainerPort) obj).value.get());
+    }
 }

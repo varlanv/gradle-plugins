@@ -1,5 +1,2 @@
-@DefaultQualifier(NonNull.class)
+@org.jetbrains.annotations.NotNullByDefault
 package io.huskit.containers.integration;
-
-import org.checkerframework.checker.nullness.qual.NonNull;
-import org.checkerframework.framework.qual.DefaultQualifier;

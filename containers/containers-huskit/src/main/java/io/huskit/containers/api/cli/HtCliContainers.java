@@ -1,8 +1,6 @@
 package io.huskit.containers.api.cli;
 
-import io.huskit.containers.api.HtContainer;
-import io.huskit.containers.api.HtContainers;
-import io.huskit.containers.api.HtImgName;
+import io.huskit.containers.api.*;
 import io.huskit.containers.api.list.HtListContainers;
 import io.huskit.containers.api.list.arg.HtListContainersArgsSpec;
 import io.huskit.containers.api.logs.HtCliLogs;
@@ -78,6 +76,34 @@ public class HtCliContainers implements HtContainers {
                 cli,
                 runSpec,
                 dockerSpec
+        );
+    }
+
+    @Override
+    public HtExec execInContainer(CharSequence containerId, CharSequence command, Iterable<? extends CharSequence> args) {
+        var argsList = new ArrayList<String>();
+        for (var arg : args) {
+            argsList.add(arg.toString());
+        }
+        return new HtCliExec(
+                cli,
+                new HtCliExecSpec(
+                        containerId.toString(),
+                        command.toString(),
+                        argsList
+                )
+        );
+    }
+
+    @Override
+    public HtExec execInContainer(CharSequence containerId, CharSequence command) {
+        return new HtCliExec(
+                cli,
+                new HtCliExecSpec(
+                        containerId.toString(),
+                        command.toString(),
+                        List.of()
+                )
         );
     }
 

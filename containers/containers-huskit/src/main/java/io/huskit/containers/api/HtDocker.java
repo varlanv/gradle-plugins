@@ -22,7 +22,7 @@ public interface HtDocker {
     }
 
     static HtCliDocker cli() {
-        var dockerSpec = new HtCliDckrSpec();
+        var dockerSpec = new HtCliDckrSpec().withForwardStdout(true).withForwardStderr(true);
         return new HtCliDckr(
                 new HtCli(dockerSpec, new Shells()),
                 dockerSpec

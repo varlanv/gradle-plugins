@@ -36,25 +36,25 @@ public class HtCliDckrSpec implements HtCliDockerSpec {
     }
 
     @Override
-    public HtCliDockerSpec withCliRecorder(CliRecorder recorder) {
+    public HtCliDckrSpec withCliRecorder(CliRecorder recorder) {
         this.recorder.set(recorder);
         return this;
     }
 
     @Override
-    public HtCliDockerSpec withShell(ShellType shell) {
+    public HtCliDckrSpec withShell(ShellType shell) {
         this.shell.set(shell);
         return this;
     }
 
     @Override
-    public HtCliDockerSpec withForwardStderr(Boolean forwardStderr) {
+    public HtCliDckrSpec withForwardStderr(Boolean forwardStderr) {
         this.forwardStderr.set(forwardStderr);
         return this;
     }
 
     @Override
-    public HtCliDockerSpec withForwardStdout(Boolean forwardStdout) {
+    public HtCliDckrSpec withForwardStdout(Boolean forwardStdout) {
         this.forwardStdout.set(forwardStdout);
         return this;
     }
@@ -66,7 +66,7 @@ public class HtCliDckrSpec implements HtCliDockerSpec {
     }
 
     @Override
-    public HtCliDockerSpec withImagePrefix(CharSequence imagePrefix) {
+    public HtCliDckrSpec withImagePrefix(CharSequence imagePrefix) {
         this.imagePrefix.set(imagePrefix.toString());
         return this;
     }

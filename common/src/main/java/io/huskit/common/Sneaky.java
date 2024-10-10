@@ -4,8 +4,6 @@ import io.huskit.common.function.ThrowingRunnable;
 import io.huskit.common.function.ThrowingSupplier;
 import lombok.SneakyThrows;
 
-import java.util.function.Supplier;
-
 public interface Sneaky {
 
     @SuppressWarnings("unchecked")

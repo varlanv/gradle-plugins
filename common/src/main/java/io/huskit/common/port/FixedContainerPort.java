@@ -1,16 +1,15 @@
 package io.huskit.common.port;
 
 import io.huskit.common.function.MemoizedSupplier;
-import lombok.Getter;
-import lombok.NonNull;
-import lombok.RequiredArgsConstructor;
-import lombok.SneakyThrows;
+import lombok.*;
 
 import java.net.ServerSocket;
 import java.util.Optional;
 
 @Getter
 @RequiredArgsConstructor
+@ToString(of = {"hostValue", "containerValue"})
+@EqualsAndHashCode(of = {"hostValue", "containerValue"})
 public final class FixedContainerPort implements ContainerPort {
 
     Integer hostValue;

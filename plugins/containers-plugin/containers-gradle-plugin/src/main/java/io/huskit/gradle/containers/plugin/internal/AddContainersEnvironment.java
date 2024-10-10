@@ -1,8 +1,7 @@
 package io.huskit.gradle.containers.plugin.internal;
 
-import io.huskit.containers.model.MongoStartedContainer;
+import io.huskit.containers.integration.HtIntegratedDocker;
 import io.huskit.containers.model.ProjectDescription;
-import io.huskit.containers.testcontainers.mongo.TestContainersDelegate;
 import io.huskit.gradle.containers.plugin.internal.buildservice.ContainersBuildService;
 import io.huskit.gradle.containers.plugin.internal.spec.ContainerRequestSpec;
 import io.huskit.log.Log;
@@ -13,7 +12,6 @@ import org.gradle.api.Task;
 import org.gradle.api.provider.ListProperty;
 import org.gradle.api.provider.Provider;
 import org.gradle.api.tasks.testing.Test;
-import org.jetbrains.annotations.Nullable;
 
 import java.util.Map;
 
@@ -30,7 +28,7 @@ public class AddContainersEnvironment implements Action<Task> {
         executeAndReturn(task, null);
     }
 
-    public Map<String, String> executeAndReturn(Task task, @Nullable TestContainersDelegate testContainersDelegate) {
+    public Map<String, String> executeAndReturn(Task task, HtIntegratedDocker integratedDocker) {
         if (task instanceof Test) {
             return ProfileLog.withProfile(
                     "io.huskit.gradle.containers.plugin.internal.AddContainersEnvironment.executeAndReturn",
@@ -42,13 +40,14 @@ public class AddContainersEnvironment implements Action<Task> {
                                         log,
                                         projectDescription,
                                         containersRequestedByUser,
-                                        testContainersDelegate
+                                        integratedDocker
+
                                 )
                         );
                         if (!startedContainers.isEmpty()) {
-                            var startedContainer = (MongoStartedContainer) startedContainers.stream().findFirst().get();
+                            var startedContainer = startedContainers.values().stream().findFirst().get();
                             log.info("Adding containers environment to task: [{}]", task.getName());
-                            var environment = startedContainer.environment();
+                            var environment = startedContainer.properties();
                             test.setEnvironment(environment);
                             return environment;
                         }

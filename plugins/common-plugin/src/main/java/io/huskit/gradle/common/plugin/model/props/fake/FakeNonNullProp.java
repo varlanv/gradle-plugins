@@ -4,7 +4,7 @@ import io.huskit.gradle.common.plugin.model.props.NonNullProp;
 import io.huskit.gradle.common.plugin.model.props.exception.NonNullPropertyException;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
-import org.checkerframework.checker.nullness.qual.Nullable;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.Objects;
 import java.util.Optional;

@@ -104,11 +104,6 @@ public class ApplyInternalPluginLogic {
 //            dependencies.add(JavaPlugin.TEST_IMPLEMENTATION_CONFIGURATION_NAME, properties.getLib("jackson-core-databind"));
             dependencies.add(JavaPlugin.TEST_RUNTIME_ONLY_CONFIGURATION_NAME, properties.getLib("junit-platform-launcher"));
 
-            var checkerFrameworkQual = properties.getLib("checkerframework-qual");
-            dependencies.add(JavaPlugin.COMPILE_ONLY_CONFIGURATION_NAME, checkerFrameworkQual);
-//            var checkerFramework = internalProperties.getLib("checkerframework-checker");
-//            dependencies.add(JavaPlugin.ANNOTATION_PROCESSOR_CONFIGURATION_NAME, checkerFramework);
-
             var lombokDependency = properties.getLib("lombok");
             dependencies.add(JavaPlugin.COMPILE_ONLY_CONFIGURATION_NAME, lombokDependency);
             dependencies.add(JavaPlugin.ANNOTATION_PROCESSOR_CONFIGURATION_NAME, lombokDependency);
@@ -157,7 +152,7 @@ public class ApplyInternalPluginLogic {
                         });
                         jvmTestSuite.getTargets().all(target -> {
                             target.getTestTask().configure(test -> {
-//                                test.getOutputs().upToDateWhen(task -> false);
+                                test.getOutputs().upToDateWhen(task -> false);
                                 test.testLogging(logging -> {
                                     logging.setShowStandardStreams(true);
                                 });

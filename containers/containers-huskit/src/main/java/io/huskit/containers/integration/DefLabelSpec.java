@@ -4,7 +4,7 @@ import io.huskit.common.Mutable;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 @RequiredArgsConstructor
@@ -12,7 +12,7 @@ public class DefLabelSpec implements LabelSpec {
 
     ContainerSpec parent;
     @Getter
-    Mutable<Map<String, String>> labelMap = Mutable.of(new HashMap<>());
+    Mutable<Map<String, String>> labelMap = Mutable.of(new LinkedHashMap<>());
 
     @Override
     public ContainerSpec pair(CharSequence key, Object value) {

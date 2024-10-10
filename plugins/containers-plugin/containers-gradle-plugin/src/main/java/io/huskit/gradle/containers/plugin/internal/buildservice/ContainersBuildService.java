@@ -1,11 +1,11 @@
 package io.huskit.gradle.containers.plugin.internal.buildservice;
 
 import io.huskit.common.Volatile;
-import io.huskit.containers.model.ContainersRequest;
-import io.huskit.containers.model.started.StartedContainer;
-import io.huskit.containers.testcontainers.mongo.ActualTestContainersDelegate;
-import io.huskit.gradle.common.plugin.model.DefaultInternalExtensionName;
 import io.huskit.containers.core.ContainersApplication;
+import io.huskit.containers.integration.HtIntegratedDocker;
+import io.huskit.containers.integration.HtStartedContainer;
+import io.huskit.containers.model.ContainersRequest;
+import io.huskit.gradle.common.plugin.model.DefaultInternalExtensionName;
 import io.huskit.gradle.containers.plugin.internal.ContainersBuildServiceParams;
 import io.huskit.gradle.containers.plugin.internal.ContainersServiceRequest;
 import io.huskit.gradle.containers.plugin.internal.spec.ContainerRequestSpec;
@@ -17,35 +17,37 @@ import org.gradle.api.services.BuildService;
 
 import java.io.Serializable;
 import java.time.Duration;
-import java.util.List;
-import java.util.Optional;
+import java.util.Map;
+import java.util.Objects;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
 public abstract class ContainersBuildService implements BuildService<ContainersBuildServiceParams>, AutoCloseable, Serializable {
 
-    private static final MultiBuildState multiBuildState = new MultiBuildState();
+    private static final SharedBuildState sharedBuildState = new SharedBuildState();
     SingleBuildState singleBuildState = new SingleBuildState();
 
     public static String name() {
         return new DefaultInternalExtensionName("containers_build_service").toString();
     }
 
-    public List<StartedContainer> containers(ContainersServiceRequest request) {
+    public Map<String, HtStartedContainer> containers(ContainersServiceRequest request) {
         singleBuildState.timeStarted().syncSetOrGet(System::currentTimeMillis);
         @SuppressWarnings("resource")
         var app = singleBuildState.application().syncSetOrGet(() -> {
             var log = new GradleLog(ContainersBuildService.class);
             return ContainersApplication.application(
                     log,
-                    Optional.ofNullable(request.testContainersDelegate()).orElse(multiBuildState.testContainersDelegate())
+                    Objects.requireNonNullElseGet(request.integratedDocker(), sharedBuildState::integratedDocker)
             );
         });
         return app.containers(
                 new ContainersRequest(
                         request.taskLog(),
                         request.projectDescription(),
-                        request.requestSpec().get().stream().map(ContainerRequestSpec::toRequestedContainer).collect(Collectors.toList())
+                        request.requestSpec().get().stream()
+                                .map(ContainerRequestSpec::toContainerSpec)
+                                .collect(Collectors.toList())
                 )
         );
     }
@@ -57,7 +59,7 @@ public abstract class ContainersBuildService implements BuildService<ContainersB
             new GradleLog(ContainersBuildService.class)
                     .error("------------------------------------------Finished in [{}]ms key [{}]----------------------------------------",
                             Duration.ofMillis(System.currentTimeMillis() - singleBuildState.timeStarted().require()),
-                            multiBuildState.counter().getAndIncrement());
+                            sharedBuildState.counter().getAndIncrement());
         });
     }
 
@@ -71,13 +73,9 @@ public abstract class ContainersBuildService implements BuildService<ContainersB
 
     @Getter
     @RequiredArgsConstructor
-    static class MultiBuildState implements Serializable {
+    static class SharedBuildState implements Serializable {
 
         AtomicInteger counter = new AtomicInteger();
-        ActualTestContainersDelegate testContainersDelegate = new ActualTestContainersDelegate(
-                new GradleLog(
-                        ContainersBuildService.class
-                )
-        );
+        HtIntegratedDocker integratedDocker = HtIntegratedDocker.instance();
     }
 }

@@ -1,8 +1,9 @@
 package io.huskit.gradle.containers.plugin.internal;
 
+import io.huskit.containers.integration.FakeHtIntegratedDocker;
+import io.huskit.containers.integration.HtIntegratedDocker;
+import io.huskit.containers.integration.HtStartedContainer;
 import io.huskit.containers.model.ProjectDescription;
-import io.huskit.containers.model.started.StartedContainer;
-import io.huskit.containers.testcontainers.mongo.TestContainersDelegate;
 import io.huskit.gradle.common.plugin.model.string.CapitalizedString;
 import io.huskit.gradle.containers.plugin.internal.buildservice.ContainersBuildService;
 import io.huskit.gradle.containers.plugin.internal.spec.ContainerRequestSpec;
@@ -15,9 +16,9 @@ import org.gradle.api.tasks.Input;
 import org.gradle.api.tasks.Internal;
 import org.gradle.api.tasks.TaskAction;
 import org.gradle.work.DisableCachingByDefault;
-import org.jetbrains.annotations.Nullable;
+import org.jetbrains.annotations.VisibleForTesting;
 
-import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @DisableCachingByDefault(because = "Caching of containers is not supported")
@@ -47,14 +48,16 @@ public abstract class ContainersTask extends DefaultTask {
 
     @TaskAction
     public void startContainers() {
-        startAndReturnContainers();
+        startAndReturnContainers(HtIntegratedDocker.instance());
     }
 
-    public List<StartedContainer> startAndReturnContainers() {
-        return startAndReturnContainers(null);
+    @VisibleForTesting
+    public Map<String, HtStartedContainer> startAndReturnContainers() {
+        return startAndReturnContainers(new FakeHtIntegratedDocker());
     }
 
-    public List<StartedContainer> startAndReturnContainers(@Nullable TestContainersDelegate testContainersDelegate) {
+    @VisibleForTesting
+    public Map<String, HtStartedContainer> startAndReturnContainers(HtIntegratedDocker integratedDocker) {
         var projectDescription = getProjectDescription().get();
         var log = new GradleProjectLog(
                 ContainersTask.class,
@@ -64,29 +67,29 @@ public abstract class ContainersTask extends DefaultTask {
         return ProfileLog.withProfile(
                 "io.huskit.gradle.containers.plugin.internal.ContainersTask.getStartedContainers",
                 log,
-                () -> getStartedContainers(testContainersDelegate, log, projectDescription));
+                () -> getStartedContainers(integratedDocker, log, projectDescription));
     }
 
-    private List<StartedContainer> getStartedContainers(@Nullable TestContainersDelegate testContainersDelegate,
-                                                        GradleProjectLog log,
-                                                        ProjectDescription projectDescription) {
+    private Map<String, HtStartedContainer> getStartedContainers(HtIntegratedDocker integratedDocker,
+                                                                 GradleProjectLog log,
+                                                                 ProjectDescription projectDescription) {
         var containerRequestSpecs = getRequestedContainers().get();
         if (containerRequestSpecs.isEmpty()) {
-            return List.of();
+            return Map.of();
         }
         var startedContainers = getContainersBuildService().get().containers(
                 new ContainersServiceRequest(
                         log,
                         projectDescription,
                         getRequestedContainers(),
-                        testContainersDelegate
+                        integratedDocker
                 )
         );
         if (startedContainers.isEmpty()) {
             log.info("No containers were started");
         } else {
-            log.info("Started [{}] containers: [{}]", startedContainers.size(), startedContainers.stream()
-                    .map(StartedContainer::key)
+            log.info("Started [{}] containers: [{}]", startedContainers.size(), startedContainers.values().stream()
+                    .map(HtStartedContainer::id)
                     .collect(Collectors.toList())
             );
         }

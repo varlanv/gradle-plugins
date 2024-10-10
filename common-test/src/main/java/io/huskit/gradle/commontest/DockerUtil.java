@@ -28,7 +28,7 @@ public class DockerUtil {
     public void cleanupDocker() {
         if (DockerClientFactory.instance().isDockerAvailable()) {
             var client = DockerClientFactory.instance().client();
-            var listContainersCmd = client.listContainersCmd().withLabelFilter(Map.of("huskit_container", "true"));
+            var listContainersCmd = client.listContainersCmd().withLabelFilter(Map.of("HTCT_CONTAINER", "true"));
             var containers = listContainersCmd.exec();
             if (!containers.isEmpty()) {
                 if (containers.size() == 1) {
@@ -59,7 +59,7 @@ public class DockerUtil {
 
     public List<Container> findHuskitContainers() {
         var client = DockerClientFactory.instance().client();
-        var listContainersCmd = client.listContainersCmd().withLabelFilter(Map.of("huskit_container", "true"));
+        var listContainersCmd = client.listContainersCmd().withLabelFilter(Map.of("HTCT_CONTAINER", "true"));
         return listContainersCmd.exec();
     }
 
@@ -67,8 +67,8 @@ public class DockerUtil {
         var client = DockerClientFactory.instance().client();
         var listContainersCmd = client.listContainersCmd().withLabelFilter(
                 Map.of(
-                        "huskit_container", "true",
-                        "huskit_key", key
+                        "HTCT_CONTAINER", "true",
+                        "HTCT_GRADLE_ROOT_PROJECT", key
                 )
         );
         return listContainersCmd.exec();
@@ -77,7 +77,7 @@ public class DockerUtil {
     public List<Container> findHuskitContainersWithIds(String... ids) {
         var idSet = new HashSet<>(Arrays.asList(ids));
         return findHuskitContainers().stream()
-                .filter(container -> idSet.contains(container.getLabels().get("huskit_key")))
+                .filter(container -> idSet.contains(container.getLabels().get("HTCT_GRADLE_ROOT_PROJECT")))
                 .collect(Collectors.toList());
     }
 }

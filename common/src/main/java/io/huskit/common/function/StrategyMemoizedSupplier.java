@@ -39,6 +39,7 @@ public class StrategyMemoizedSupplier<T> implements MemoizedSupplier<T> {
     }
 
     @Override
+    @SuppressWarnings("PMD.NullAssignment")
     public void reset() {
         memoizedStrategy = null;
     }

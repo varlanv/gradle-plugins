@@ -13,7 +13,6 @@ assertJ = "3.26.3"
 jetbrains-annotations = "26.0.0"
 mockito = "5.14.1"
 easymock = "5.4.0"
-checkerframework = "3.48.0"
 github-docker = "3.4.0"
 json = "20240303"
 gradle-shadow-plugin = "8.3.3"
@@ -41,8 +40,6 @@ junit-platform-engine = { group = "org.junit.platform", name = "junit-platform-e
 jetbrains-annotations = { group = "org.jetbrains", name = "annotations", version.ref = "jetbrains-annotations" }
 mockito-core = { group = "org.mockito", name = "mockito-core", version.ref = "mockito" }
 easymock = { group = "org.easymock", name = "easymock", version.ref = "easymock" }
-checkerframework-qual = { group = "org.checkerframework", name = "checker-qual", version.ref = "checkerframework" }
-checkerframework-checker = { group = "org.checkerframework", name = "checker", version.ref = "checkerframework" }
 github-docker-java = { group = "com.github.docker-java", name = "docker-java", version.ref = "github-docker" }
 github-docker-transport = { group = "com.github.docker-java", name = "docker-java-transport-httpclient5", version.ref = "github-docker" }
 json = { group = "org.json", name = "json", version.ref = "json" }

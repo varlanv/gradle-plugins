@@ -1,5 +1,6 @@
 package io.huskit.gradle.containers.plugin.internal.spec;
 
+import io.huskit.containers.integration.ContainerSpec;
 import io.huskit.containers.model.ContainerType;
 import io.huskit.containers.model.id.ContainerKey;
 import io.huskit.containers.model.request.RequestedContainer;
@@ -34,6 +35,8 @@ public interface ContainerRequestSpec extends ContainerRequestSpecView, Named {
     Map<String, Object> keyProps();
 
     RequestedContainer toRequestedContainer();
+
+    ContainerSpec toContainerSpec();
 
     @Override
     default void port(Action<ContainerPortSpecView> portAction) {
