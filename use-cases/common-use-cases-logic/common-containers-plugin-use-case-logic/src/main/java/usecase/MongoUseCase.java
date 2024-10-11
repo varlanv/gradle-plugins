@@ -39,7 +39,8 @@ public class MongoUseCase {
             String messageMarker = "~_~~";
             System.out.println(messageMarker + mongoConnectionStringEnv + "=" + mongoConnectionString);
         } catch (Exception e) {
-            throw new RuntimeException(e);
+            e.printStackTrace();
+            throw new RuntimeException();
         } finally {
             System.out.printf("Mongo test body time: [%s]%n", Duration.ofMillis(System.currentTimeMillis() - timeBefore));
         }
