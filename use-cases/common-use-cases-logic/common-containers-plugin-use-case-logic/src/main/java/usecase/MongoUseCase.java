@@ -18,6 +18,7 @@ public class MongoUseCase {
         var timeBefore = System.currentTimeMillis();
         String mongoConnectionStringEnv = "MONGO_CONNECTION_STRING";
         String mongoConnectionString = System.getenv(mongoConnectionStringEnv);
+        System.out.println("Extracted mongo connection string: " + mongoConnectionString);
         try (MongoClient mongoClient = MongoClients.create(System.getenv(mongoConnectionStringEnv))) {
             MongoDatabase test = mongoClient.getDatabase("test");
             MongoCollection<Document> testCollection = test.getCollection("test_collection");
