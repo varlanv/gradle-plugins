@@ -1,7 +1,7 @@
 package io.huskit.containers.api.run;
 
-import io.huskit.common.HtStrings;
 import io.huskit.common.Mutable;
+import io.huskit.common.HtStrings;
 import io.huskit.containers.api.HtImgName;
 import io.huskit.containers.api.cli.CommandType;
 import lombok.Getter;
@@ -117,8 +117,6 @@ public class HtCmdRunSpecImpl implements HtRunSpec {
         processCmd.add("docker");
         processCmd.add("run");
         processCmd.add("-d");
-        processCmd.add("--network");
-        processCmd.add("host");
         remove.ifPresent(rm -> {
             if (rm) {
                 processCmd.add("--rm");
