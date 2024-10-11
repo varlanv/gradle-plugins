@@ -3,8 +3,8 @@ package io.huskit.containers.internal.cli;
 import io.huskit.common.HtStrings;
 import io.huskit.containers.api.HtContainer;
 import io.huskit.containers.api.cli.CommandType;
-import io.huskit.containers.internal.HtJsonContainer;
 import io.huskit.containers.internal.HtJson;
+import io.huskit.containers.internal.HtJsonContainer;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 
@@ -25,13 +25,17 @@ public class HtFindCliCtrsByIds {
     public Stream<HtContainer> stream() {
         try {
             var containers = cli.sendCommand(
-                    new CliCommand(CommandType.CONTAINERS_INSPECT, buildListContainersCommand(ids)).withLinePredicate(Predicate.not(String::isBlank)),
+                    new CliCommand(
+                            CommandType.CONTAINERS_INSPECT,
+                            buildListContainersCommand(ids)
+                    ).withLinePredicate(Predicate.not(String::isBlank)),
                     result -> {
                         return result.lines().stream()
                                 .map(HtJson::toMap)
                                 .map(map -> (HtContainer) new HtJsonContainer(map))
                                 .collect(Collectors.toList());
-                    });
+                    }
+            );
             return containers.stream();
         } catch (Exception e) {
             throw new IllegalStateException(String.format("Failed to find containers by ids - %s", ids), e);

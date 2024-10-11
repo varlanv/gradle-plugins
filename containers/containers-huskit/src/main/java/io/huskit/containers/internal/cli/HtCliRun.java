@@ -38,7 +38,8 @@ public class HtCliRun implements HtRun {
         runSpec.lookFor().ifPresent(lookFor -> parent.logs(id)
                 .follow()
                 .lookFor(LookFor.word(lookFor).withTimeout(runSpec.timeout()))
-                .await());
+                .await()
+        );
         return new HtLazyContainer(
                 id,
                 MemoizedSupplier.of(() -> new HtFindCliCtrsByIds(cli, Set.of(id)).stream()

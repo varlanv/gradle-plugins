@@ -1,8 +1,6 @@
 package io.huskit.common;
 
-import io.huskit.common.function.ThrowingConsumer;
-import io.huskit.common.function.ThrowingPredicate;
-import io.huskit.common.function.ThrowingSupplier;
+import io.huskit.common.function.*;
 import io.huskit.common.internal.DfMutable;
 
 import java.util.Optional;
@@ -27,9 +25,13 @@ public interface Mutable<T> {
 
     T or(T other);
 
+    <R> R mapOr(ThrowingFunction<T, R> mapper, ThrowingSupplier<R> other);
+
     T or(ThrowingSupplier<T> supplier);
 
     void ifPresent(ThrowingConsumer<T> consumer);
+
+    void ifPresentOrElse(ThrowingConsumer<T> consumer, ThrowingRunnable runnable);
 
     T require();
 

@@ -1,1 +1,2 @@
 io.huskit.gradle.SynchronizingTestListener
+io.huskit.gradle.ProfilingTestListener

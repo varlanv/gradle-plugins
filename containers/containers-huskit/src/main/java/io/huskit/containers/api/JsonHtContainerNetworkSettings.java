@@ -118,6 +118,9 @@ public class JsonHtContainerNetworkSettings implements HtContainerNetworkSetting
         var mappedPorts = new ArrayList<MappedPort>();
         for (var portEntry : ports.entrySet()) {
             var values = (List<Map<String, String>>) portEntry.getValue();
+            if (values.isEmpty()) {
+                throw new IllegalStateException(String.format("Port '%s' is not mapped to any host port", portEntry.getKey()));
+            }
             var mappedPort = values.get(0);
             var hostPort = Integer.parseInt(mappedPort.get("HostPort"));
             mappedPorts.add(new MappedPort(hostPort, Integer.parseInt(portEntry.getKey().split("/")[0])));

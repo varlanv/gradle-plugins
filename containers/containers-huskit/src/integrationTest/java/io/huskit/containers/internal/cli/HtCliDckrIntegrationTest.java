@@ -52,8 +52,8 @@ class HtCliDckrIntegrationTest implements DockerIntegrationTest {
 
     @TestTemplate
     @Execution(ExecutionMode.CONCURRENT)
-    @DisplayName("Integration with docker containers and images should work")
-    void docker_container_spec(HtCliDocker subject) {
+    @DisplayName("Integration with alpine docker container should work")
+    void docker_alpine_container_spec(HtCliDocker subject) {
         var containerRef = Mutable.<HtContainer>of();
         try {
             var containerEnv = Map.of(

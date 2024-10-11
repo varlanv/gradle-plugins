@@ -1,9 +1,7 @@
 package io.huskit.common.internal;
 
 import io.huskit.common.Mutable;
-import io.huskit.common.function.ThrowingConsumer;
-import io.huskit.common.function.ThrowingPredicate;
-import io.huskit.common.function.ThrowingSupplier;
+import io.huskit.common.function.*;
 import lombok.*;
 import lombok.experimental.NonFinal;
 import org.jetbrains.annotations.Nullable;
@@ -52,6 +50,13 @@ public class DfMutable<T> implements Mutable<T> {
 
     @Override
     @SneakyThrows
+    public <R> R mapOr(ThrowingFunction<T, R> mapper, ThrowingSupplier<R> other) {
+        var value = this.value;
+        return value != null ? Objects.requireNonNull(mapper.apply(value), "mapper") : Objects.requireNonNull(other.get(), "other");
+    }
+
+    @Override
+    @SneakyThrows
     public T or(ThrowingSupplier<T> supplier) {
         var value = this.value;
         return value != null ? value : Objects.requireNonNull(supplier.get(), "supplier");
@@ -63,6 +68,17 @@ public class DfMutable<T> implements Mutable<T> {
         var value = this.value;
         if (value != null) {
             consumer.accept(value);
+        }
+    }
+
+    @Override
+    @SneakyThrows
+    public void ifPresentOrElse(ThrowingConsumer<T> consumer, ThrowingRunnable runnable) {
+        var value = this.value;
+        if (value != null) {
+            consumer.accept(value);
+        } else {
+            runnable.run();
         }
     }
 

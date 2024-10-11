@@ -155,6 +155,7 @@ public class ApplyInternalPluginLogic {
                                 test.getOutputs().upToDateWhen(task -> false);
                                 test.testLogging(logging -> {
                                     logging.setShowStandardStreams(true);
+                                    logging.setShowStackTraces(true);
                                 });
                                 test.setFailFast(internalEnvironment.isCi());
                                 test.usesService(syncBuildService);

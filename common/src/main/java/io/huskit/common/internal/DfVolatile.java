@@ -1,9 +1,7 @@
 package io.huskit.common.internal;
 
 import io.huskit.common.Volatile;
-import io.huskit.common.function.ThrowingConsumer;
-import io.huskit.common.function.ThrowingPredicate;
-import io.huskit.common.function.ThrowingSupplier;
+import io.huskit.common.function.*;
 import lombok.*;
 import lombok.experimental.NonFinal;
 import org.jetbrains.annotations.Nullable;
@@ -78,6 +76,13 @@ public class DfVolatile<T> implements Volatile<T>, Serializable {
 
     @Override
     @SneakyThrows
+    public <R> R mapOr(ThrowingFunction<T, R> mapper, ThrowingSupplier<R> other) {
+        var val = value;
+        return val != null ? Objects.requireNonNull(mapper.apply(val), "mapper") : Objects.requireNonNull(other.get(), "other");
+    }
+
+    @Override
+    @SneakyThrows
     public T or(ThrowingSupplier<T> supplier) {
         var val = value;
         return val != null ? val : Objects.requireNonNull(supplier.get(), "supplier");
@@ -89,6 +94,17 @@ public class DfVolatile<T> implements Volatile<T>, Serializable {
         var val = value;
         if (val != null) {
             consumer.accept(val);
+        }
+    }
+
+    @Override
+    @SneakyThrows
+    public void ifPresentOrElse(ThrowingConsumer<T> consumer, ThrowingRunnable runnable) {
+        var val = value;
+        if (val != null) {
+            consumer.accept(val);
+        } else {
+            runnable.run();
         }
     }
 

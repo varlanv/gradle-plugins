@@ -12,6 +12,7 @@ import lombok.SneakyThrows;
 import lombok.With;
 
 import java.util.ArrayList;
+import java.util.LinkedHashSet;
 import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -128,7 +129,7 @@ public class HtCli {
                 line = shell.outLine();
             }
 
-            if (command.type() == CommandType.CONTAINERS_RUN) {
+            if (command.type() == CommandType.CONTAINERS_RUN || command.type() == CommandType.CONTAINERS_RUN_FOLLOW) {
                 containerIdsForCleanup.add(lines.get(0));
             }
             return resultConsumer.apply(new CommandResult(lines));
@@ -137,7 +138,7 @@ public class HtCli {
         private void stop() {
             if (isStopped.compareAndSet(false, true)) {
                 if (cleanupOnClose && !containerIdsForCleanup.isEmpty()) {
-                    new HtCliRm(parent, new HtCliRmSpec(containerIdsForCleanup).withForce().withVolumes()).exec();
+                    new HtCliRm(parent, new HtCliRmSpec(new LinkedHashSet<>(containerIdsForCleanup)).withForce().withVolumes()).exec();
                 }
                 shell.close();
             }
