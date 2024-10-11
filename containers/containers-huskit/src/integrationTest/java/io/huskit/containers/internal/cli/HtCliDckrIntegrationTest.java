@@ -178,6 +178,16 @@ class HtCliDckrIntegrationTest implements DockerIntegrationTest {
                     assertThat(containerGraphDriver.data()).isNotEmpty();
                     assertThat(containerGraphDriver.name()).isNotEmpty();
                 }
+                {
+                    var commandResult = subject.containers().execInContainer(
+                            containerRef.require().id(),
+                            "sh",
+                            List.of("-c", "echo $((1 + 1)) && echo $((2 + 2))")
+                    ).exec();
+                    assertThat(commandResult.lines()).containsExactly("2", "4");
+                    assertThat(subject.containers().logs(containerRef.require().id()).stream().collect(Collectors.toList()))
+                            .containsExactly("Hello World 1", "Hello World 2");
+                }
             }
         } finally {
             containerRef.ifPresent(container -> subject.containers().remove(container.id(), spec -> spec.withForce().withVolumes()).exec());
