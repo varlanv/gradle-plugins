@@ -1,5 +1,6 @@
 package io.huskit.containers.internal;
 
+import io.huskit.containers.api.container.HtJsonContainer;
 import io.huskit.gradle.commontest.UnitTest;
 import org.junit.jupiter.api.Test;
 

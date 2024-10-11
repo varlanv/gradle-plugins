@@ -25,9 +25,9 @@ public interface Mutable<T> {
 
     T or(T other);
 
-    <R> R mapOr(ThrowingFunction<T, R> mapper, ThrowingSupplier<R> other);
-
     T or(ThrowingSupplier<T> supplier);
+
+    <R> R mapOr(ThrowingFunction<T, R> mapper, ThrowingSupplier<R> other);
 
     void ifPresent(ThrowingConsumer<T> consumer);
 

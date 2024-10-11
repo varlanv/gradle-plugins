@@ -76,16 +76,16 @@ public class DfVolatile<T> implements Volatile<T>, Serializable {
 
     @Override
     @SneakyThrows
-    public <R> R mapOr(ThrowingFunction<T, R> mapper, ThrowingSupplier<R> other) {
+    public T or(ThrowingSupplier<T> supplier) {
         var val = value;
-        return val != null ? Objects.requireNonNull(mapper.apply(val), "mapper") : Objects.requireNonNull(other.get(), "other");
+        return val != null ? val : Objects.requireNonNull(supplier.get(), "supplier");
     }
 
     @Override
     @SneakyThrows
-    public T or(ThrowingSupplier<T> supplier) {
+    public <R> R mapOr(ThrowingFunction<T, R> mapper, ThrowingSupplier<R> other) {
         var val = value;
-        return val != null ? val : Objects.requireNonNull(supplier.get(), "supplier");
+        return val != null ? Objects.requireNonNull(mapper.apply(val), "mapper") : Objects.requireNonNull(other.get(), "other");
     }
 
     @Override

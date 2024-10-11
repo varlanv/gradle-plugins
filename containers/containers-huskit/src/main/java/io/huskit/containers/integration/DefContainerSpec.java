@@ -1,6 +1,6 @@
 package io.huskit.containers.integration;
 
-import io.huskit.containers.api.HtImgName;
+import io.huskit.containers.api.image.HtImgName;
 import io.huskit.containers.integration.mongo.ContainerHash;
 import io.huskit.containers.model.ContainerType;
 import io.huskit.containers.model.HtConstants;

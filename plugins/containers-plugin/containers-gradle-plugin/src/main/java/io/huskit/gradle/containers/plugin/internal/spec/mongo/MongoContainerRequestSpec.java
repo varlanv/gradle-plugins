@@ -1,7 +1,7 @@
 package io.huskit.gradle.containers.plugin.internal.spec.mongo;
 
 import io.huskit.common.Opt;
-import io.huskit.containers.api.HtImgName;
+import io.huskit.containers.api.image.HtImgName;
 import io.huskit.containers.integration.ContainerSpec;
 import io.huskit.containers.integration.DefContainerSpec;
 import io.huskit.containers.model.ContainerType;

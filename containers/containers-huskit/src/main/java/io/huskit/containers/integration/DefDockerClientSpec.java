@@ -2,7 +2,7 @@ package io.huskit.containers.integration;
 
 import io.huskit.common.Mutable;
 import io.huskit.common.Volatile;
-import io.huskit.containers.api.HtDocker;
+import io.huskit.containers.api.docker.HtDocker;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 

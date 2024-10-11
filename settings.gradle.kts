@@ -39,7 +39,6 @@ include(
         "common-test",
         "functional-test",
         "plugins:common-plugin",
-        "containers:containers-model",
         "containers:containers-core",
         "containers:containers-huskit",
         "plugins:containers-plugin:containers-gradle-plugin",

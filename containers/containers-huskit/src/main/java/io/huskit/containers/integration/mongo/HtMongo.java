@@ -2,10 +2,10 @@ package io.huskit.containers.integration.mongo;
 
 import io.huskit.common.Mutable;
 import io.huskit.common.port.DynamicContainerPort;
-import io.huskit.containers.api.HtContainer;
-import io.huskit.containers.api.HtContainers;
-import io.huskit.containers.api.HtDocker;
-import io.huskit.containers.api.HtImgName;
+import io.huskit.containers.api.container.HtContainer;
+import io.huskit.containers.api.container.HtContainers;
+import io.huskit.containers.api.docker.HtDocker;
+import io.huskit.containers.api.image.HtImgName;
 import io.huskit.containers.integration.*;
 import io.huskit.containers.model.ContainerType;
 import io.huskit.containers.model.HtConstants;

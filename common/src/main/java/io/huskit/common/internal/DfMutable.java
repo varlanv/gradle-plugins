@@ -50,16 +50,16 @@ public class DfMutable<T> implements Mutable<T> {
 
     @Override
     @SneakyThrows
-    public <R> R mapOr(ThrowingFunction<T, R> mapper, ThrowingSupplier<R> other) {
+    public T or(ThrowingSupplier<T> supplier) {
         var value = this.value;
-        return value != null ? Objects.requireNonNull(mapper.apply(value), "mapper") : Objects.requireNonNull(other.get(), "other");
+        return value != null ? value : Objects.requireNonNull(supplier.get(), "supplier");
     }
 
     @Override
     @SneakyThrows
-    public T or(ThrowingSupplier<T> supplier) {
+    public <R> R mapOr(ThrowingFunction<T, R> mapper, ThrowingSupplier<R> other) {
         var value = this.value;
-        return value != null ? value : Objects.requireNonNull(supplier.get(), "supplier");
+        return value != null ? Objects.requireNonNull(mapper.apply(value), "mapper") : Objects.requireNonNull(other.get(), "other");
     }
 
     @Override

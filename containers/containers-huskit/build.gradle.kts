@@ -21,8 +21,8 @@ dependencies {
     implementation(projects.common)
     implementation(projects.logging.loggingApi)
     implementation(libs.json)
-    implementation(libs.github.docker.java)
-    implementation(libs.github.docker.transport)
-    implementation(libs.bundles.testcontainers)
+    testImplementation(libs.github.docker.java)
+    testImplementation(libs.github.docker.transport)
+    testImplementation(libs.bundles.testcontainers)
     testImplementation(libs.mongoDriver)
 }

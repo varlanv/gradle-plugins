@@ -3,6 +3,7 @@ package io.huskit.containers.integration.mongo;
 import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoClients;
 import com.mongodb.client.model.Filters;
+import io.huskit.containers.http.npipe.NamedPipeSocket;
 import io.huskit.containers.model.HtConstants;
 import io.huskit.gradle.commontest.DockerIntegrationTest;
 import io.huskit.log.ProfileLog;
@@ -13,12 +14,8 @@ import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.testcontainers.DockerClientFactory;
 
-import java.net.URI;
-import java.net.http.HttpClient;
-import java.net.http.HttpRequest;
-import java.net.http.HttpResponse;
+import java.nio.charset.StandardCharsets;
 import java.time.Duration;
-import java.util.concurrent.Executors;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -47,8 +44,6 @@ class HtMongoIntegrationTest implements DockerIntegrationTest {
     @Test
     @Disabled
     void http_client() {
-        var executor = Executors.newFixedThreadPool(1);
-        final var before = System.currentTimeMillis();
         var client = DockerClientFactory.instance().client();
         client.authCmd().exec();
         ProfileLog.withProfile("test", () -> {
@@ -61,25 +56,26 @@ class HtMongoIntegrationTest implements DockerIntegrationTest {
     @Disabled
     @SneakyThrows
     void npipe() {
-        System.loadLibrary("npipe");
-        HttpClient client = HttpClient.newHttpClient();
-        var uri = URI.create("npipe:////./pipe/docker_engine");
-        // Create a URI for the Docker API using named pipes
-        URI dockerUri = new URI("http://localhost:2375/v1.41/containers/json");
+        try (var namedPipeSocket = new NamedPipeSocket()) {
+            namedPipeSocket.connect(null); // No endpoint required
+            var out = namedPipeSocket.getOutputStream();
+            var in = namedPipeSocket.getInputStream();
 
-        // Create an HTTP request to Docker's API
-        HttpRequest request = HttpRequest.newBuilder()
-                .uri(dockerUri)
-                .GET()
-                .build();
+            // Send HTTP request for 'docker ps' (list containers)
+            var request = "GET /containers/json HTTP/1.1\r\n"
+                    + "Host: localhost\r\n"
+                    + "Connection: close\r\n"
+                    + "\r\n";
+            out.write(request.getBytes(StandardCharsets.UTF_8));
+            out.flush();
 
-        // Send the request and retrieve the response
-        HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
-
-        // Output the response
-        System.out.println("Response code: " + response.statusCode());
-        System.out.println("Response body: " + response.body());
-
+            // Read and print the response
+            var buffer = new byte[8192];
+            int bytesRead;
+            while ((bytesRead = in.read(buffer)) != -1) {
+                System.out.write(buffer, 0, bytesRead);
+            }
+        }
     }
 
     private void verifyMongoConnection(String connectionString) {
