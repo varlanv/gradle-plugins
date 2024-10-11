@@ -122,6 +122,9 @@ workflows:
         - matches:
             pattern: fix/.*
             value: << pipeline.git.branch >>
+        - matches:
+            pattern: bugfix/.*
+            value: << pipeline.git.branch >>
     jobs:
       - gradle-build:
           name: Compile
