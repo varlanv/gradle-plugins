@@ -22,6 +22,7 @@ import org.junit.jupiter.api.TestTemplate;
 import org.junit.jupiter.api.extension.*;
 import org.junit.jupiter.api.parallel.Execution;
 import org.junit.jupiter.api.parallel.ExecutionMode;
+import org.testcontainers.containers.GenericContainer;
 
 import java.time.Duration;
 import java.util.Arrays;
@@ -91,6 +92,7 @@ class HtCliDckrIntegrationTest implements DockerIntegrationTest {
                 var containerNetwork = container.network();
                 assertThat(containerNetwork.ports().get(0)).isIn(mappedPort1, mappedPort2).isNotEqualTo(containerNetwork.ports().get(1));
                 assertThat(containerNetwork.ports().get(1)).isIn(mappedPort1, mappedPort2);
+                new GenericContainer<>().start();
             }
             {
                 var logs = subject.containers().logs(containerRef.require().id())
