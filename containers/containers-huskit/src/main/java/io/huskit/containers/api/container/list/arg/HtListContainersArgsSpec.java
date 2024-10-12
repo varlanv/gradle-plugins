@@ -9,4 +9,6 @@ public interface HtListContainersArgsSpec {
     HtListContainersArgsSpec withNameFilter(CharSequence name);
 
     HtListContainersArgsSpec withLabelFilter(CharSequence label, CharSequence value);
+
+    HtListContainersArgsSpec withLabelFilter(CharSequence label);
 }

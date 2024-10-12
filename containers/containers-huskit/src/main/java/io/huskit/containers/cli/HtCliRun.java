@@ -3,7 +3,6 @@ package io.huskit.containers.cli;
 import io.huskit.common.function.MemoizedSupplier;
 import io.huskit.containers.api.container.HtContainer;
 import io.huskit.containers.api.container.logs.LookFor;
-import io.huskit.containers.api.container.run.HtCmdRunSpecImpl;
 import io.huskit.containers.api.container.run.HtRun;
 import io.huskit.containers.api.container.HtLazyContainer;
 import io.huskit.containers.model.HtConstants;
@@ -18,7 +17,7 @@ import java.util.function.Predicate;
 class HtCliRun implements HtRun {
     HtCliContainers parent;
     HtCli cli;
-    HtCmdRunSpecImpl runSpec;
+    CmdRunSpec runSpec;
     HtCliDckrSpec dockerSpec;
 
     @Override

@@ -44,4 +44,15 @@ public class HtCollections {
         }
         return (T) val;
     }
+
+    public static <K, V> void putOrAdd(Map<K, List<V>> map, K key, V value) {
+        var list = map.get(key);
+        if (list != null) {
+            list.add(value);
+        } else {
+            var newList = new ArrayList<V>();
+            newList.add(value);
+            map.put(key, newList);
+        }
+    }
 }

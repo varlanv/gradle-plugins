@@ -1,7 +1,9 @@
-package io.huskit.containers.api.container.run;
+package io.huskit.containers.cli;
 
-import io.huskit.common.Mutable;
 import io.huskit.common.HtStrings;
+import io.huskit.common.Mutable;
+import io.huskit.containers.api.container.run.HtRunSpec;
+import io.huskit.containers.api.container.run.RunCommand;
 import io.huskit.containers.api.image.HtImgName;
 import io.huskit.containers.model.CommandType;
 import lombok.Getter;
@@ -14,7 +16,7 @@ import java.util.stream.Collectors;
 
 @With
 @RequiredArgsConstructor
-public class HtCmdRunSpecImpl implements HtRunSpec {
+class CmdRunSpec implements HtRunSpec {
 
     HtImgName imgName;
     Mutable<Map<String, String>> labels = Mutable.of();
@@ -27,7 +29,7 @@ public class HtCmdRunSpecImpl implements HtRunSpec {
     Mutable<Duration> timeout = Mutable.of(Duration.ZERO);
 
     @Override
-    public HtCmdRunSpecImpl withLabels(Map<String, ?> labels) {
+    public CmdRunSpec withLabels(Map<String, ?> labels) {
         this.labels.set(
                 Collections.unmodifiableMap(
                         labels.entrySet().stream()
@@ -43,7 +45,7 @@ public class HtCmdRunSpecImpl implements HtRunSpec {
     }
 
     @Override
-    public HtCmdRunSpecImpl withEnv(Map<String, ?> labels) {
+    public CmdRunSpec withEnv(Map<String, ?> labels) {
         this.env.set(
                 Collections.unmodifiableMap(
                         labels.entrySet().stream()
@@ -59,7 +61,7 @@ public class HtCmdRunSpecImpl implements HtRunSpec {
     }
 
     @Override
-    public HtCmdRunSpecImpl withRemove() {
+    public CmdRunSpec withRemove() {
         this.remove.set(true);
         return this;
     }
@@ -86,12 +88,12 @@ public class HtCmdRunSpecImpl implements HtRunSpec {
     }
 
     @Override
-    public HtCmdRunSpecImpl withCommand(CharSequence command, Object... args) {
+    public CmdRunSpec withCommand(CharSequence command, Object... args) {
         return withCommand(command, Arrays.asList(args));
     }
 
     @Override
-    public HtCmdRunSpecImpl withCommand(CharSequence command, Iterable<?> args) {
+    public CmdRunSpec withCommand(CharSequence command, Iterable<?> args) {
         var argsList = new ArrayList<String>(4);
         for (var arg : args) {
             argsList.add(arg.toString());
@@ -106,7 +108,7 @@ public class HtCmdRunSpecImpl implements HtRunSpec {
     }
 
     @Override
-    public HtCmdRunSpecImpl withLookFor(CharSequence text, Duration timeout) {
+    public CmdRunSpec withLookFor(CharSequence text, Duration timeout) {
         this.lookFor.set(text.toString());
         this.timeout.set(timeout);
         return this;

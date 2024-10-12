@@ -2,16 +2,12 @@ package io.huskit.containers.cli;
 
 import io.huskit.containers.api.container.HtContainer;
 import io.huskit.containers.api.container.list.HtListContainers;
-import io.huskit.containers.api.container.list.arg.HtListContainersArgsSpec;
 import io.huskit.containers.model.CommandType;
 import lombok.RequiredArgsConstructor;
 import lombok.With;
 
 import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Objects;
 import java.util.Set;
-import java.util.function.Consumer;
 import java.util.stream.Stream;
 
 @With
@@ -19,14 +15,7 @@ import java.util.stream.Stream;
 class HtCliListCtrs implements HtListContainers {
 
     HtCli cli;
-    List<HtArg> cmdArgs;
-
-    @Override
-    public HtListContainers withArgs(Consumer<HtListContainersArgsSpec> args) {
-        var spec = new HtCliListCtrsArgsSpec();
-        args.accept(spec);
-        return this.withCmdArgs(Objects.requireNonNull(spec.build()));
-    }
+    HtCliListCtrsArgsSpec args;
 
     @Override
     public Stream<HtContainer> asStream() {
@@ -47,7 +36,7 @@ class HtCliListCtrs implements HtListContainers {
                         new CliCommand(
                                 CommandType.CONTAINERS_LIST,
                                 new FindIdsCommand(
-                                        cmdArgs
+                                        args.build()
                                 ).list()
                         ),
                         CommandResult::lines

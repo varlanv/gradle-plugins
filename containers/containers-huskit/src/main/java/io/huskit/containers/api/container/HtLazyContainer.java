@@ -1,19 +1,23 @@
 package io.huskit.containers.api.container;
 
+import io.huskit.common.function.MemoizedSupplier;
+import io.huskit.common.function.ThrowingSupplier;
 import lombok.Getter;
-import lombok.RequiredArgsConstructor;
 
 import java.time.Instant;
 import java.util.List;
 import java.util.Map;
-import java.util.function.Supplier;
 
-@RequiredArgsConstructor
 public class HtLazyContainer implements HtContainer {
 
     @Getter
     String id;
-    Supplier<HtContainer> delegate;
+    MemoizedSupplier<HtContainer> delegate;
+
+    public HtLazyContainer(String id, ThrowingSupplier<HtContainer> delegate) {
+        this.id = id;
+        this.delegate = MemoizedSupplier.of(delegate);
+    }
 
     @Override
     public String name() {

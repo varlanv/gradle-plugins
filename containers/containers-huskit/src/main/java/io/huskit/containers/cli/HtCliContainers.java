@@ -2,15 +2,14 @@ package io.huskit.containers.cli;
 
 import io.huskit.containers.api.container.HtContainer;
 import io.huskit.containers.api.container.HtContainers;
+import io.huskit.containers.api.container.HtCreate;
+import io.huskit.containers.api.container.HtStart;
 import io.huskit.containers.api.container.exec.HtExec;
 import io.huskit.containers.api.container.list.HtListContainers;
 import io.huskit.containers.api.container.list.arg.HtListContainersArgsSpec;
 import io.huskit.containers.api.container.logs.HtLogs;
 import io.huskit.containers.api.container.rm.HtRm;
-import io.huskit.containers.api.container.run.HtCmdRunSpecImpl;
-import io.huskit.containers.api.container.run.HtRmSpec;
-import io.huskit.containers.api.container.run.HtRun;
-import io.huskit.containers.api.container.run.HtRunSpec;
+import io.huskit.containers.api.container.run.*;
 import io.huskit.containers.api.image.HtImgName;
 import lombok.RequiredArgsConstructor;
 
@@ -26,12 +25,14 @@ class HtCliContainers implements HtContainers {
 
     @Override
     public HtListContainers list() {
-        return new HtCliListCtrs(cli, List.of());
+        return new HtCliListCtrs(cli, new HtCliListCtrsArgsSpec());
     }
 
     @Override
-    public HtListContainers list(Consumer<HtListContainersArgsSpec> args) {
-        return new HtCliListCtrs(cli, List.of()).withArgs(args);
+    public HtListContainers list(Consumer<HtListContainersArgsSpec> argsAction) {
+        var args = new HtCliListCtrsArgsSpec();
+        argsAction.accept(args);
+        return new HtCliListCtrs(cli, args);
     }
 
     @Override
@@ -64,14 +65,14 @@ class HtCliContainers implements HtContainers {
         return new HtCliRun(
                 this,
                 cli,
-                new HtCmdRunSpecImpl(HtImgName.ofPrefix(dockerSpec.imagePrefix(), dockerImageName)),
+                new CmdRunSpec(HtImgName.ofPrefix(dockerSpec.imagePrefix(), dockerImageName)),
                 dockerSpec
         );
     }
 
     @Override
     public HtRun run(CharSequence dockerImageName, Consumer<HtRunSpec> spec) {
-        var runSpec = new HtCmdRunSpecImpl(HtImgName.ofPrefix(dockerSpec.imagePrefix(), dockerImageName));
+        var runSpec = new CmdRunSpec(HtImgName.ofPrefix(dockerSpec.imagePrefix(), dockerImageName));
         spec.accept(runSpec);
         return new HtCliRun(
                 this,
@@ -79,6 +80,21 @@ class HtCliContainers implements HtContainers {
                 runSpec,
                 dockerSpec
         );
+    }
+
+    @Override
+    public HtCreate create(CharSequence dockerImageName) {
+        return null;
+    }
+
+    @Override
+    public HtCreate create(CharSequence dockerImageName, Consumer<HtCreateSpec> specAction) {
+        return null;
+    }
+
+    @Override
+    public HtStart start(CharSequence containerId) {
+        return null;
     }
 
     @Override
@@ -122,7 +138,7 @@ class HtCliContainers implements HtContainers {
     }
 
     @Override
-    public <T extends CharSequence> HtCliRm remove(Collection<T> containerIds, Consumer<HtRmSpec> specAction) {
+    public HtCliRm remove(Iterable<? extends CharSequence> containerIds, Consumer<HtRmSpec> specAction) {
         var rmSpec = new HtCliRmSpec(containerIds);
         specAction.accept(rmSpec);
         return new HtCliRm(cli, new HtCliRmSpec(containerIds));

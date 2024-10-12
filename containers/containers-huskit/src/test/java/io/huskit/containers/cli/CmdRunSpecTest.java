@@ -2,7 +2,6 @@ package io.huskit.containers.cli;
 
 import io.huskit.common.HtStrings;
 import io.huskit.containers.api.image.HtImgName;
-import io.huskit.containers.api.container.run.HtCmdRunSpecImpl;
 import io.huskit.gradle.commontest.UnitTest;
 import org.junit.jupiter.api.Test;
 
@@ -10,13 +9,13 @@ import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-class HtCmdRunSpecImplTest implements UnitTest {
+class CmdRunSpecTest implements UnitTest {
 
     HtImgName imageName = HtImgName.of("any:image");
 
     @Test
     void toCommand__no_args__returns_default_command() {
-        var subject = new HtCmdRunSpecImpl(imageName);
+        var subject = new CmdRunSpec(imageName);
 
         var actual = subject.toCommand();
 
@@ -28,7 +27,7 @@ class HtCmdRunSpecImplTest implements UnitTest {
 
     @Test
     void toCommand__with_one_label__returns_command_with_label() {
-        var subject = new HtCmdRunSpecImpl(imageName)
+        var subject = new CmdRunSpec(imageName)
                 .withLabels(Map.of("key", "value"));
 
         var actual = subject.toCommand();
@@ -42,7 +41,7 @@ class HtCmdRunSpecImplTest implements UnitTest {
 
     @Test
     void toCommand__with_two_labels__returns_command_with_labels() {
-        var subject = new HtCmdRunSpecImpl(imageName)
+        var subject = new CmdRunSpec(imageName)
                 .withLabels(Map.of("key1", "value1", "key2", "value2"));
 
         var actual = subject.toCommand();
@@ -57,7 +56,7 @@ class HtCmdRunSpecImplTest implements UnitTest {
 
     @Test
     void toCommand__with_remove__returns_command_with_remove() {
-        var subject = new HtCmdRunSpecImpl(imageName)
+        var subject = new CmdRunSpec(imageName)
                 .withRemove();
 
         var actual = subject.toCommand();
@@ -70,7 +69,7 @@ class HtCmdRunSpecImplTest implements UnitTest {
 
     @Test
     void toCommand__with_one_env__returns_command_with_env() {
-        var subject = new HtCmdRunSpecImpl(imageName)
+        var subject = new CmdRunSpec(imageName)
                 .withEnv(Map.of("key", "value"));
 
         var actual = subject.toCommand();
@@ -84,7 +83,7 @@ class HtCmdRunSpecImplTest implements UnitTest {
 
     @Test
     void toCommand__with_two_envs__returns_command_with_envs() {
-        var subject = new HtCmdRunSpecImpl(imageName)
+        var subject = new CmdRunSpec(imageName)
                 .withEnv(Map.of("key1", "value1", "key2", "value2"));
 
         var actual = subject.toCommand();
@@ -99,7 +98,7 @@ class HtCmdRunSpecImplTest implements UnitTest {
 
     @Test
     void toCommand__with_command__returns_command_with_additional_command() {
-        var subject = new HtCmdRunSpecImpl(imageName)
+        var subject = new CmdRunSpec(imageName)
                 .withCommand("command", "arg1", "arg2");
 
         var actual = subject.toCommand();
@@ -113,7 +112,7 @@ class HtCmdRunSpecImplTest implements UnitTest {
 
     @Test
     void toCommand__with_label_and_remove_and_command__returns_command_with_label_and_remove_and_additional_command() {
-        var subject = new HtCmdRunSpecImpl(imageName)
+        var subject = new CmdRunSpec(imageName)
                 .withLabels(Map.of("key", "value"))
                 .withRemove()
                 .withCommand("command", "arg1", "arg2");

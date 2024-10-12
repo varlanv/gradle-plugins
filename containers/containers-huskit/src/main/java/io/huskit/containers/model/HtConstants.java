@@ -5,6 +5,7 @@ import org.intellij.lang.annotations.PrintFormat;
 
 import java.time.Duration;
 import java.time.temporal.ChronoUnit;
+import java.util.function.Consumer;
 import java.util.function.Predicate;
 
 @NoArgsConstructor(access = lombok.AccessLevel.PRIVATE)
@@ -22,6 +23,18 @@ public class HtConstants {
     public static class Cleanup {
 
         public static final Duration DEFAULT_CLEANUP_AFTER = Duration.of(18, ChronoUnit.HOURS);
+    }
+
+    @NoArgsConstructor(access = lombok.AccessLevel.PRIVATE)
+    public static class Consumers {
+
+        private static final Consumer<?> NO_OP = t -> {
+        };
+
+        @SuppressWarnings("unchecked")
+        public static <T> Consumer<T> noop() {
+            return (Consumer<T>) NO_OP;
+        }
     }
 
     @NoArgsConstructor(access = lombok.AccessLevel.PRIVATE)

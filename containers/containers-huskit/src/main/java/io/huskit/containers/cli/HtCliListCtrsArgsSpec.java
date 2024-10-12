@@ -45,6 +45,11 @@ class HtCliListCtrsArgsSpec implements HtListContainersArgsSpec {
         return this;
     }
 
+    @Override
+    public HtListContainersArgsSpec withLabelFilter(CharSequence label) {
+        return withLabelFilter(label, "");
+    }
+
     public List<HtArg> build() {
         var all = this.all.require();
         var result = new ArrayList<HtArg>(filters.size());

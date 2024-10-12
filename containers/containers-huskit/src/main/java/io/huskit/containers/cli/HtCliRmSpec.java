@@ -4,7 +4,10 @@ import io.huskit.common.Mutable;
 import io.huskit.common.Volatile;
 import io.huskit.containers.api.container.run.HtRmSpec;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 
 class HtCliRmSpec implements HtRmSpec {
 
@@ -12,13 +15,13 @@ class HtCliRmSpec implements HtRmSpec {
     Mutable<Boolean> force = Volatile.of(false);
     Mutable<Boolean> volumes = Volatile.of(false);
 
-    public HtCliRmSpec(Collection<? extends CharSequence> containerIds) {
-        if (containerIds.isEmpty()) {
-            throw new IllegalArgumentException("Container IDs must not be empty");
-        }
-        this.containerIds = new ArrayList<>(containerIds.size());
+    public HtCliRmSpec(Iterable<? extends CharSequence> containerIds) {
+        this.containerIds = new ArrayList<>(5);
         for (var containerId : containerIds) {
             this.containerIds.add(containerId.toString());
+        }
+        if (this.containerIds.isEmpty()) {
+            throw new IllegalArgumentException("Container IDs must not be empty");
         }
     }
 
