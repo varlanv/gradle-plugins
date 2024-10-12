@@ -10,7 +10,7 @@ public class DockerSockets {
     public DockerSocket pickDefault() {
         return DEFAULT_SOCKET.syncSetOrGet(() -> {
             if (Os.WINDOWS.isCurrent()) {
-                return new DfDockerSocket(NpipeSocket::new);
+                return new DockerNpipe();
             } else {
                 throw new IllegalStateException("Unsupported OS");
             }

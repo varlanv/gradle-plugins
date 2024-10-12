@@ -18,6 +18,7 @@ public class HtConstants {
     public static final String CONTAINER_LABEL = "HTCT_CONTAINER";
     public static final String CONTAINER_PROJECT_KEY = "HTCT_PROJECT_KEY";
     public static final String GRADLE_ROOT_PROJECT = "HTCT_GRADLE_ROOT_PROJECT";
+    public static final String NPIPE_SOCKET = "\\\\.\\pipe\\docker_engine";
 
     @NoArgsConstructor(access = lombok.AccessLevel.PRIVATE)
     public static class Cleanup {

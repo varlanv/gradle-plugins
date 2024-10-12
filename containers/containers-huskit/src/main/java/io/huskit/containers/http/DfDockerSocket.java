@@ -14,7 +14,6 @@ import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Supplier;
 
@@ -45,6 +44,7 @@ class DfDockerSocket implements DockerSocket {
         int status = -1;
         int i;
         var headerLineCount = 0;
+        var characters = new ArrayList<>();
         var charBuffer = CharBuffer.allocate(1024);
         while (true) {
             i = is.read();
@@ -52,7 +52,7 @@ class DfDockerSocket implements DockerSocket {
             if (ch == '\n') {
                 break;
             }
-            charBuffer.put(ch);
+            characters.add(ch);
 //            if (headerLineCount == 0) {
 //                var split = headerLine.split(" ");
 //                status = Integer.parseInt(split[1]);
@@ -66,11 +66,11 @@ class DfDockerSocket implements DockerSocket {
 
         var transferEncoding = headers.get("Transfer-Encoding");
         var isChunked = transferEncoding != null && transferEncoding.equals("chunked");
-        var lines = new ArrayList<String>();
 
         String bodyLine = "";
         String prevBodyLine = null;
         var bodyLineCount = 0;
+        var lines = new ArrayList<String>();
         if (status != 204) {
 //            while ((bodyLine = is.readLine()) != null) {
             while (true) {

@@ -4,6 +4,7 @@ import io.huskit.containers.api.container.HtContainers;
 import io.huskit.containers.api.image.HtImages;
 import io.huskit.containers.api.volume.HtVolumes;
 import lombok.RequiredArgsConstructor;
+import lombok.SneakyThrows;
 
 import java.util.Objects;
 
@@ -40,6 +41,7 @@ final class HtHttpDckr implements HtHttpDocker {
     }
 
     @Override
+    @SneakyThrows
     public void close() {
         spec.socket().close();
     }

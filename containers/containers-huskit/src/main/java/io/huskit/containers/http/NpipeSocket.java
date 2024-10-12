@@ -1,5 +1,6 @@
 package io.huskit.containers.http;
 
+import io.huskit.containers.model.HtConstants;
 import lombok.SneakyThrows;
 import lombok.experimental.NonFinal;
 
@@ -30,7 +31,7 @@ final class NpipeSocket extends Socket {
     }
 
     public NpipeSocket() {
-        this("\\\\.\\pipe\\docker_engine");
+        this(HtConstants.NPIPE_SOCKET);
     }
 
     @Override
