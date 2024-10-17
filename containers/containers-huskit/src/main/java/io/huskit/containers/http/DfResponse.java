@@ -5,8 +5,8 @@ import lombok.RequiredArgsConstructor;
 
 @Getter
 @RequiredArgsConstructor
-class DfDockerResponse implements DockerResponse {
+class DfResponse implements Http.Response {
 
-    Head head;
-    Body body;
+    Http.Head head;
+    Http.Body body;
 }

@@ -13,12 +13,12 @@ public class HttpInspect {
     HtHttpDockerSpec dockerSpec;
 
     public HtContainer inspect(CharSequence id) {
-        var response = dockerSpec.socket().send(new HttpInspectSpec(id).toRequest());
+        var response = dockerSpec.socket().send(new HttpInspectSpec(id).toRequest(), r -> HtJson.toMapList(r.reader()));
         var status = response.head().status();
         if (status != 200) {
             throw new RuntimeException(String.format("Failed to inspect container, received status %s - %s", status, response.body().list()));
         }
-        return new HtJsonContainer(HtJson.toMap(response.body().singleLine()));
+        return new HtJsonContainer(response.body().single());
     }
 
     public Stream<HtContainer> inspect(Iterable<? extends CharSequence> containerIds) {
@@ -26,9 +26,8 @@ public class HttpInspect {
                 .flatMap(ids -> {
                     var url = "/containers/" + String.join(",", ids) + "/json";
                     var request = new HttpInspectSpec(url).toRequest();
-                    var response = dockerSpec.socket().send(request);
+                    var response = dockerSpec.socket().send(request, r -> HtJson.toMapList(r.reader()));
                     return response.body().stream()
-                            .flatMap(HtJson::toMapStream)
                             .map(HtJsonContainer::new);
                 });
     }

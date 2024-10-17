@@ -1,12 +1,15 @@
 package io.huskit.containers.http;
 
+import io.huskit.common.function.ThrowingFunction;
+
+import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
 public interface DockerSocket {
 
-    CompletableFuture<DockerResponse> sendAsync(DockerRequest request);
+    <T> CompletableFuture<Http.Response<T>> sendAsync(Http.Request request, ThrowingFunction<Npipe.HttpFlow, List<T>> action);
 
-    DockerResponse send(DockerRequest request);
+    <T> Http.Response<T> send(Http.Request request, ThrowingFunction<Npipe.HttpFlow, List<T>> action);
 
     void close();
 }
