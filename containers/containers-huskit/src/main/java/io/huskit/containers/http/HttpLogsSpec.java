@@ -18,8 +18,8 @@ class HttpLogsSpec {
         this.containerId = containerId.toString();
     }
 
-    public DockerRequest toRequest() {
-        return new DfDockerRequest(
+    public Http.Request toRequest() {
+        return new DfHttpRequest(
                 String.format(
                         requestFormat,
                         "GET", "/containers/" + containerId + "/logs?stdout=true&stderr=true", "localhost"

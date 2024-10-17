@@ -17,12 +17,12 @@ public class HttpCreate implements HtCreate {
 
     @Override
     public HtContainer exec() {
-        var response = dockerSpec.socket().send(httpCreateSpec.toRequest(image));
+        var response = dockerSpec.socket().send(httpCreateSpec.toRequest(image), r -> HtJson.toMapList(r.reader()));
         var status = response.head().status();
         if (status != 201) {
             throw new RuntimeException(String.format("Failed to create container, received status %s - %s", status, response.body().list()));
         }
-        var id = (String) HtJson.toMap(response.body().singleLine()).get("Id");
+        var id = (String) response.body().single().get("Id");
         return new HtLazyContainer(id, () -> httpInspect.inspect(id));
     }
 }

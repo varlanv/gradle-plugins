@@ -17,8 +17,8 @@ public class HttpInspectSpec {
         this.id = id.toString();
     }
 
-    public DockerRequest toRequest() {
-        return new DfDockerRequest(
+    public Http.Request toRequest() {
+        return new DfHttpRequest(
                 String.format(requestFormat, "GET", "/containers/" + id + "/json", "localhost")
                         .getBytes(StandardCharsets.UTF_8)
         );

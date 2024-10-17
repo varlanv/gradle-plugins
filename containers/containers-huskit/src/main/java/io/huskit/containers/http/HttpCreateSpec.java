@@ -101,7 +101,7 @@ class HttpCreateSpec implements HtCreateSpec {
         return this;
     }
 
-    public DockerRequest toRequest(HtImgName image) {
+    public Http.Request toRequest(HtImgName image) {
         this.body.put("Image", image.reference());
         var body = HtJson.toJson(this.body);
         var bodyBytes = body.getBytes(StandardCharsets.UTF_8);
@@ -113,6 +113,6 @@ class HttpCreateSpec implements HtCreateSpec {
                 "localhost",
                 contentLength
         ) + body;
-        return new DfDockerRequest(request.getBytes(StandardCharsets.UTF_8));
+        return new DfHttpRequest(request.getBytes(StandardCharsets.UTF_8));
     }
 }

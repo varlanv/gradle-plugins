@@ -27,11 +27,15 @@ class HtHttpListContainers implements HtListContainers {
         return Stream.of(true)
                 .flatMap(ignore -> {
                     var url = "/containers/json" + spec.toParameters();
-                    var request = new DfDockerRequest(String.format(requestFormat,
-                            "GET", url, "localhost").getBytes(StandardCharsets.UTF_8));
-                    var response = dockerSpec.socket().send(request);
-                    return response.body().stream()
-                            .flatMap(HtJson::toMapStream)
+                    var request = new DfHttpRequest(
+                            String.format(
+                                    requestFormat,
+                                    "GET", url, "localhost"
+                            ).getBytes(StandardCharsets.UTF_8)
+                    );
+                    return dockerSpec.socket().send(request, r -> HtJson.toMapList(r.reader()))
+                            .body()
+                            .stream()
                             .map(HtJsonContainer::new);
                 });
     }
