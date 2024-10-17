@@ -4,6 +4,8 @@ import io.huskit.common.function.ThrowingRunnable;
 import io.huskit.common.function.ThrowingSupplier;
 import lombok.SneakyThrows;
 
+import java.util.ArrayList;
+
 public interface Sneaky {
 
     @SuppressWarnings("unchecked")
@@ -24,6 +26,27 @@ public interface Sneaky {
 
     static <T> ThrowingSupplier<T> thrown(ThrowingSupplier<? extends Throwable> e) {
         return () -> hide(e);
+    }
+
+    static void doTry(ThrowingRunnable... runnables) {
+        var exceptions = new ArrayList<Exception>(runnables.length);
+        for (var runnable : runnables) {
+            try {
+                runnable.run();
+            } catch (Exception e) {
+                exceptions.add(e);
+            }
+        }
+        if (!exceptions.isEmpty()) {
+            var runtimeException = new RuntimeException();
+            exceptions.forEach(runtimeException::addSuppressed);
+            throw runtimeException;
+        }
+    }
+
+    @SuppressWarnings("unchecked")
+    static <T> T hideType(Object anyType) {
+        return (T) anyType;
     }
 
     @SneakyThrows

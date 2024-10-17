@@ -1,10 +1,9 @@
 package io.huskit.containers.cli;
 
 import io.huskit.containers.api.container.exec.HtExec;
-import io.huskit.containers.model.CommandType;
 import lombok.RequiredArgsConstructor;
 
-import java.util.function.Function;
+import java.util.concurrent.CompletableFuture;
 
 @RequiredArgsConstructor
 class HtCliExec implements HtExec {
@@ -13,13 +12,19 @@ class HtCliExec implements HtExec {
     HtCliExecSpec spec;
 
     @Override
-    public CommandResult exec() {
-        return cli.sendCommand(
-                new CliCommand(
-                        CommandType.CONTAINERS_EXEC,
-                        spec.toCommand()
-                ),
-                Function.identity()
-        );
+    public void exec() {
+//        return cli.sendCommand(
+//                new CliCommand(
+//                        CommandType.CONTAINERS_EXEC,
+//                        spec.toCommand()
+//                ),
+//                Function.identity()
+//        );
+    }
+
+    @Override
+    public CompletableFuture<Void> execAsync() {
+        return null;
+//        return CompletableFuture.supplyAsync(this::exec);
     }
 }

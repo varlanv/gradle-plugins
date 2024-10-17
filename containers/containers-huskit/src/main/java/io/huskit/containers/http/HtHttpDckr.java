@@ -43,6 +43,6 @@ final class HtHttpDckr implements HtHttpDocker {
     @Override
     @SneakyThrows
     public void close() {
-        spec.socket().close();
+        spec.socket().release();
     }
 }
