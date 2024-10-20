@@ -3,8 +3,6 @@ package io.huskit.containers.http;
 import io.huskit.containers.api.container.rm.HtRm;
 import lombok.RequiredArgsConstructor;
 
-import java.util.List;
-
 @RequiredArgsConstructor
 final class HttpRm implements HtRm {
 
@@ -17,9 +15,8 @@ final class HttpRm implements HtRm {
         var ran = false;
         for (var containerId : containerIds) {
             dockerSpec.socket().send(
-                    new Request<>(
-                            spec.toRequest(containerId),
-                            List::of
+                    new Request(
+                            spec.toRequest(containerId)
                     )
             );
             ran = true;

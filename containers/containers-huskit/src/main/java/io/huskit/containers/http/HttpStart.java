@@ -5,8 +5,6 @@ import io.huskit.containers.api.container.HtLazyContainer;
 import io.huskit.containers.api.container.HtStart;
 import lombok.RequiredArgsConstructor;
 
-import java.util.List;
-
 @RequiredArgsConstructor
 final class HttpStart implements HtStart {
 
@@ -17,9 +15,8 @@ final class HttpStart implements HtStart {
     @Override
     public HtContainer exec() {
         dockerSpec.socket().send(
-                new Request<>(
-                        httpStartSpec.toRequest(containerId),
-                        r -> List.of()
+                new Request(
+                        httpStartSpec.toRequest(containerId)
                 ).withExpectedStatus(204)
         );
         return new HtLazyContainer(

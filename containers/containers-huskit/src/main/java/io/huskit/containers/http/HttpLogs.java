@@ -1,7 +1,6 @@
 package io.huskit.containers.http;
 
 import io.huskit.common.function.CloseableAccessor;
-import io.huskit.common.function.ThrowingFunction;
 import io.huskit.containers.api.container.logs.HtFollowedLogs;
 import io.huskit.containers.api.container.logs.HtLogs;
 import io.huskit.containers.api.container.logs.Logs;
@@ -18,62 +17,6 @@ final class HttpLogs implements HtLogs {
         this.dockerSpec = dockerSpec;
         this.containerId = containerId.toString();
     }
-
-//    @Override
-//    public void acceptStream(ThrowingConsumer<Logs> consumer) {
-//        asyncStreamOpen().thenAccept(consumer.toUnchecked()).whenComplete(handleStreamClose()).join();
-//    }
-//
-//    @Override
-//    public <T> T applyStream(ThrowingFunction<Logs, T> function) {
-//        return asyncStreamOpen().thenApply(function.toUnchecked()).whenComplete(handleStreamClose()).join();
-//    }
-//
-//    @Override
-//    public CompletableFuture<CloseableAccessor<Logs>> asyncStream() {
-//        return asyncStreamOpen().thenApply(CloseableAccessor::of);
-//    }
-//
-//    @Override
-//    public void acceptStdOut(ThrowingConsumer<Stream<String>> consumer) {
-//        asyncStdOut()
-//                .thenAccept(stdOutProducer ->
-//                        stdOutProducer.accept(stdOut -> {
-//                            consumer.toUnchecked().accept(stdOut);
-//                            return null;
-//                        }))
-//                .join();
-//    }
-//
-//    @Override
-//    public <T> T applyStdOut(ThrowingFunction<Stream<String>, T> function) {
-//        return asyncStdOut()
-//                .thenApply(logs -> {
-//
-//                })
-//                .join();
-//    }
-//
-//    @Override
-//    public <T> CompletableFuture<Consumer<Function<Stream<String>, T>>> asyncStdOut() {
-//        CompletableFuture<Consumer<Function<Stream<String>, T>>> consumerCompletableFuture = asyncStreamOpen().thenApply(logs -> fn -> applyLogs(logs, logs.stdOut(), fn));
-//        return consumerCompletableFuture;
-//    }
-//
-//    @Override
-//    public void acceptStdErr(ThrowingConsumer<Stream<String>> consumer) {
-//        asyncStdErr().thenAccept(consumer.toUnchecked()).join();
-//    }
-//
-//    @Override
-//    public <T> T applyStdErr(ThrowingFunction<Stream<String>, T> function) {
-//        return asyncStdErr().thenApply(function.toUnchecked()).join();
-//    }
-//
-//    @Override
-//    public <T> CompletableFuture<Consumer<Function<Stream<String>, T>>> asyncStdErr() {
-//        return asyncStreamOpen().thenApply(logs -> fn -> applyLogs(logs, logs.stdErr(), fn));
-//    }
 
     @Override
     public CloseableAccessor<Logs> stream() {
@@ -117,18 +60,16 @@ final class HttpLogs implements HtLogs {
 
     private CompletableFuture<Logs> asyncStreamOpen() {
         return dockerSpec.socket().sendAsync(
-                        new Request<>(
-                                dockerSpec.requests().get(new HttpLogsSpec(containerId)),
-                                mapLogStreams()
+                        new Request(
+                                dockerSpec.requests().get(new HttpLogsSpec(containerId))
                         ).withExpectedStatus(200)
                 )
-                .thenApply(response -> response.body().value());
-    }
+                .thenApply(response ->
+                        new Logs.DfLogs(
+                                response.stdOutReader().orElseThrow(),
+                                response.stdErrReader().orElseThrow()
 
-    private ThrowingFunction<Npipe.HttpFlow, Logs> mapLogStreams() {
-        return response -> new Logs.DfLogs(
-                response.stdOut(),
-                response.stdErr()
-        );
+                        )
+                );
     }
 }

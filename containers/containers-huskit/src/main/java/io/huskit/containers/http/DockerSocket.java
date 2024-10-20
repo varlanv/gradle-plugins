@@ -1,7 +1,6 @@
 package io.huskit.containers.http;
 
 import io.huskit.common.Mutable;
-import io.huskit.common.function.ThrowingFunction;
 import io.huskit.containers.api.container.logs.LookFor;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
@@ -12,9 +11,9 @@ import java.util.concurrent.CompletableFuture;
 
 interface DockerSocket {
 
-    <T> Http.Response<T> send(Request<T> request);
+    Http.RawResponse send(Request request);
 
-    <T> CompletableFuture<Http.Response<T>> sendAsync(Request<T> request);
+    CompletableFuture<Http.RawResponse> sendAsync(Request request);
 
     void release();
 
@@ -37,12 +36,12 @@ final class DfCloseableDockerSocket implements DockerSocket.CloseableDockerSocke
     DockerSocket delegate;
 
     @Override
-    public <T> Http.Response<T> send(Request<T> request) {
+    public Http.RawResponse send(Request request) {
         return delegate.send(request);
     }
 
     @Override
-    public <T> CompletableFuture<Http.Response<T>> sendAsync(Request<T> request) {
+    public CompletableFuture<Http.RawResponse> sendAsync(Request request) {
         return delegate.sendAsync(request);
     }
 
@@ -57,29 +56,25 @@ final class DfCloseableDockerSocket implements DockerSocket.CloseableDockerSocke
     }
 }
 
-final class Request<T> {
+final class Request {
 
     @Getter
     Http.Request http;
-    @Getter
-    ThrowingFunction<Npipe.HttpFlow, T> action;
     Mutable<RepeatRead> repeatReadPredicate;
     Mutable<ExpectedStatus> expectedStatus;
 
-    public Request(Http.Request http,
-                   ThrowingFunction<Npipe.HttpFlow, T> action) {
+    public Request(Http.Request http) {
         this.http = http;
-        this.action = action;
         this.repeatReadPredicate = Mutable.of();
         this.expectedStatus = Mutable.of();
     }
 
-    public Request<T> withRepeatReadPredicate(LookFor lookFor, Duration backoff) {
+    public Request withRepeatReadPredicate(LookFor lookFor, Duration backoff) {
         repeatReadPredicate.set(new RepeatRead(lookFor, backoff));
         return this;
     }
 
-    public Request<T> withExpectedStatus(Integer status) {
+    public Request withExpectedStatus(Integer status) {
         expectedStatus.set(new ExpectedStatus(status));
         return this;
     }

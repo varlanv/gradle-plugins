@@ -3,7 +3,6 @@ package io.huskit.containers.http;
 import io.huskit.containers.api.container.exec.HtExec;
 import lombok.RequiredArgsConstructor;
 
-import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
 @RequiredArgsConstructor
@@ -20,9 +19,8 @@ final class HttpExec implements HtExec {
     @Override
     public CompletableFuture<Void> execAsync() {
         return dockerSpec.socket().sendAsync(
-                new Request<>(
-                        dockerSpec.requests().post(httpExecSpec),
-                        r -> List.of()
+                new Request(
+                        dockerSpec.requests().post(httpExecSpec)
                 )
         ).thenApply(v -> null);
     }

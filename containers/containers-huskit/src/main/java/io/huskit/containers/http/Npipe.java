@@ -7,10 +7,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.experimental.NonFinal;
 
-import java.io.BufferedReader;
-import java.io.InputStreamReader;
-import java.io.Reader;
-import java.io.StringReader;
+import java.io.*;
 import java.nio.ByteBuffer;
 import java.nio.CharBuffer;
 import java.nio.channels.AsynchronousFileChannel;
@@ -41,23 +38,24 @@ final class Npipe implements DockerSocket {
     }
 
     @Override
-    public <T> Http.Response<T> send(Request<T> request) {
+    public Http.RawResponse send(Request request) {
         return sendAsyncInternal(request).join();
     }
 
     @Override
-    public <T> CompletableFuture<Http.Response<T>> sendAsync(Request<T> request) {
+    public CompletableFuture<Http.RawResponse> sendAsync(Request request) {
         return sendAsyncInternal(request);
     }
 
-    private <T> CompletableFuture<Http.Response<T>> sendAsyncInternal(Request<T> request) {
+    private CompletableFuture<Http.RawResponse> sendAsyncInternal(Request request) {
         var state = stateSupplier.get();
-        return state
-                .write(request)
+        var rawResponse = new CompletableFuture<Http.RawResponse>();
+        state.write(request)
                 .thenCompose(r -> read(
-                                new ReadState<>(
+                                new ReadState(
                                         request,
-                                        state.decoder
+                                        state.decoder,
+                                        rawResponse
                                 )
                         )
                 )
@@ -80,14 +78,15 @@ final class Npipe implements DockerSocket {
                     }
                     state.lock.release();
                 });
+        return rawResponse;
     }
 
-    private <T> CompletableFuture<Http.Response<T>> read(ReadState<T> readState) {
+    private CompletableFuture<Http.RawResponse> read(ReadState readState) {
         return readLoop(readState)
                 .thenApply(ReadState::toResponse);
     }
 
-    private <T> CompletableFuture<ReadState<T>> readLoop(ReadState<T> readState) {
+    private CompletableFuture<ReadState> readLoop(ReadState readState) {
         return readAndProcess(readState)
                 .thenCompose(r -> {
                     if (r.shouldReadMore) {
@@ -118,7 +117,7 @@ final class Npipe implements DockerSocket {
                                             if (backoff > 0) {
                                                 Thread.sleep(backoff);
                                             }
-                                            var rs = new ReadState<>(r.request, r.decoder);
+                                            var rs = new ReadState(r.request, r.decoder, r.response);
                                             rs.isHead = false;
                                             return readLoop(rs);
                                         } catch (InterruptedException e) {
@@ -133,7 +132,7 @@ final class Npipe implements DockerSocket {
                 });
     }
 
-    private <T> CompletableFuture<ReadState<T>> readAndProcess(ReadState<T> readState) {
+    private CompletableFuture<ReadState> readAndProcess(ReadState readState) {
         return readOnce(readState)
                 .thenApply(r -> {
                     processBuffer(r);
@@ -142,7 +141,7 @@ final class Npipe implements DockerSocket {
     }
 
     @SneakyThrows
-    private <T> void processBuffer(ReadState<T> readState) {
+    private void processBuffer(ReadState readState) {
         readState.readBuffer.flip();
         readState.chars = readState.decoder.decode(readState.readBuffer);
         if (readState.isHead) {
@@ -155,7 +154,7 @@ final class Npipe implements DockerSocket {
         readState.readBuffer.clear();
     }
 
-    private <T> void readHead(ReadState<T> readState) {
+    private void readHead(ReadState readState) {
         while (readState.chars.hasRemaining()) {
             var ch = readState.chars.get();
             var prevCh = readState.prevChar;
@@ -227,7 +226,7 @@ final class Npipe implements DockerSocket {
         }
     }
 
-    private <T> void readBody(ReadState<T> readState) {
+    private void readBody(ReadState readState) {
         if (readState.status == 204) {
             readState.shouldReadMore = false;
             readState.bodyNotPresent = true;
@@ -328,13 +327,13 @@ final class Npipe implements DockerSocket {
         }
     }
 
-    private <T> CompletableFuture<ReadState<T>> readOnce(ReadState<T> readState) {
-        var readOpCompletion = new CompletableFuture<ReadState<T>>();
+    private CompletableFuture<ReadState> readOnce(ReadState readState) {
+        var readOpCompletion = new CompletableFuture<ReadState>();
         var state = stateSupplier.get();
         state.channel.read(readState.readBuffer, 0, readState, new CompletionHandler<>() {
 
             @Override
-            public void completed(Integer result, ReadState<T> readState) {
+            public void completed(Integer result, ReadState readState) {
                 readState.resultSize = result;
                 readOpCompletion.complete(readState);
             }
@@ -380,7 +379,7 @@ final class Npipe implements DockerSocket {
             );
         }
 
-        public CompletableFuture<Integer> write(Request<?> request) {
+        public CompletableFuture<Integer> write(Request request) {
             var body = request.http().body();
             var bb = ByteBuffer.wrap(body);
             return CompletableFuture.supplyAsync(() -> {
@@ -452,10 +451,11 @@ final class Npipe implements DockerSocket {
     }
 
     @RequiredArgsConstructor
-    private static final class ReadState<T> {
+    private static final class ReadState {
 
-        Request<T> request;
+        Request request;
         CharsetDecoder decoder;
+        CompletableFuture<Http.RawResponse> response;
         int readBufferSize = 4096;
         int lineBufferSize = 256;
         int chunkSizeBufferSize = 16;
@@ -608,32 +608,8 @@ final class Npipe implements DockerSocket {
             stderrLinesCount++;
         }
 
-        private static final class PipeStream {
-
-            Supplier<Stream<String>> streamSupplier;
-
-            private PipeStream(Pipe pipe, int linesCount) {
-                if (pipe == null || linesCount == 0) {
-                    streamSupplier = Stream::empty;
-                } else {
-                    var source = pipe.source();
-                    var reader = new BufferedReader(new InputStreamReader(Channels.newInputStream(source), StandardCharsets.UTF_8));
-                    streamSupplier = () ->
-                            Stream.generate(() -> {
-                                        try {
-                                            return reader.readLine();
-                                        } catch (Exception e) {
-                                            throw Sneaky.rethrow(e);
-                                        }
-                                    })
-                                    .limit(linesCount)
-                                    .onClose(Sneaky.quiet(source::close));
-                }
-            }
-        }
-
         @SneakyThrows
-        public MyHttpResponse<T> toResponse() {
+        public Http.RawResponse toResponse() {
             var body = buildBody();
             return new MyHttpResponse<>(
                     new DfHead(status, headers),
@@ -655,11 +631,11 @@ final class Npipe implements DockerSocket {
         }
 
         private Stream<String> buildStdoutStream() {
-            return new PipeStream(stdoutPipe, stdoutLinesCount).streamSupplier.get();
+            return new PipeStream(stdoutPipe, stdoutLinesCount).streamSupplier().get();
         }
 
         private Stream<String> buildStrderrStream() {
-            return new PipeStream(stderrPipe, stderrLinesCount).streamSupplier.get();
+            return new PipeStream(stderrPipe, stderrLinesCount).streamSupplier().get();
         }
 
         private String buildBody() {

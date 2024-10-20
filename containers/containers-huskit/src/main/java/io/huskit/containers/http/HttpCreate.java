@@ -24,15 +24,12 @@ final class HttpCreate implements HtCreate {
     public CompletableFuture<HtContainer> execAsync() {
         return dockerSpec.socket()
                 .sendAsync(
-                        new Request<>(
-                                dockerSpec.requests().post(httpCreateSpec),
-                                r -> HtJson.toMap(
-                                        r.reader()
-                                )
+                        new Request(
+                                dockerSpec.requests().post(httpCreateSpec)
                         ).withExpectedStatus(201)
                 )
                 .thenApply(response -> {
-                    var id = (String) response.body().value().get("Id");
+                    var id = (String) HtJson.toMap(response.bodyReader().orElseThrow()).get("Id");
                     return new HtLazyContainer(id, () -> httpInspect.inspect(id));
                 });
     }

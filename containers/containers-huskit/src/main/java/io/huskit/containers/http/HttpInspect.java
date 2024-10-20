@@ -25,12 +25,14 @@ final class HttpInspect {
 
     public CompletableFuture<HtContainer> inspectAsync(CharSequence id) {
         return dockerSpec.socket().sendAsync(
-                new Request<>(
-                        dockerSpec.requests().get(new HttpInspectSpec(id)),
-                        r -> HtJson.toMap(
-                                r.reader()
-                        )
+                new Request(
+                        dockerSpec.requests().get(new HttpInspectSpec(id))
                 ).withExpectedStatus(200)
-        ).thenApply(response -> new HtJsonContainer(response.body().value()));
+        ).thenApply(response ->
+                new HtJsonContainer(
+                        HtJson.toMap(
+                                response.bodyReader().orElseThrow()
+                        )
+                ));
     }
 }

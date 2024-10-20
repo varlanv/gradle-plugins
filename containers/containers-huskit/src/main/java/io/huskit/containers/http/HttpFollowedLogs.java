@@ -65,19 +65,14 @@ final class HttpFollowedLogs implements HtFollowedLogs {
         return this.streamAsyncInternal(Function.identity());
     }
 
-    private CompletableFuture<Logs> streamAsyncInternal(Function<Request<Logs>, Request<Logs>> requestAction) {
+    private CompletableFuture<Logs> streamAsyncInternal(Function<Request, Request> requestAction) {
         return dockerSpec.socket()
                 .sendAsync(
                         requestAction.apply(
-                                new Request<>(
-                                        dockerSpec.requests().get(logsSpec),
-                                        this::getLogs
+                                new Request(
+                                        dockerSpec.requests().get(logsSpec)
                                 ).withExpectedStatus(200)
                         )
-                ).thenApply(response -> response.body().value());
-    }
-
-    private Logs getLogs(Npipe.HttpFlow r) {
-        return new Logs.DfLogs(r.stdOut(), r.stdErr());
+                ).thenApply(response -> new Logs.DfLogs(response.stdOutReader().orElse(null), response.stdErrReader().orElse(null)));
     }
 }
