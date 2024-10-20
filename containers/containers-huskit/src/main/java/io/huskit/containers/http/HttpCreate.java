@@ -25,7 +25,7 @@ public class HttpCreate implements HtCreate {
     public CompletableFuture<HtContainer> execAsync() {
         return dockerSpec.socket()
                 .sendAsync(
-                        new DockerSocket.Request<>(
+                        new Request<>(
                                 dockerSpec.requests().post(httpCreateSpec),
                                 r -> List.of(
                                         HtJson.toMap(

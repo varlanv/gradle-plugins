@@ -41,16 +41,16 @@ final class Npipe implements DockerSocket {
     }
 
     @Override
-    public <T> Http.Response<T> send(DockerSocket.Request<T> request) {
+    public <T> Http.Response<T> send(Request<T> request) {
         return sendAsyncInternal(request).join();
     }
 
     @Override
-    public <T> CompletableFuture<Http.Response<T>> sendAsync(DockerSocket.Request<T> request) {
+    public <T> CompletableFuture<Http.Response<T>> sendAsync(Request<T> request) {
         return sendAsyncInternal(request);
     }
 
-    private <T> CompletableFuture<Http.Response<T>> sendAsyncInternal(DockerSocket.Request<T> request) {
+    private <T> CompletableFuture<Http.Response<T>> sendAsyncInternal(Request<T> request) {
         var state = stateSupplier.get();
         return state
                 .write(request)
@@ -380,7 +380,7 @@ final class Npipe implements DockerSocket {
             );
         }
 
-        public CompletableFuture<Integer> write(DockerSocket.Request<?> request) {
+        public CompletableFuture<Integer> write(Request<?> request) {
             var body = request.http().body();
             var bb = ByteBuffer.wrap(body);
             return CompletableFuture.supplyAsync(() -> {
@@ -454,7 +454,7 @@ final class Npipe implements DockerSocket {
     @RequiredArgsConstructor
     private static class ReadState<T> {
 
-        DockerSocket.Request<T> request;
+        Request<T> request;
         CharsetDecoder decoder;
         int readBufferSize = 4096;
         int lineBufferSize = 256;

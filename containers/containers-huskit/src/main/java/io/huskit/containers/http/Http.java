@@ -36,6 +36,13 @@ public interface Http {
         Body<T> body();
     }
 
+    interface RawResponse {
+
+        Head head();
+
+        Reader bodyReader();
+    }
+
     interface Head {
 
         Integer status();

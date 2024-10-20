@@ -40,7 +40,7 @@ class HtHttpListContainers implements HtListContainers {
 
     private <R> CompletableFuture<R> send(Function<Stream<HtJsonContainer>, R> action) {
         return dockerSpec.socket().sendAsync(
-                        new DockerSocket.Request<>(
+                        new Request<>(
                                 dockerSpec.requests().get(spec),
                                 response -> HtJson.toMapList(
                                         response.reader()

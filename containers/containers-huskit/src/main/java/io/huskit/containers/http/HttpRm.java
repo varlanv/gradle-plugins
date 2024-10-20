@@ -17,7 +17,7 @@ public class HttpRm implements HtRm {
         var ran = false;
         for (var containerId : containerIds) {
             dockerSpec.socket().send(
-                    new DockerSocket.Request<>(
+                    new Request<>(
                             spec.toRequest(containerId),
                             List::of
                     )

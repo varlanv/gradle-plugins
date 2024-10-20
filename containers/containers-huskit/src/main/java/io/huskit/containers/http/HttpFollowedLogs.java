@@ -66,11 +66,11 @@ class HttpFollowedLogs implements HtFollowedLogs {
         return this.streamAsyncInternal(Function.identity());
     }
 
-    private CompletableFuture<Logs> streamAsyncInternal(Function<DockerSocket.Request<Logs>, DockerSocket.Request<Logs>> requestAction) {
+    private CompletableFuture<Logs> streamAsyncInternal(Function<Request<Logs>, Request<Logs>> requestAction) {
         return dockerSpec.socket()
                 .sendAsync(
                         requestAction.apply(
-                                new DockerSocket.Request<>(
+                                new Request<>(
                                         dockerSpec.requests().get(logsSpec),
                                         this::getLogs
                                 ).withExpectedStatus(200)

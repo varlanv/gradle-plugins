@@ -118,7 +118,7 @@ public class HttpLogs implements HtLogs {
 
     private CompletableFuture<Logs> asyncStreamOpen() {
         return dockerSpec.socket().sendAsync(
-                        new DockerSocket.Request<>(
+                        new Request<>(
                                 dockerSpec.requests().get(new HttpLogsSpec(containerId)),
                                 mapLogStreams()
                         ).withExpectedStatus(200)

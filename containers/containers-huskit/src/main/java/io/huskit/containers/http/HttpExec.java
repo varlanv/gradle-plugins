@@ -20,7 +20,7 @@ class HttpExec implements HtExec {
     @Override
     public CompletableFuture<Void> execAsync() {
         return dockerSpec.socket().sendAsync(
-                new DockerSocket.Request<>(
+                new Request<>(
                         dockerSpec.requests().post(httpExecSpec),
                         r -> List.of()
                 )

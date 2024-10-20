@@ -184,7 +184,7 @@ public class NpipeIntegrationTest implements DockerIntegrationTest {
             ThrowingRunnable r = () -> {
                 var before = System.currentTimeMillis();
                 subject.sendAsync(
-                                new DockerSocket.Request<>(
+                                new Request<>(
                                         httpRequests.get(HtUrl.of("/containers/json?all=true")),
                                         httpFlow -> new JSONArray(
                                                 new JSONTokener(
