@@ -1,8 +1,10 @@
 package io.huskit.containers.api.container.exec;
 
-import io.huskit.containers.cli.CommandResult;
+import java.util.concurrent.CompletableFuture;
 
 public interface HtExec {
 
-    CommandResult exec();
+    void exec();
+
+    CompletableFuture<Void> execAsync();
 }

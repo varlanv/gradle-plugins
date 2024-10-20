@@ -7,8 +7,8 @@ import java.util.Map;
 
 @Getter
 @RequiredArgsConstructor
-class DfHead implements Head {
+class DfHead implements Http.Head {
 
-    int status;
+    Integer status;
     Map<String, String> headers;
 }

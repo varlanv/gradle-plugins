@@ -2,9 +2,9 @@ package io.huskit.containers.cli;
 
 import io.huskit.common.function.MemoizedSupplier;
 import io.huskit.containers.api.container.HtContainer;
+import io.huskit.containers.api.container.HtLazyContainer;
 import io.huskit.containers.api.container.logs.LookFor;
 import io.huskit.containers.api.container.run.HtRun;
-import io.huskit.containers.api.container.HtLazyContainer;
 import io.huskit.containers.model.HtConstants;
 import lombok.RequiredArgsConstructor;
 import lombok.With;
@@ -35,7 +35,6 @@ class HtCliRun implements HtRun {
         runSpec.lookFor().ifPresent(lookFor -> parent.logs(id)
                 .follow()
                 .lookFor(LookFor.word(lookFor).withTimeout(runSpec.timeout()))
-                .await()
         );
         return new HtLazyContainer(
                 id,

@@ -71,7 +71,11 @@ public class DockerImagesStash {
     }
 
     public static Command smallImageBusyCommand() {
-        return new Command("sh", List.of("-c", "echo 'Hello World 1' && echo 'Hello World 2' && tail -f /dev/null"));
+        return new Command("sh", List.of("-c", "echo 'Hello World 1' && echo 'Hello World 123' && tail -f /dev/null"));
+    }
+
+    public static Command smallImageInfinitePrintCommand() {
+        return new Command("sh", List.of("-c", "count=1; while true; do echo \\\"Hello World $count\\\"; count=$((count+1)); sleep 1; done"));
     }
 
     public static String defaultSmall() {

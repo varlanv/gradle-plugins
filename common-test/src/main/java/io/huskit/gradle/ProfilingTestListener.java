@@ -26,9 +26,10 @@ public class ProfilingTestListener implements TestExecutionListener {
     public void executionFinished(TestIdentifier testIdentifier, TestExecutionResult testExecutionResult) {
         if (testIdentifier.isTest()) {
             var uniqueId = testIdentifier.getUniqueId();
-            var millis = syncMap.get(uniqueId);
-            if (millis != null) {
-                System.out.printf("Test '%s' finished in '%s'\n", uniqueId, Duration.ofMillis(System.currentTimeMillis() - millis));
+            var millisBefore = syncMap.get(uniqueId);
+            if (millisBefore != null) {
+                var time = System.currentTimeMillis() - millisBefore;
+                System.out.printf("Test '%s' finished in '%s'\n", uniqueId, time > 1000 ? Duration.ofMillis(time) : time + "ms");
                 syncMap.remove(uniqueId);
             }
         }

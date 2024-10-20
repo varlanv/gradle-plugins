@@ -8,6 +8,26 @@ class LookForNothing implements LookFor {
     static final LookForNothing INSTANCE = new LookForNothing();
 
     @Override
+    public LookFor onlyInStdOut() {
+        return this;
+    }
+
+    @Override
+    public LookFor onlyInStdErr() {
+        return this;
+    }
+
+    @Override
+    public Boolean isOnlyInStdOut() {
+        return false;
+    }
+
+    @Override
+    public Boolean isOnlyInStdErr() {
+        return false;
+    }
+
+    @Override
     public LookFor withTimeout(Duration timeout) {
         return this;
     }

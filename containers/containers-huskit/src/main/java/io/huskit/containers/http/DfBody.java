@@ -8,22 +8,22 @@ import java.util.stream.Stream;
 
 @Getter
 @RequiredArgsConstructor
-class DfBody implements Body {
+class DfBody<T> implements Http.Body<T> {
 
-    List<String> lines;
+    List<T> lines;
 
     @Override
-    public List<String> list() {
+    public List<T> list() {
         return lines;
     }
 
     @Override
-    public Stream<String> stream() {
+    public Stream<T> stream() {
         return lines.stream();
     }
 
     @Override
-    public String singleLine() {
+    public T single() {
         if (lines.size() == 1) {
             return lines.get(0);
         } else if (lines.isEmpty()) {

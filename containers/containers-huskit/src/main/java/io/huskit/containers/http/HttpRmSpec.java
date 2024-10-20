@@ -35,9 +35,9 @@ public class HttpRmSpec implements HtRmSpec {
         return this;
     }
 
-    public DockerRequest toRequest(CharSequence containerId) {
+    public Http.Request toRequest(CharSequence containerId) {
         var url = getUrl(containerId.toString());
-        return new DfDockerRequest(
+        return new DfHttpRequest(
                 String.format(requestFormat, "DELETE", url, "localhost").getBytes(StandardCharsets.UTF_8)
         );
     }

@@ -14,10 +14,9 @@ public class HttpStartSpec {
             + "Connection: keep-alive%n"
             + "Content-Type: application/json%n"
             + "%n";
-    ;
 
-    public DockerRequest toRequest(String containerId) {
-        return new DfDockerRequest(
+    public Http.Request toRequest(String containerId) {
+        return new DfHttpRequest(
                 String.format(requestFormat, "POST", "/containers/" + containerId + "/start", "localhost")
                         .getBytes(StandardCharsets.UTF_8)
         );
