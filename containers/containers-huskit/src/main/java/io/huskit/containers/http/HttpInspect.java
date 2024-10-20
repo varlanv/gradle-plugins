@@ -31,7 +31,7 @@ final class HttpInspect {
         ).thenApply(response ->
                 new HtJsonContainer(
                         HtJson.toMap(
-                                response.bodyReader().orElseThrow()
+                                response.bodyReader()
                         )
                 ));
     }

@@ -46,7 +46,7 @@ final class HtHttpListContainers implements HtListContainers {
                 )
                 .thenApply(response ->
                         action.apply(
-                                HtJson.toMapList(response.bodyReader().orElseThrow())
+                                HtJson.toMapList(response.bodyReader())
                                         .stream()
                                         .map(HtJsonContainer::new)
                         )

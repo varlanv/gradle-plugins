@@ -66,8 +66,8 @@ final class HttpLogs implements HtLogs {
                 )
                 .thenApply(response ->
                         new Logs.DfLogs(
-                                response.stdOutReader().orElseThrow(),
-                                response.stdErrReader().orElseThrow()
+                                response.stdOutReader(),
+                                response.stdErrReader()
 
                         )
                 );

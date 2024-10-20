@@ -184,16 +184,19 @@ public class NpipeIntegrationTest implements DockerIntegrationTest {
             ThrowingRunnable r = () -> {
                 var before = System.currentTimeMillis();
                 subject.sendAsync(
-                                new Request<>(
-                                        httpRequests.get(HtUrl.of("/containers/json?all=true")),
-                                        httpFlow -> new JSONArray(
-                                                new JSONTokener(
-                                                        httpFlow.reader()
-                                                )
-                                        ).toList()
+                                new Request(
+                                        httpRequests.get(
+                                                HtUrl.of("/containers/json?all=true")
+                                        )
                                 )
                         )
-                        .thenAccept(it -> System.out.println(it.body().value()))
+                        .thenApplyAsync(rawResponse ->
+                                new JSONArray(
+                                        new JSONTokener(
+                                                rawResponse.bodyReader()
+                                        )
+                                ).toList())
+                        .thenAccept(System.out::println)
                         .whenComplete((it, e) -> System.out.println("Time: " + (System.currentTimeMillis() - before) + "ms"))
                         .join();
             };

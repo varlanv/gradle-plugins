@@ -2,12 +2,12 @@ package io.huskit.containers.http;
 
 import io.huskit.common.Mutable;
 import lombok.Getter;
+import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 
 import java.io.Reader;
 import java.util.Map;
 import java.util.NoSuchElementException;
-import java.util.Optional;
 
 public interface Http {
 
@@ -43,37 +43,37 @@ public interface Http {
 
         Head head();
 
-        Optional<Reader> bodyReader();
+        Reader bodyReader();
 
-        Optional<Reader> stdOutReader();
+        Reader stdOutReader();
 
-        Optional<Reader> stdErrReader();
+        Reader stdErrReader();
 
         @RequiredArgsConstructor
         class BodyRawResponse implements RawResponse {
 
             @Getter
             Head head;
+            @NonNull
             Reader bodyReader;
 
             @Override
-            public Optional<Reader> bodyReader() {
-                return Optional.of(bodyReader);
+            public Reader bodyReader() {
+                return bodyReader;
             }
 
             @Override
-            public Optional<Reader> stdOutReader() {
-                return Optional.empty();
+            public Reader stdOutReader() {
+                throw new RuntimeException("StdOut not available");
             }
 
             @Override
-            public Optional<Reader> stdErrReader() {
-                return Optional.empty();
+            public Reader stdErrReader() {
+                throw new RuntimeException("StdErr not available");
             }
         }
 
         @Getter
-        @RequiredArgsConstructor
         class StdRawResponse implements RawResponse {
 
             Head head;
@@ -87,18 +87,18 @@ public interface Http {
             }
 
             @Override
-            public Optional<Reader> bodyReader() {
-                return Optional.empty();
+            public Reader bodyReader() {
+                throw new RuntimeException("Body not available");
             }
 
             @Override
-            public Optional<Reader> stdOutReader() {
-                return stdOut.maybe();
+            public Reader stdOutReader() {
+                return stdOut.require();
             }
 
             @Override
-            public Optional<Reader> stdErrReader() {
-                return stdErr.maybe();
+            public Reader stdErrReader() {
+                return stdErr.require();
             }
         }
     }

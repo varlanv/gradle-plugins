@@ -73,6 +73,12 @@ final class HttpFollowedLogs implements HtFollowedLogs {
                                         dockerSpec.requests().get(logsSpec)
                                 ).withExpectedStatus(200)
                         )
-                ).thenApply(response -> new Logs.DfLogs(response.stdOutReader().orElse(null), response.stdErrReader().orElse(null)));
+                )
+                .thenApply(response ->
+                        new Logs.DfLogs(
+                                response.stdOutReader(),
+                                response.stdErrReader()
+                        )
+                );
     }
 }

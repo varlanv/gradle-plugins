@@ -29,7 +29,7 @@ final class HttpCreate implements HtCreate {
                         ).withExpectedStatus(201)
                 )
                 .thenApply(response -> {
-                    var id = (String) HtJson.toMap(response.bodyReader().orElseThrow()).get("Id");
+                    var id = (String) HtJson.toMap(response.bodyReader()).get("Id");
                     return new HtLazyContainer(id, () -> httpInspect.inspect(id));
                 });
     }
