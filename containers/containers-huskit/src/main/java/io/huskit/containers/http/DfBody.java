@@ -8,7 +8,7 @@ import java.util.stream.Stream;
 
 @Getter
 @RequiredArgsConstructor
-class DfBody<T> implements Http.Body<T> {
+final class DfBody<T> implements Http.Body<T> {
 
     List<T> lines;
 

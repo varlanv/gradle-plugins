@@ -7,7 +7,7 @@ import lombok.RequiredArgsConstructor;
 import java.util.function.Function;
 
 @RequiredArgsConstructor
-public class HttpRun implements HtRun {
+final class HttpRun implements HtRun {
 
     HttpCreate httpCreate;
     Function<String, HttpStart> httpStartFromContainerId;

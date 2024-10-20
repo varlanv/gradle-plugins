@@ -10,7 +10,7 @@ import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
 @RequiredArgsConstructor
-public class HttpCreate implements HtCreate {
+final class HttpCreate implements HtCreate {
 
     HtHttpDockerSpec dockerSpec;
     HttpCreateSpec httpCreateSpec;

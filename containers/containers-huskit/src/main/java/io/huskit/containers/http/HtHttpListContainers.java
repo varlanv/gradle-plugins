@@ -13,7 +13,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 @RequiredArgsConstructor
-class HtHttpListContainers implements HtListContainers {
+final class HtHttpListContainers implements HtListContainers {
 
     HtHttpDockerSpec dockerSpec;
     HtHttpListContainersSpec spec;

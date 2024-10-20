@@ -11,7 +11,7 @@ import java.time.Duration;
 import java.util.Map;
 
 @RequiredArgsConstructor
-public class HttpRunSpec implements HtRunSpec {
+final class HttpRunSpec implements HtRunSpec {
 
     @Getter
     HttpCreateSpec createSpec;

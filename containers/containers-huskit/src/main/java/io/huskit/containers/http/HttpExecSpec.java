@@ -4,7 +4,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
-public class HttpExecSpec implements HtUrl {
+final class HttpExecSpec implements HtUrl {
 
     String containerId;
     Map<String, Object> body;

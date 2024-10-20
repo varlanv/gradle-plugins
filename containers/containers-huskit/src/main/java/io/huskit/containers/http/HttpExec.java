@@ -7,7 +7,7 @@ import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
 @RequiredArgsConstructor
-class HttpExec implements HtExec {
+final class HttpExec implements HtExec {
 
     HtHttpDockerSpec dockerSpec;
     HttpExecSpec httpExecSpec;

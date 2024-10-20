@@ -8,7 +8,7 @@ import lombok.RequiredArgsConstructor;
 import java.util.List;
 
 @RequiredArgsConstructor
-public class HttpStart implements HtStart {
+final class HttpStart implements HtStart {
 
     HtHttpDockerSpec dockerSpec;
     HttpStartSpec httpStartSpec;

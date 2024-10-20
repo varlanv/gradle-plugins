@@ -1,6 +1,6 @@
 package io.huskit.containers.http;
 
-public class HttpInspectSpec implements HtUrl {
+final class HttpInspectSpec implements HtUrl {
 
     String id;
 

@@ -10,7 +10,7 @@ import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Stream;
 
-public class HttpLogs implements HtLogs {
+final class HttpLogs implements HtLogs {
 
     HtHttpDockerSpec dockerSpec;
     String containerId;

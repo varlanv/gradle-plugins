@@ -33,7 +33,7 @@ interface DockerSocket {
 }
 
 @RequiredArgsConstructor
-class DfCloseableDockerSocket implements DockerSocket.CloseableDockerSocket {
+final class DfCloseableDockerSocket implements DockerSocket.CloseableDockerSocket {
 
     DockerSocket delegate;
 
@@ -58,7 +58,7 @@ class DfCloseableDockerSocket implements DockerSocket.CloseableDockerSocket {
     }
 }
 
-class Request<T> {
+final class Request<T> {
 
     @Getter
     Http.Request http;
@@ -92,24 +92,9 @@ class Request<T> {
     public Optional<ExpectedStatus> expectedStatus() {
         return expectedStatus.maybe();
     }
-
-    @Getter
-    @RequiredArgsConstructor
-    public static class ExpectedStatus {
-
-        Integer status;
-    }
-
-    @Getter
-    @RequiredArgsConstructor
-    public static class RepeatRead {
-
-        LookFor lookFor;
-        Duration backoff;
-    }
 }
 
-class RawRequest {
+final class RawRequest {
 
     @Getter
     Http.Request http;
@@ -143,14 +128,14 @@ class RawRequest {
 
 @Getter
 @RequiredArgsConstructor
-class ExpectedStatus {
+final class ExpectedStatus {
 
     Integer status;
 }
 
 @Getter
 @RequiredArgsConstructor
-class RepeatRead {
+final class RepeatRead {
 
     LookFor lookFor;
     Duration backoff;

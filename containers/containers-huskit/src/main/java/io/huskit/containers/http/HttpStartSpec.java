@@ -7,7 +7,7 @@ import java.nio.charset.StandardCharsets;
 
 @Getter
 @RequiredArgsConstructor
-public class HttpStartSpec {
+final class HttpStartSpec {
 
     private static final String requestFormat = "%s %s HTTP/1.1%n"
             + "Host: %s%n"

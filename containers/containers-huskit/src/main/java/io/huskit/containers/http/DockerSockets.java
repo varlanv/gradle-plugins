@@ -4,7 +4,7 @@ import io.huskit.common.Os;
 import io.huskit.common.Volatile;
 import io.huskit.containers.model.HtConstants;
 
-public class DockerSockets {
+final class DockerSockets {
 
     private static final Volatile<DockerSocket> DEFAULT_SOCKET = Volatile.of();
 

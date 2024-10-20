@@ -12,7 +12,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-public class HtHttpListContainersSpec implements HtListContainersArgsSpec, HtUrl {
+final class HtHttpListContainersSpec implements HtListContainersArgsSpec, HtUrl {
 
     Mutable<Boolean> all = Mutable.of(false);
     Map<HtListContainersFilterType, List<String>> filters = new HashMap<>();

@@ -2,7 +2,7 @@ package io.huskit.containers.http;
 
 import io.huskit.common.Mutable;
 
-class HttpLogsSpec implements HtUrl {
+final class HttpLogsSpec implements HtUrl {
 
     String containerId;
     Mutable<Boolean> follow = Mutable.of(false);

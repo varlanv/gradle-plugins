@@ -4,7 +4,7 @@ import io.huskit.containers.internal.HtJson;
 
 import java.nio.charset.StandardCharsets;
 
-public class HttpRequests {
+final class HttpRequests {
 
     byte[] afterUrlPartGet;
     byte[] afterUrlPartPost;

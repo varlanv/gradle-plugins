@@ -8,7 +8,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 
 @RequiredArgsConstructor
-public class HttpRmSpec implements HtRmSpec {
+final class HttpRmSpec implements HtRmSpec {
 
     private static final String requestFormat = "%s %s HTTP/1.1%n"
             + "Host: %s%n"

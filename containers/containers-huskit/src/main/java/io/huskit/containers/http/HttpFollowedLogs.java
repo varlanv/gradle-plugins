@@ -14,7 +14,7 @@ import java.util.function.Function;
 import java.util.stream.Stream;
 
 @RequiredArgsConstructor
-class HttpFollowedLogs implements HtFollowedLogs {
+final class HttpFollowedLogs implements HtFollowedLogs {
 
     HtHttpDockerSpec dockerSpec;
     HttpLogsSpec logsSpec;

@@ -5,7 +5,7 @@ import lombok.RequiredArgsConstructor;
 
 @Getter
 @RequiredArgsConstructor
-class DfHttpRequest implements Http.Request {
+final class DfHttpRequest implements Http.Request {
 
     byte[] body;
 

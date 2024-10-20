@@ -5,7 +5,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.With;
 
 @RequiredArgsConstructor
-public class DfHtHttpDockerSpec implements HtHttpDockerSpec {
+final class DfHtHttpDockerSpec implements HtHttpDockerSpec {
 
     DockerSockets sockets;
     @With

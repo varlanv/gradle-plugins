@@ -6,7 +6,7 @@ import lombok.RequiredArgsConstructor;
 import java.util.List;
 
 @RequiredArgsConstructor
-public class HttpRm implements HtRm {
+final class HttpRm implements HtRm {
 
     HtHttpDockerSpec dockerSpec;
     HttpRmSpec spec;

@@ -62,7 +62,7 @@ final class Npipe implements DockerSocket {
                         )
                 )
                 .thenApply(r -> {
-                    request.expectedStatus().map(Request.ExpectedStatus::status).ifPresent(expectedStatus -> {
+                    request.expectedStatus().map(ExpectedStatus::status).ifPresent(expectedStatus -> {
                         if (!Objects.equals(r.head().status(), expectedStatus)) {
                             throw new RuntimeException(
                                     String.format(
@@ -349,7 +349,7 @@ final class Npipe implements DockerSocket {
 
 
     @Getter
-    private static class State {
+    private static final class State {
 
         @NonFinal
         AsynchronousFileChannel channel;
@@ -434,7 +434,7 @@ final class Npipe implements DockerSocket {
     }
 
     @RequiredArgsConstructor
-    public static class HttpFlow {
+    public static final class HttpFlow {
 
         @Getter
         Reader reader;
@@ -452,7 +452,7 @@ final class Npipe implements DockerSocket {
     }
 
     @RequiredArgsConstructor
-    private static class ReadState<T> {
+    private static final class ReadState<T> {
 
         Request<T> request;
         CharsetDecoder decoder;
@@ -608,7 +608,7 @@ final class Npipe implements DockerSocket {
             stderrLinesCount++;
         }
 
-        private static class PipeStream {
+        private static final class PipeStream {
 
             Supplier<Stream<String>> streamSupplier;
 

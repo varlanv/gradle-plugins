@@ -11,7 +11,7 @@ import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
 @RequiredArgsConstructor
-public class HttpInspect {
+final class HttpInspect {
 
     HtHttpDockerSpec dockerSpec;
 
