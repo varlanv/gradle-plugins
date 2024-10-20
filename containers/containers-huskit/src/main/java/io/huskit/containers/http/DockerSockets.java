@@ -11,7 +11,7 @@ final class DockerSockets {
     public DockerSocket pickDefault() {
         return DEFAULT_SOCKET.syncSetOrGet(() -> {
             if (Os.WINDOWS.isCurrent()) {
-                return new Npipe(HtConstants.NPIPE_SOCKET);
+                return new NpipeDocker(HtConstants.NPIPE_SOCKET);
             } else {
                 throw new IllegalStateException("Unsupported OS");
             }

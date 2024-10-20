@@ -22,7 +22,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 
 @EnabledOnOs(OS.WINDOWS)
-public class NpipeIntegrationTest implements DockerIntegrationTest {
+public class NpipeDockerIntegrationTest implements DockerIntegrationTest {
 
     String dockerNpipe = "\\\\.\\pipe\\docker_engine";
 
@@ -180,7 +180,7 @@ public class NpipeIntegrationTest implements DockerIntegrationTest {
     @Timeout(3)
     void containers_json() throws Exception {
         var httpRequests = new HttpRequests();
-        try (var subject = new Npipe(dockerNpipe).closeable()) {
+        try (var subject = new NpipeDocker(dockerNpipe).closeable()) {
             ThrowingRunnable r = () -> {
                 var before = System.currentTimeMillis();
                 subject.sendAsync(
@@ -190,13 +190,12 @@ public class NpipeIntegrationTest implements DockerIntegrationTest {
                                         )
                                 )
                         )
-                        .thenApply(rawResponse -> {
-                            return new JSONArray(
-                                    new JSONTokener(
-                                            rawResponse.bodyReader()
-                                    )
-                            ).toList();
-                        })
+                        .thenApply(rawResponse ->
+                                new JSONArray(
+                                        new JSONTokener(
+                                                rawResponse.bodyReader()
+                                        )
+                                ).toList())
                         .thenAccept(System.out::println)
                         .whenComplete((it, e) -> System.out.println("Time: " + (System.currentTimeMillis() - before) + "ms"))
                         .join();

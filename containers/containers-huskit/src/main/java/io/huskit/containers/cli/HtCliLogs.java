@@ -1,12 +1,9 @@
 package io.huskit.containers.cli;
 
 import io.huskit.common.function.CloseableAccessor;
-import io.huskit.common.function.ThrowingConsumer;
-import io.huskit.common.function.ThrowingFunction;
 import io.huskit.containers.api.container.logs.HtFollowedLogs;
 import io.huskit.containers.api.container.logs.HtLogs;
 import io.huskit.containers.api.container.logs.Logs;
-import io.huskit.containers.api.container.logs.LookFor;
 import lombok.RequiredArgsConstructor;
 import lombok.With;
 
@@ -19,6 +16,41 @@ public class HtCliLogs implements HtLogs {
 
     HtCli cli;
     String id;
+
+    @Override
+    public Logs stream() {
+        return null;
+    }
+
+    @Override
+    public CompletableFuture<Logs> asyncStream() {
+        return null;
+    }
+
+    @Override
+    public Stream<String> stdOut() {
+        return Stream.empty();
+    }
+
+    @Override
+    public CompletableFuture<Stream<String>> asyncStdOut() {
+        return null;
+    }
+
+    @Override
+    public Stream<String> stdErr() {
+        return Stream.empty();
+    }
+
+    @Override
+    public CompletableFuture<Stream<String>> asyncStdErr() {
+        return null;
+    }
+
+    @Override
+    public HtFollowedLogs follow() {
+        return null;
+    }
 
 //    @Override
 //    public Stream<String> stream() {
@@ -46,40 +78,4 @@ public class HtCliLogs implements HtLogs {
 //    public Stream<String> streamStdErr() {
 //        return Stream.empty();
 //    }
-
-
-    @Override
-    public CloseableAccessor<Logs> stream() {
-        return null;
-    }
-
-    @Override
-    public CompletableFuture<CloseableAccessor<Logs>> asyncStream() {
-        return null;
-    }
-
-    @Override
-    public CloseableAccessor<Stream<String>> stdOut() {
-        return null;
-    }
-
-    @Override
-    public CompletableFuture<CloseableAccessor<Stream<String>>> asyncStdOut() {
-        return null;
-    }
-
-    @Override
-    public CloseableAccessor<Stream<String>> stdErr() {
-        return null;
-    }
-
-    @Override
-    public CompletableFuture<CloseableAccessor<Stream<String>>> asyncStdErr() {
-        return null;
-    }
-
-    @Override
-    public HtFollowedLogs follow() {
-        return new HtCliFollowedLogs(cli, id, LookFor.nothing());
-    }
 }

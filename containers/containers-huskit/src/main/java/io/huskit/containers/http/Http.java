@@ -1,6 +1,5 @@
 package io.huskit.containers.http;
 
-import io.huskit.common.Mutable;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
@@ -8,6 +7,8 @@ import lombok.RequiredArgsConstructor;
 import java.io.Reader;
 import java.util.Map;
 import java.util.NoSuchElementException;
+import java.util.Optional;
+import java.util.function.Supplier;
 
 public interface Http {
 
@@ -45,60 +46,67 @@ public interface Http {
 
         Reader bodyReader();
 
-        Reader stdOutReader();
+        SimplePipe stdOut();
 
-        Reader stdErrReader();
+        SimplePipe stdErr();
 
         @RequiredArgsConstructor
-        class BodyRawResponse implements RawResponse {
+        final class BodyRawResponse implements RawResponse {
 
             @Getter
             Head head;
             @NonNull
-            Reader bodyReader;
+            Supplier<Reader> bodyReader;
 
             @Override
             public Reader bodyReader() {
-                return bodyReader;
+                return bodyReader.get();
             }
 
             @Override
-            public Reader stdOutReader() {
-                throw new RuntimeException("StdOut not available");
+            public SimplePipe stdOut() {
+                throw new NoSuchElementException();
             }
 
             @Override
-            public Reader stdErrReader() {
-                throw new RuntimeException("StdErr not available");
+            public SimplePipe stdErr() {
+                throw new NoSuchElementException();
             }
         }
 
         @Getter
-        class StdRawResponse implements RawResponse {
+        @RequiredArgsConstructor
+        final class StdRawResponse implements RawResponse {
 
             Head head;
-            Mutable<Reader> stdOut;
-            Mutable<Reader> stdErr;
-
-            public StdRawResponse(Head head, Reader stdOut, Reader stdErr) {
-                this.head = head;
-                this.stdOut = Mutable.of(stdOut);
-                this.stdErr = Mutable.of(stdErr);
-            }
+            SimplePipe stdOut;
+            SimplePipe stdErr;
 
             @Override
             public Reader bodyReader() {
                 throw new RuntimeException("Body not available");
             }
+        }
+
+        @Getter
+        @RequiredArgsConstructor
+        final class OnlyHeadRawResponse implements RawResponse {
+
+            Head head;
 
             @Override
-            public Reader stdOutReader() {
-                return stdOut.require();
+            public Reader bodyReader() {
+                throw new NoSuchElementException();
             }
 
             @Override
-            public Reader stdErrReader() {
-                return stdErr.require();
+            public SimplePipe stdOut() {
+                throw new NoSuchElementException();
+            }
+
+            @Override
+            public SimplePipe stdErr() {
+                throw new NoSuchElementException();
             }
         }
     }
@@ -123,7 +131,7 @@ public interface Http {
         T value();
 
         @SuppressWarnings("rawtypes")
-        class EmptyBody implements Body {
+        final class EmptyBody implements Body {
 
             private static final EmptyBody INSTANCE = new EmptyBody();
 

@@ -9,7 +9,7 @@ import org.jetbrains.annotations.Nullable;
 import java.util.Objects;
 
 @RequiredArgsConstructor
-public class StrategyMemoizedSupplier<T> implements MemoizedSupplier<T> {
+public final class StrategyMemoizedSupplier<T> implements MemoizedSupplier<T> {
 
     @NonNull
     ThrowingSupplier<ThrowingSupplier<T>> delegate;

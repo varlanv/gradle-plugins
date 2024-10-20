@@ -2,14 +2,13 @@ package io.huskit.containers.api.container.logs;
 
 import io.huskit.common.Sneaky;
 import io.huskit.containers.http.PipeStream;
+import io.huskit.containers.http.SimplePipe;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
-import java.io.IOException;
-import java.io.Reader;
 import java.util.stream.Stream;
 
-public interface Logs extends AutoCloseable {
+public interface Logs {
 
     Stream<String> stdOut();
 
@@ -23,20 +22,24 @@ public interface Logs extends AutoCloseable {
     @RequiredArgsConstructor
     class DfLogs implements Logs {
 
-        Stream<String> stdOut;
-        Stream<String> stdErr;
+        SimplePipe stdOutPipe;
+        SimplePipe stdErrPipe;
 
-        public DfLogs(Reader stdOutReader, Reader stdErrReader) {
-            stdOut = new PipeStream(stdOutReader, 0).streamSupplier().get();
-            stdErr = new PipeStream(stdErrReader, 0).streamSupplier().get();
+        public void close() {
+            Sneaky.doTry(
+                    stdOutPipe::close,
+                    stdErrPipe::close
+            );
         }
 
         @Override
-        public void close() throws IOException {
-            Sneaky.doTry(
-                    stdOut::close,
-                    stdErr::close
-            );
+        public Stream<String> stdOut() {
+            return new PipeStream(stdOutPipe).streamSupplier().get();
+        }
+
+        @Override
+        public Stream<String> stdErr() {
+            return new PipeStream(stdErrPipe).streamSupplier().get();
         }
     }
 }

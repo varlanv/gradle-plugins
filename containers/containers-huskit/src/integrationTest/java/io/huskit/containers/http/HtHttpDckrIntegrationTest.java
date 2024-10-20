@@ -7,7 +7,6 @@ import io.huskit.common.port.DynamicContainerPort;
 import io.huskit.common.port.MappedPort;
 import io.huskit.containers.api.container.HtContainer;
 import io.huskit.containers.api.container.HtContainerStatus;
-import io.huskit.containers.api.container.logs.Logs;
 import io.huskit.containers.api.container.logs.LookFor;
 import io.huskit.gradle.commontest.DockerImagesStash;
 import io.huskit.gradle.commontest.DockerIntegrationTest;
@@ -19,13 +18,12 @@ import org.junit.jupiter.api.parallel.Execution;
 import org.junit.jupiter.api.parallel.ExecutionMode;
 
 import java.time.Duration;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
-import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
@@ -95,7 +93,7 @@ class HtHttpDckrIntegrationTest implements DockerIntegrationTest {
 //                assertThat(containerNetwork.ports().get(1)).isIn(mappedPort1, mappedPort2);
             }
             {
-                var logs = new ArrayList<String>();
+                var logs = new CopyOnWriteArrayList<String>();
                 subject.containers().logs(containerRef.require().id())
                         .follow()
                         .lookFor(LookFor.lineMatching(line -> {
@@ -105,7 +103,7 @@ class HtHttpDckrIntegrationTest implements DockerIntegrationTest {
                 assertThat(logs).containsExactly("Hello World 1", "Hello World 123");
             }
             {
-                var logs = new ArrayList<String>();
+                var logs = new CopyOnWriteArrayList<>();
                 subject.containers().logs(containerRef.require().id())
                         .follow()
                         .lookFor(LookFor.lineMatching(line -> {
@@ -116,52 +114,48 @@ class HtHttpDckrIntegrationTest implements DockerIntegrationTest {
             }
 
             {
-                var logs = subject.containers()
-                        .logs(containerRef.require().id())
-                        .stream()
-                        .apply(l -> l.all().collect(Collectors.toList()));
-                assertThat(logs).containsExactly("Hello World 1", "Hello World 123");
+                Runnable readLogs = () -> {
+                    var logs = subject.containers()
+                            .logs(containerRef.require().id())
+                            .stream().all()
+                            .collect(Collectors.toList());
+                    assertThat(logs).containsExactly("Hello World 1", "Hello World 123");
+                };
+                readLogs.run();
+                readLogs.run();
             }
             {
                 subject.containers()
                         .logs(containerRef.require().id())
                         .asyncStream()
-                        .thenAccept(accessor ->
-                                accessor.accept(logs ->
-                                        assertThat(logs.all()).containsExactly("Hello World 1", "Hello World 123")))
+                        .thenAccept(logs -> assertThat(logs.all()).containsExactly("Hello World 1", "Hello World 123"))
                         .join();
             }
             {
                 subject.containers()
                         .logs(containerRef.require().id())
                         .asyncStdOut()
-                        .thenAccept(accessor -> {
-                            accessor.accept(logs ->
-                                    assertThat(logs.collect(Collectors.toList())).containsExactly("Hello World 1", "Hello World 123"));
-                            var counter = new AtomicInteger();
-                            assertThatThrownBy(() -> accessor.accept(logs -> counter.incrementAndGet()));
-                            assertThat(counter.get()).isZero();
-                        })
+                        .thenAccept(logs -> assertThat(logs.collect(Collectors.toList())).containsExactly("Hello World 1", "Hello World 123"))
                         .join();
             }
             {
                 subject.containers()
                         .logs(containerRef.require().id())
                         .asyncStdErr()
-                        .thenAccept(accessor -> accessor.accept(logs -> assertThat(logs.collect(Collectors.toList())).isEmpty()))
+                        .thenAccept(logs -> assertThat(logs.collect(Collectors.toList())).isEmpty())
                         .join();
             }
             {
-                subject.containers()
+                var logs = subject.containers()
                         .logs(containerRef.require().id())
-                        .stdErr()
-                        .accept(logs -> assertThat(logs.collect(Collectors.toList())).isEmpty());
+                        .stdErr();
+                assertThat(logs.collect(Collectors.toList())).isEmpty();
             }
             {
-                subject.containers()
+                var logs = subject.containers()
                         .logs(containerRef.require().id())
-                        .stdErr()
-                        .accept(logs -> assertThat(logs.collect(Collectors.toList())).isEmpty());
+                        .stdErr();
+                assertThat(logs.collect(Collectors.toList())).isEmpty();
             }
             {
                 var inspected = subject.containers().inspect(containerRef.require().id());
@@ -240,8 +234,6 @@ class HtHttpDckrIntegrationTest implements DockerIntegrationTest {
                             "sh",
                             List.of("-c", "echo $((1 + 1)) && echo $((2 + 2))")
                     ).exec();
-                    assertThat(subject.containers().logs(containerRef.require().id()).stream().apply((Logs l) -> l.all().collect(Collectors.toList())))
-                            .containsExactly("Hello World 1", "Hello World 123");
                 }
             }
         } catch (Throwable t) {

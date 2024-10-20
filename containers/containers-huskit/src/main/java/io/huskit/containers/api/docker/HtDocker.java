@@ -1,13 +1,11 @@
 package io.huskit.containers.api.docker;
 
-import io.huskit.containers.api.volume.HtVolumes;
 import io.huskit.containers.api.container.HtContainers;
-import io.huskit.containers.cli.HtCliDckrSpec;
-import io.huskit.containers.cli.HtCliDocker;
 import io.huskit.containers.api.image.HtImages;
-import io.huskit.containers.cli.HtCli;
-import io.huskit.containers.cli.HtCliDckr;
-import io.huskit.containers.cli.Shells;
+import io.huskit.containers.api.volume.HtVolumes;
+import io.huskit.containers.cli.*;
+import io.huskit.containers.http.HtHttpDckr;
+import io.huskit.containers.http.HtHttpDocker;
 
 public interface HtDocker {
 
@@ -20,7 +18,7 @@ public interface HtDocker {
     HtVolumes volumes();
 
     static HtDocker anyClient() {
-        return cli();
+        return http();
     }
 
     static HtCliDocker cli() {
@@ -29,5 +27,9 @@ public interface HtDocker {
                 new HtCli(dockerSpec, new Shells()),
                 dockerSpec
         );
+    }
+
+    static HtHttpDocker http() {
+        return new HtHttpDckr().withCleanOnClose(true);
     }
 }

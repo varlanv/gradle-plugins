@@ -76,8 +76,8 @@ final class HttpFollowedLogs implements HtFollowedLogs {
                 )
                 .thenApply(response ->
                         new Logs.DfLogs(
-                                response.stdOutReader(),
-                                response.stdErrReader()
+                                response.stdOut(),
+                                response.stdErr()
                         )
                 );
     }

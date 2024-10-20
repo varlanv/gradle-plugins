@@ -1,6 +1,5 @@
 package io.huskit.containers.http;
 
-import io.huskit.common.function.CloseableAccessor;
 import io.huskit.containers.api.container.logs.HtFollowedLogs;
 import io.huskit.containers.api.container.logs.HtLogs;
 import io.huskit.containers.api.container.logs.Logs;
@@ -19,35 +18,35 @@ final class HttpLogs implements HtLogs {
     }
 
     @Override
-    public CloseableAccessor<Logs> stream() {
+    public Logs stream() {
         return asyncStream().join();
     }
 
     @Override
-    public CompletableFuture<CloseableAccessor<Logs>> asyncStream() {
-        return asyncStreamOpen().thenApply(CloseableAccessor::of);
+    public CompletableFuture<Logs> asyncStream() {
+        return asyncStreamOpen();
     }
 
     @Override
-    public CloseableAccessor<Stream<String>> stdOut() {
+    public Stream<String> stdOut() {
         return asyncStdOut().join();
     }
 
     @Override
-    public CompletableFuture<CloseableAccessor<Stream<String>>> asyncStdOut() {
+    public CompletableFuture<Stream<String>> asyncStdOut() {
         return asyncStreamOpen()
-                .thenApply(logs -> CloseableAccessor.of(logs.stdOut(), logs));
+                .thenApply(Logs::stdOut);
     }
 
     @Override
-    public CloseableAccessor<Stream<String>> stdErr() {
+    public Stream<String> stdErr() {
         return asyncStdErr().join();
     }
 
     @Override
-    public CompletableFuture<CloseableAccessor<Stream<String>>> asyncStdErr() {
+    public CompletableFuture<Stream<String>> asyncStdErr() {
         return asyncStreamOpen()
-                .thenApply(logs -> CloseableAccessor.of(logs.stdErr(), logs));
+                .thenApply(Logs::stdErr);
     }
 
     @Override
@@ -61,13 +60,15 @@ final class HttpLogs implements HtLogs {
     private CompletableFuture<Logs> asyncStreamOpen() {
         return dockerSpec.socket().sendAsync(
                         new Request(
-                                dockerSpec.requests().get(new HttpLogsSpec(containerId))
+                                dockerSpec.requests().get(
+                                        new HttpLogsSpec(containerId)
+                                )
                         ).withExpectedStatus(200)
                 )
                 .thenApply(response ->
                         new Logs.DfLogs(
-                                response.stdOutReader(),
-                                response.stdErrReader()
+                                response.stdOut(),
+                                response.stdErr()
 
                         )
                 );

@@ -9,7 +9,7 @@ import lombok.SneakyThrows;
 import java.util.Objects;
 
 @RequiredArgsConstructor
-final class HtHttpDckr implements HtHttpDocker {
+public final class HtHttpDckr implements HtHttpDocker {
 
     DfHtHttpDockerSpec spec;
 
