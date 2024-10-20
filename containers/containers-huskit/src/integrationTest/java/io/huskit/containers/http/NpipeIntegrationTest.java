@@ -190,12 +190,13 @@ public class NpipeIntegrationTest implements DockerIntegrationTest {
                                         )
                                 )
                         )
-                        .thenApplyAsync(rawResponse ->
-                                new JSONArray(
-                                        new JSONTokener(
-                                                rawResponse.bodyReader()
-                                        )
-                                ).toList())
+                        .thenApply(rawResponse -> {
+                            return new JSONArray(
+                                    new JSONTokener(
+                                            rawResponse.bodyReader()
+                                    )
+                            ).toList();
+                        })
                         .thenAccept(System.out::println)
                         .whenComplete((it, e) -> System.out.println("Time: " + (System.currentTimeMillis() - before) + "ms"))
                         .join();

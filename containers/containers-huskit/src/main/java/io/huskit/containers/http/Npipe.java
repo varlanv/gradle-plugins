@@ -12,7 +12,6 @@ import java.nio.ByteBuffer;
 import java.nio.CharBuffer;
 import java.nio.channels.AsynchronousFileChannel;
 import java.nio.channels.CompletionHandler;
-import java.nio.channels.Pipe;
 import java.nio.charset.CharsetDecoder;
 import java.nio.charset.CharsetEncoder;
 import java.nio.charset.CodingErrorAction;
@@ -49,14 +48,16 @@ final class Npipe implements DockerSocket {
         var state = stateSupplier.get();
         var rawResponse = new CompletableFuture<Http.RawResponse>();
         state.write(request)
-                .thenCompose(r -> readLoop(
-                                new ReadState(
-                                        request,
-                                        state.decoder,
-                                        rawResponse
-                                )
-                        )
-                );
+                .thenRun(() -> {
+                    readAndProcess(
+                            new ReadState(
+                                    request,
+                                    state.decoder,
+                                    rawResponse
+                            )
+                    );
+                    System.out.println();
+                }).join();
         return rawResponse.thenApply(r -> {
             request.expectedStatus().map(ExpectedStatus::status).ifPresent(expectedStatus -> {
                 if (!Objects.equals(r.head().status(), expectedStatus)) {
@@ -77,59 +78,54 @@ final class Npipe implements DockerSocket {
         });
     }
 
-    private CompletableFuture<ReadState> readLoop(ReadState readState) {
-        return readAndProcess(readState)
-                .thenCompose(r -> {
-                    if (r.shouldReadMore) {
-                        return readLoop(r);
-                    } else {
-                        return readState.request
-                                .repeatReadPredicate()
-                                .map(repeatRead -> {
-                                    var backoff = repeatRead.backoff().toMillis();
-                                    var predicate = repeatRead.lookFor().predicate();
-                                    if (repeatRead.lookFor().isOnlyInStdErr()) {
-                                        r.buildStrderrStream().filter(predicate)
-                                                .findFirst()
-                                                .ifPresent(ignore -> r.isKeepReading = false);
-                                    } else if (repeatRead.lookFor().isOnlyInStdOut()) {
-                                        r.buildStdoutStream()
-                                                .filter(predicate)
-                                                .findFirst()
-                                                .ifPresent(ignore -> r.isKeepReading = false);
-                                    } else {
-                                        Stream.concat(r.buildStdoutStream(), r.buildStrderrStream())
-                                                .filter(predicate)
-                                                .findFirst()
-                                                .ifPresent(ignore -> r.isKeepReading = false);
-                                    }
-                                    if (r.isKeepReading) {
-                                        try {
-                                            if (backoff > 0) {
-                                                Thread.sleep(backoff);
-                                            }
-                                            var rs = new ReadState(r.request, r.decoder, r.response);
-                                            rs.isHead = false;
-                                            return readLoop(rs);
-                                        } catch (InterruptedException e) {
-                                            throw Sneaky.rethrow(e);
-                                        }
-                                    } else {
-                                        return CompletableFuture.completedFuture(r);
-                                    }
-                                })
-                                .orElseGet(() -> CompletableFuture.completedFuture(r));
-                    }
-                });
+    private void readAndProcess(ReadState rs) {
+        readOnce(rs)
+                .thenRun(() -> {
+                    processBuffer(rs);
+                    checkResult(rs);
+                })
+                .join();
     }
 
-    private CompletableFuture<ReadState> readAndProcess(ReadState readState) {
-        return readOnce(readState)
-                .thenApply(r -> {
-                    processBuffer(r);
-                    return r;
-                });
+    private void checkResult(ReadState rs) {
+        if (rs.shouldReadMore) {
+            readAndProcess(rs);
+        } else {
+            rs.request.repeatReadPredicate()
+                    .ifPresent(repeatRead -> {
+                        var backoff = repeatRead.backoff().toMillis();
+                        var predicate = repeatRead.lookFor().predicate();
+                        if (repeatRead.lookFor().isOnlyInStdErr()) {
+                            rs.buildStrderrStream().filter(predicate)
+                                    .findFirst()
+                                    .ifPresent(ignore -> rs.isKeepReading = false);
+                        } else if (repeatRead.lookFor().isOnlyInStdOut()) {
+                            rs.buildStdoutStream()
+                                    .filter(predicate)
+                                    .findFirst()
+                                    .ifPresent(ignore -> rs.isKeepReading = false);
+                        } else {
+                            Stream.concat(rs.buildStdoutStream(), rs.buildStrderrStream())
+                                    .filter(predicate)
+                                    .findFirst()
+                                    .ifPresent(ignore -> rs.isKeepReading = false);
+                        }
+                        if (rs.isKeepReading) {
+                            try {
+                                if (backoff > 0) {
+                                    Thread.sleep(backoff);
+                                }
+                                var nrs = new ReadState(rs.request, rs.decoder, rs.response);
+                                nrs.isHead = false;
+                                readAndProcess(nrs);
+                            } catch (InterruptedException e) {
+                                throw Sneaky.rethrow(e);
+                            }
+                        }
+                    });
+        }
     }
+
 
     @SneakyThrows
     private void processBuffer(ReadState readState) {
@@ -270,14 +266,11 @@ final class Npipe implements DockerSocket {
                                 if (--readState.multiplexLineSize == 0) {
                                     if (readState.isMultiplexStderr) {
                                         readState.writeToStderrBuffer(ch);
-                                        readState.stdoutBuffer.flip();
-                                        readState.writeToStderr(readState.stdoutBuffer);
+                                        readState.stdErrNewLine();
                                     } else {
                                         readState.writeToStdoutBuffer(ch);
-                                        readState.stdoutBuffer.flip();
-                                        readState.writeToStdout(readState.stdoutBuffer);
+                                        readState.stdOutNewLine();
                                     }
-                                    readState.stdoutBuffer.clear();
                                     if (readState.currentReadChunkSize == 0) {
                                         readState.isChunkSizeStartPart = true;
                                         if (readState.request.repeatReadPredicate().isPresent()) {
@@ -319,15 +312,15 @@ final class Npipe implements DockerSocket {
         }
     }
 
-    private CompletableFuture<ReadState> readOnce(ReadState readState) {
-        var readOpCompletion = new CompletableFuture<ReadState>();
+    private CompletableFuture<Void> readOnce(ReadState readState) {
+        var readOpCompletion = new CompletableFuture<Void>();
         var state = stateSupplier.get();
         state.channel.read(readState.readBuffer, 0, readState, new CompletionHandler<>() {
 
             @Override
             public void completed(Integer result, ReadState readState) {
                 readState.resultSize = result;
-                readOpCompletion.complete(readState);
+                readOpCompletion.complete(null);
             }
 
             @Override
@@ -350,7 +343,6 @@ final class Npipe implements DockerSocket {
         Semaphore lock;
         AtomicBoolean isDirtyConnection;
 
-        @SneakyThrows
         private State(String socketFile) {
             this.socketFile = socketFile;
             this.channel = openChannel();
@@ -371,34 +363,29 @@ final class Npipe implements DockerSocket {
             );
         }
 
+        @SneakyThrows
         public CompletableFuture<Integer> write(Request request) {
             var body = request.http().body();
             var bb = ByteBuffer.wrap(body);
-            return CompletableFuture.supplyAsync(() -> {
-                try {
-                    var writeCompletion = new CompletableFuture<Integer>();
-                    lock.acquire();
-                    System.out.println("Sending request body -> " + new String(body, StandardCharsets.UTF_8));
-                    channel.write(bb, 0, null, new CompletionHandler<>() {
+            var writeCompletion = new CompletableFuture<Integer>();
+            lock.acquire();
+            System.out.println("Sending request body -> " + new String(body, StandardCharsets.UTF_8));
+            channel.write(bb, 0, null, new CompletionHandler<>() {
 
-                        @Override
-                        public void completed(Integer result, Object attachment) {
-                            if (request.repeatReadPredicate().isPresent()) {
-                                isDirtyConnection.set(true);
-                            }
-                            writeCompletion.complete(result);
-                        }
+                @Override
+                public void completed(Integer result, Object attachment) {
+                    if (request.repeatReadPredicate().isPresent()) {
+                        isDirtyConnection.set(true);
+                    }
+                    writeCompletion.complete(result);
+                }
 
-                        @Override
-                        public void failed(Throwable exc, Object attachment) {
-                            writeCompletion.completeExceptionally(exc);
-                        }
-                    });
-                    return writeCompletion.join();
-                } catch (InterruptedException e) {
-                    throw Sneaky.rethrow(e);
+                @Override
+                public void failed(Throwable exc, Object attachment) {
+                    writeCompletion.completeExceptionally(exc);
                 }
             });
+            return writeCompletion;
         }
 
         @SneakyThrows
@@ -464,10 +451,6 @@ final class Npipe implements DockerSocket {
         CharBuffer lineBuffer = CharBuffer.allocate(lineBufferSize);
         @NonFinal
         SimplePipe bodyPipe;
-        @NonFinal
-        CharBuffer stderrBuffer;
-        @NonFinal
-        CharBuffer stdoutBuffer;
         CharBuffer chunkSizeBuffer = CharBuffer.allocate(chunkSizeBufferSize);
         @NonFinal
         CharBuffer chars;
@@ -475,9 +458,9 @@ final class Npipe implements DockerSocket {
         @NonFinal
         String currentHeaderKey;
         @NonFinal
-        Pipe stdoutPipe;
+        SimplePipe stdoutPipe;
         @NonFinal
-        Pipe stderrPipe;
+        SimplePipe stderrPipe;
         @NonFinal
         int headLineCount;
         @NonFinal
@@ -517,10 +500,6 @@ final class Npipe implements DockerSocket {
         @NonFinal
         boolean isKeepReading = true;
         @NonFinal
-        int stdoutLinesCount;
-        @NonFinal
-        int stderrLinesCount;
-        @NonFinal
         boolean isCompleted;
 
         public void complete() {
@@ -550,27 +529,17 @@ final class Npipe implements DockerSocket {
         }
 
         public void writeToStdoutBuffer(char ch) {
-            if (stdoutBuffer == null) {
-                stdoutBuffer = CharBuffer.allocate(readBufferSize);
-            } else if (stdoutBuffer.remaining() == 0) {
-                var newBuffer = CharBuffer.allocate(stdoutBuffer.capacity() * 2);
-                stdoutBuffer.flip();
-                newBuffer.put(stdoutBuffer);
-                stdoutBuffer = newBuffer;
+            if (stdoutPipe == null) {
+                stdoutPipe = new SimplePipe(readBufferSize);
             }
-            stdoutBuffer.put(ch);
+            stdoutPipe.writeLine(ch);
         }
 
         public void writeToStderrBuffer(char ch) {
-            if (stderrBuffer == null) {
-                stderrBuffer = CharBuffer.allocate(readBufferSize);
-            } else if (stderrBuffer.remaining() == 0) {
-                var newBuffer = CharBuffer.allocate(stderrBuffer.capacity() * 2);
-                stderrBuffer.flip();
-                newBuffer.put(stderrBuffer);
-                stderrBuffer = newBuffer;
+            if (stderrPipe == null) {
+                stderrPipe = new SimplePipe(readBufferSize);
             }
-            stderrBuffer.put(ch);
+            stderrPipe.writeLine(ch);
         }
 
         public void clearLineBuffer() {
@@ -578,11 +547,11 @@ final class Npipe implements DockerSocket {
         }
 
         public void writeToBody(char ch) {
-            ensureBody().write(ch);
+            ensureBody().writeLine(ch);
         }
 
         public void writeToBody(CharBuffer chars) {
-            ensureBody().write(chars);
+            ensureBody().writeLine(chars);
         }
 
         private SimplePipe ensureBody() {
@@ -603,82 +572,38 @@ final class Npipe implements DockerSocket {
         }
 
         @SneakyThrows
-        public void writeToStdout(CharSequence charSequence) {
+        public void stdOutNewLine() {
             if (stdoutPipe == null) {
-                stdoutPipe = Pipe.open();
+                stdoutPipe = new SimplePipe(readBufferSize);
             }
-            var str = charSequence.toString();
-            stdoutPipe.sink().write(StandardCharsets.UTF_8.encode(str));
-            stdoutLinesCount++;
+            stdoutPipe.newLine();
         }
 
         @SneakyThrows
-        public void writeToStderr(CharSequence charSequence) {
+        public void stdErrNewLine() {
             if (stderrPipe == null) {
-                stderrPipe = Pipe.open();
+                stderrPipe = new SimplePipe(readBufferSize);
             }
-            var str = charSequence.toString();
-            stderrPipe.sink().write(StandardCharsets.UTF_8.encode(str));
-            stderrLinesCount++;
+            stderrPipe.newLine();
         }
 
-//        @SneakyThrows
-//        public Http.RawResponse toResponse() {
-//            var body = buildBody();
-//            return new MyHttpResponse<>(
-//                    new DfHead(status, headers),
-//                    new DfBody<>(
-//                            request.action().apply(
-//                                    new HttpFlow(
-//                                            new StringReader(body),
-//                                            body,
-//                                            new DfHead(
-//                                                    status,
-//                                                    headers
-//                                            ),
-//                                            buildStdoutStream(),
-//                                            buildStrderrStream()
-//                                    )
-//                            )
-//                    )
-//            );
-//        }
-
         private Stream<String> buildStdoutStream() {
-            return new PipeStream(stdoutPipe, stdoutLinesCount).streamSupplier().get();
+            return new PipeStream(stdoutPipe.source(), stdoutPipe.lineCount()).streamSupplier().get();
         }
 
         private Stream<String> buildStrderrStream() {
-            return new PipeStream(stderrPipe, stderrLinesCount).streamSupplier().get();
-        }
-
-        public void close() {
-            close(stdoutPipe);
-            close(stderrPipe);
-        }
-
-        @SneakyThrows
-        private void close(Pipe pipe) {
-            if (pipe != null) {
-                var sink = pipe.sink();
-                if (sink.isOpen()) {
-                    pipe.sink().close();
-                }
-                var source = pipe.source();
-                if (source.isOpen()) {
-                    pipe.source().close();
-                }
-            }
+            return new PipeStream(stderrPipe.source(), stderrPipe.lineCount()).streamSupplier().get();
         }
     }
 }
 
+@Getter
 final class SimplePipe {
 
-    @Getter
     Writer sink;
-    @Getter
     Reader source;
+    @NonFinal
+    int lineCount;
 
     @SneakyThrows
     public SimplePipe(int size) {
@@ -689,13 +614,19 @@ final class SimplePipe {
     }
 
     @SneakyThrows
-    public void write(CharSequence charSequence) {
+    public void writeLine(CharSequence charSequence) {
         sink.write(charSequence.toString());
         sink.flush();
+        lineCount++;
     }
 
     @SneakyThrows
-    public void write(char ch) {
+    public void newLine() {
+        lineCount++;
+    }
+
+    @SneakyThrows
+    public void writeLine(char ch) {
         sink.write(ch);
         sink.flush();
     }
