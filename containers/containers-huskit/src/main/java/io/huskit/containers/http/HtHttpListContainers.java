@@ -50,6 +50,7 @@ final class HtHttpListContainers implements HtListContainers {
                 .thenApply(response ->
                         action.apply(
                                 response.body()
+                                        .value()
                                         .stream()
                                         .map(HtJsonContainer::new)
                         )

@@ -16,16 +16,12 @@ final class HttpStart implements HtStart {
 
     @Override
     public HtContainer exec() {
-        var response = dockerSpec.socket().send(
+        dockerSpec.socket().send(
                 new Request<>(
                         httpStartSpec.toRequest(containerId),
                         r -> List.of()
-                )
+                ).withExpectedStatus(204)
         );
-        if (response.head().status() != 204) {
-            throw new RuntimeException(String.format("Failed to start container, received status code %s - %s",
-                    response.head().status(), response.body().list()));
-        }
         return new HtLazyContainer(
                 containerId,
                 () -> new HttpInspect(dockerSpec).inspect(containerId)

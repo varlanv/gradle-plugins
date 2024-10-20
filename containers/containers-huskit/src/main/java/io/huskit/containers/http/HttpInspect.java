@@ -5,7 +5,6 @@ import io.huskit.containers.api.container.HtJsonContainer;
 import io.huskit.containers.internal.HtJson;
 import lombok.RequiredArgsConstructor;
 
-import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
@@ -28,12 +27,10 @@ final class HttpInspect {
         return dockerSpec.socket().sendAsync(
                 new Request<>(
                         dockerSpec.requests().get(new HttpInspectSpec(id)),
-                        r -> List.of(
-                                HtJson.toMap(
-                                        r.reader()
-                                )
+                        r -> HtJson.toMap(
+                                r.reader()
                         )
                 ).withExpectedStatus(200)
-        ).thenApply(response -> new HtJsonContainer(response.body().single()));
+        ).thenApply(response -> new HtJsonContainer(response.body().value()));
     }
 }

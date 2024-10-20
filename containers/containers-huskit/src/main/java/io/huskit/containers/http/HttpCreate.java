@@ -6,7 +6,6 @@ import io.huskit.containers.api.container.HtLazyContainer;
 import io.huskit.containers.internal.HtJson;
 import lombok.RequiredArgsConstructor;
 
-import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
 @RequiredArgsConstructor
@@ -27,15 +26,13 @@ final class HttpCreate implements HtCreate {
                 .sendAsync(
                         new Request<>(
                                 dockerSpec.requests().post(httpCreateSpec),
-                                r -> List.of(
-                                        HtJson.toMap(
-                                                r.reader()
-                                        )
+                                r -> HtJson.toMap(
+                                        r.reader()
                                 )
                         ).withExpectedStatus(201)
                 )
                 .thenApply(response -> {
-                    var id = (String) response.body().single().get("Id");
+                    var id = (String) response.body().value().get("Id");
                     return new HtLazyContainer(id, () -> httpInspect.inspect(id));
                 });
     }

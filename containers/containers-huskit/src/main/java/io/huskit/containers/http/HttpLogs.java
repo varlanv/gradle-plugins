@@ -6,7 +6,6 @@ import io.huskit.containers.api.container.logs.HtFollowedLogs;
 import io.huskit.containers.api.container.logs.HtLogs;
 import io.huskit.containers.api.container.logs.Logs;
 
-import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Stream;
 
@@ -123,15 +122,13 @@ final class HttpLogs implements HtLogs {
                                 mapLogStreams()
                         ).withExpectedStatus(200)
                 )
-                .thenApply(response -> response.body().single());
+                .thenApply(response -> response.body().value());
     }
 
-    private ThrowingFunction<Npipe.HttpFlow, List<Logs>> mapLogStreams() {
-        return response -> List.of(
-                new Logs.DfLogs(
-                        response.stdOut(),
-                        response.stdErr()
-                )
+    private ThrowingFunction<Npipe.HttpFlow, Logs> mapLogStreams() {
+        return response -> new Logs.DfLogs(
+                response.stdOut(),
+                response.stdErr()
         );
     }
 }

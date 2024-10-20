@@ -193,7 +193,7 @@ public class NpipeIntegrationTest implements DockerIntegrationTest {
                                         ).toList()
                                 )
                         )
-                        .thenAccept(it -> System.out.println(it.body().list()))
+                        .thenAccept(it -> System.out.println(it.body().value()))
                         .whenComplete((it, e) -> System.out.println("Time: " + (System.currentTimeMillis() - before) + "ms"))
                         .join();
             };

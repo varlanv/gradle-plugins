@@ -1,10 +1,8 @@
 package io.huskit.containers.http;
 
 import java.io.Reader;
-import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
-import java.util.stream.Stream;
 
 public interface Http {
 
@@ -60,11 +58,7 @@ public interface Http {
             return EmptyBody.instance();
         }
 
-        List<T> list();
-
-        Stream<T> stream();
-
-        T single();
+        T value();
 
         @SuppressWarnings("rawtypes")
         class EmptyBody implements Body {
@@ -79,17 +73,7 @@ public interface Http {
             }
 
             @Override
-            public List<?> list() {
-                return List.of();
-            }
-
-            @Override
-            public Stream<?> stream() {
-                return Stream.empty();
-            }
-
-            @Override
-            public Object single() {
+            public Object value() {
                 throw new NoSuchElementException();
             }
         }

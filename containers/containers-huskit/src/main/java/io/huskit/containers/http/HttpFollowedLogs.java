@@ -7,7 +7,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 
 import java.time.Duration;
-import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
@@ -75,11 +74,10 @@ final class HttpFollowedLogs implements HtFollowedLogs {
                                         this::getLogs
                                 ).withExpectedStatus(200)
                         )
-                ).thenApply(response -> response.body().single());
+                ).thenApply(response -> response.body().value());
     }
 
-    private List<Logs> getLogs(Npipe.HttpFlow r) {
-        var dfLogs = new Logs.DfLogs(r.stdOut(), r.stdErr());
-        return List.of(dfLogs);
+    private Logs getLogs(Npipe.HttpFlow r) {
+        return new Logs.DfLogs(r.stdOut(), r.stdErr());
     }
 }

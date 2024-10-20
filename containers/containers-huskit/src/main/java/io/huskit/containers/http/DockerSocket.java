@@ -7,7 +7,6 @@ import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
 import java.time.Duration;
-import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 
@@ -63,12 +62,12 @@ final class Request<T> {
     @Getter
     Http.Request http;
     @Getter
-    ThrowingFunction<Npipe.HttpFlow, List<T>> action;
+    ThrowingFunction<Npipe.HttpFlow, T> action;
     Mutable<RepeatRead> repeatReadPredicate;
     Mutable<ExpectedStatus> expectedStatus;
 
     public Request(Http.Request http,
-                   ThrowingFunction<Npipe.HttpFlow, List<T>> action) {
+                   ThrowingFunction<Npipe.HttpFlow, T> action) {
         this.http = http;
         this.action = action;
         this.repeatReadPredicate = Mutable.of();
