@@ -49,16 +49,21 @@ final class HttpFollowedLogs implements HtFollowedLogs {
     }
 
     @Override
-    @SneakyThrows
     public void lookFor(LookFor lookFor) {
+        lookForAsync(lookFor).join();
+    }
+
+    @Override
+    @SneakyThrows
+    public CompletableFuture<Void> lookForAsync(LookFor lookFor) {
         var timeout = lookFor.timeout();
         if (timeout.isZero()) {
-            streamAsyncInternal(request -> request.withRepeatReadPredicate(lookFor, Duration.ofMillis(10)))
-                    .join();
+            streamAsyncInternal(request -> request.withRepeatReadPredicate(lookFor, Duration.ofMillis(10))).join();
         } else {
             streamAsyncInternal(request -> request.withRepeatReadPredicate(lookFor, Duration.ofMillis(10)))
                     .get(timeout.toMillis(), TimeUnit.MILLISECONDS);
         }
+        return CompletableFuture.completedFuture(null);
     }
 
     private CompletableFuture<Logs> streamAsyncInternal() {

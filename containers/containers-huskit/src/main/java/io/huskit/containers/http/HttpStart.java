@@ -5,6 +5,8 @@ import io.huskit.containers.api.container.HtLazyContainer;
 import io.huskit.containers.api.container.HtStart;
 import lombok.RequiredArgsConstructor;
 
+import java.util.concurrent.CompletableFuture;
+
 @RequiredArgsConstructor
 final class HttpStart implements HtStart {
 
@@ -14,14 +16,19 @@ final class HttpStart implements HtStart {
 
     @Override
     public HtContainer exec() {
-        dockerSpec.socket().send(
+        return execAsync().join();
+    }
+
+    @Override
+    public CompletableFuture<HtContainer> execAsync() {
+        return dockerSpec.socket().sendAsync(
                 new Request(
                         httpStartSpec.toRequest(containerId)
                 ).withExpectedStatus(204)
-        );
-        return new HtLazyContainer(
-                containerId,
-                () -> new HttpInspect(dockerSpec).inspect(containerId)
+        ).thenApply(r -> new HtLazyContainer(
+                        containerId,
+                        () -> new HttpInspect(dockerSpec).inspect(containerId)
+                )
         );
     }
 }

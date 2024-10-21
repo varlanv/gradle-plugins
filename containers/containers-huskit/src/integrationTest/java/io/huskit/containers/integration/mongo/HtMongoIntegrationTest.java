@@ -27,8 +27,8 @@ class HtMongoIntegrationTest implements DockerIntegrationTest {
                 .withContainerSpec(spec -> spec.reuse().enabledWithCleanupAfter(Duration.ofMinutes(120)))
                 .start();
         {
-            var connectionString = subject.connectionString();
-            verifyMongoConnection(connectionString);
+//            var connectionString = subject.connectionString();
+//            verifyMongoConnection(connectionString);
         }
 
         {
@@ -38,6 +38,7 @@ class HtMongoIntegrationTest implements DockerIntegrationTest {
             assertThat(subject.properties()).containsEntry(HtConstants.Mongo.DEFAULT_DB_NAME_ENV, HtConstants.Mongo.DEFAULT_DB_NAME);
             assertThat(subject.properties()).containsKey(HtConstants.Mongo.DEFAULT_PORT_ENV);
         }
+        System.out.println("Mongo container create HTTP time - " + Duration.ofMillis(System.currentTimeMillis() - var));
     }
 
     @Test

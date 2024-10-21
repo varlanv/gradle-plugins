@@ -9,6 +9,7 @@ import lombok.RequiredArgsConstructor;
 
 import java.time.Duration;
 import java.util.Map;
+import java.util.Optional;
 
 @RequiredArgsConstructor
 final class HttpRunSpec implements HtRunSpec {
@@ -23,7 +24,7 @@ final class HttpRunSpec implements HtRunSpec {
         this.createSpec = new HttpCreateSpec(HtImgName.of(dockerImageName));
         this.startSpec = new HttpStartSpec();
         this.remove = Mutable.of(false);
-        this.lookFor = Mutable.of(LookFor.nothing());
+        this.lookFor = Mutable.of();
     }
 
     @Override
@@ -74,7 +75,7 @@ final class HttpRunSpec implements HtRunSpec {
         return this;
     }
 
-    public LookFor lookFor() {
-        return this.lookFor.require();
+    public Optional<LookFor> lookFor() {
+        return this.lookFor.maybe();
     }
 }

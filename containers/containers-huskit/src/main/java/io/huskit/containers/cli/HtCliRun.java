@@ -10,6 +10,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.With;
 
 import java.util.Set;
+import java.util.concurrent.CompletableFuture;
 import java.util.function.Predicate;
 
 @With
@@ -42,5 +43,10 @@ class HtCliRun implements HtRun {
                         .findFirst()
                         .orElseThrow())
         );
+    }
+
+    @Override
+    public CompletableFuture<HtContainer> execAsync() {
+        return null;
     }
 }

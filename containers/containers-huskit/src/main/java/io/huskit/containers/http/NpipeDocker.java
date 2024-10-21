@@ -16,12 +16,14 @@ import java.nio.charset.CodingErrorAction;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
+import java.time.Duration;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.Stream;
 
 final class NpipeDocker implements DockerSocket {
@@ -63,8 +65,13 @@ final class NpipeDocker implements DockerSocket {
                 if (state.isDirtyConnection().get()) {
                     state.resetConnection();
                 }
-                state.lock.release();
+                state.releaseLock();
             }
+        }).handle((ignore, throwable) -> {
+            if (throwable != null) {
+                rawResponse.completeExceptionally(throwable);
+            }
+            return null;
         });
         return CompletableFuture.completedFuture(rawResponse.join());
     }
@@ -84,16 +91,20 @@ final class NpipeDocker implements DockerSocket {
                                 var backoff = repeatRead.backoff().toMillis();
                                 var predicate = repeatRead.lookFor().predicate();
                                 if (repeatRead.lookFor().isOnlyInStdErr()) {
-                                    rs.buildStrderrStream().filter(predicate)
+                                    rs.buildStrderrStream()
+                                            .peek(System.out::println)
+                                            .filter(predicate)
                                             .findFirst()
                                             .ifPresent(ignore -> rs.isKeepReading = false);
                                 } else if (repeatRead.lookFor().isOnlyInStdOut()) {
                                     rs.buildStdoutStream()
+                                            .peek(System.out::println)
                                             .filter(predicate)
                                             .findFirst()
                                             .ifPresent(ignore -> rs.isKeepReading = false);
                                 } else {
                                     Stream.concat(rs.buildStdoutStream(), rs.buildStrderrStream())
+                                            .peek(System.out::println)
                                             .filter(predicate)
                                             .findFirst()
                                             .ifPresent(ignore -> rs.isKeepReading = false);
@@ -259,6 +270,8 @@ final class NpipeDocker implements DockerSocket {
                                     readState.isMultiplexStderr = false;
                                 } else if (ch == '\u0002') {
                                     readState.isMultiplexStderr = true;
+                                } else if (ch == 65533) {
+                                    throw new RuntimeException("Failed to decode multiplexed stream");
                                 } else if (ch != '\u0000') {
                                     readState.isMultiplexLineStart = false;
                                     readState.multiplexLineSize = ch;
@@ -326,6 +339,7 @@ final class NpipeDocker implements DockerSocket {
         CharsetDecoder decoder;
         CharsetEncoder encoder;
         Semaphore lock;
+        AtomicLong lockTime = new AtomicLong();
         AtomicBoolean isDirtyConnection;
 
         private State(String socketFile) {
@@ -352,8 +366,7 @@ final class NpipeDocker implements DockerSocket {
         public void write(Request request) {
             var body = request.http().body();
             var bb = ByteBuffer.wrap(body);
-            lock.acquire();
-            System.out.println("Sending request body -> " + new String(body, StandardCharsets.UTF_8));
+            takeLock(new String(body, StandardCharsets.UTF_8));
             channel.write(bb, 0).get();
             if (request.repeatReadPredicate().isPresent()) {
                 isDirtyConnection.set(true);
@@ -365,6 +378,18 @@ final class NpipeDocker implements DockerSocket {
             channel.close();
             channel = openChannel();
             isDirtyConnection().set(false);
+        }
+
+        @SneakyThrows
+        private void takeLock(String request) {
+            lock.acquire();
+            System.out.println("Took lock for request -> " + request);
+            lockTime.set(System.currentTimeMillis());
+        }
+
+        public void releaseLock() {
+            System.out.println("Releasing lock, `lockTime` -> " + Duration.ofMillis(System.currentTimeMillis() - lockTime.get()));
+            lock.release();
         }
     }
 

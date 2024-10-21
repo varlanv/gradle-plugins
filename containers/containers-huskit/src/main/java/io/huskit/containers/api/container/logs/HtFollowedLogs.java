@@ -18,4 +18,6 @@ public interface HtFollowedLogs {
     CompletableFuture<Stream<String>> streamStdErrAsync();
 
     void lookFor(LookFor lookFor);
+
+    CompletableFuture<Void> lookForAsync(LookFor lookFor);
 }

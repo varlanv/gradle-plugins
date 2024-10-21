@@ -55,6 +55,11 @@ public class HtCliFollowedLogs implements HtFollowedLogs {
 
     }
 
+    @Override
+    public CompletableFuture<Void> lookForAsync(LookFor lookFor) {
+        return null;
+    }
+
 //    @Override
 //    public Stream<String> stream() {
 //        return cli.sendCommand(

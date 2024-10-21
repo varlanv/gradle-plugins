@@ -5,7 +5,6 @@ import io.huskit.containers.api.container.HtContainers;
 import io.huskit.containers.api.container.exec.HtExec;
 import io.huskit.containers.api.container.list.HtListContainers;
 import io.huskit.containers.api.container.list.arg.HtListContainersArgsSpec;
-import io.huskit.containers.api.container.logs.HtLogs;
 import io.huskit.containers.api.container.rm.HtRm;
 import io.huskit.containers.api.container.run.HtCreateSpec;
 import io.huskit.containers.api.container.run.HtRmSpec;
@@ -49,7 +48,7 @@ final class HtHttpContainers implements HtContainers {
     }
 
     @Override
-    public HtLogs logs(CharSequence containerId) {
+    public HttpLogs logs(CharSequence containerId) {
         return new HttpLogs(dockerSpec, containerId);
     }
 
@@ -71,6 +70,8 @@ final class HtHttpContainers implements HtContainers {
                         spec.createSpec(),
                         new HttpInspect(dockerSpec)
                 ),
+                spec,
+                this::logs,
                 this::start
         );
     }
