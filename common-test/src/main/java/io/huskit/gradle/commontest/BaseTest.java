@@ -11,6 +11,7 @@ import org.junit.jupiter.api.TestInstance;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.time.Instant;
 import java.util.Objects;
 import java.util.concurrent.CountDownLatch;
@@ -85,6 +86,23 @@ public interface BaseTest {
         var dir = Files.createTempDirectory("huskitjunit-").toFile();
         dir.deleteOnExit();
         return dir;
+    }
+
+    @SneakyThrows
+    default Path newTempFile() {
+        return Files.createTempFile("huskitjunit-", ".tmp");
+    }
+
+    @SneakyThrows
+    default void useTempFile(ThrowingConsumer<Path> action) {
+        var file = newTempFile();
+        try {
+            action.accept(file);
+        } finally {
+            if (Files.exists(file)) {
+                Files.delete(file);
+            }
+        }
     }
 
     default void runAndDeleteFile(@NonNull File file, ThrowingRunnable runnable) {

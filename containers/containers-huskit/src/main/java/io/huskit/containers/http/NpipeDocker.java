@@ -140,25 +140,28 @@ final class NpipeChannelIn {
     AtomicBoolean isDirtyConnection;
     NpipeChannelLock lock;
 
-    @SneakyThrows
     CompletableFuture<Integer> write(Request request) {
         var body = request.http().body();
-        lock.acquire(() -> new String(body, StandardCharsets.UTF_8));
         var completion = new CompletableFuture<Integer>();
-        channel.write(ByteBuffer.wrap(body), 0, null, new CompletionHandler<>() {
+        if (body.length == 0) {
+            completion.completeExceptionally(new IllegalArgumentException("Cannot write empty body"));
+        } else {
+            lock.acquire(() -> new String(body, StandardCharsets.UTF_8));
+            channel.write(ByteBuffer.wrap(body), 0, null, new CompletionHandler<>() {
 
-            @Override
-            public void completed(Integer result, Object attachment) {
-                completion.complete(result);
-            }
+                @Override
+                public void completed(Integer result, Object attachment) {
+                    completion.complete(result);
+                }
 
-            @Override
-            public void failed(Throwable exc, Object attachment) {
-                completion.completeExceptionally(exc);
+                @Override
+                public void failed(Throwable exc, Object attachment) {
+                    completion.completeExceptionally(exc);
+                }
+            });
+            if (request.repeatReadPredicate().isPresent()) {
+                isDirtyConnection.set(true);
             }
-        });
-        if (request.repeatReadPredicate().isPresent()) {
-            isDirtyConnection.set(true);
         }
         return completion;
     }

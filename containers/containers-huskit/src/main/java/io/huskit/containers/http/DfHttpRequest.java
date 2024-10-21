@@ -12,6 +12,8 @@ final class DfHttpRequest implements Http.Request {
     DfHttpRequest(byte[]... parts) {
         if (parts.length == 1) {
             this.body = parts[0];
+        } else if (parts.length == 0) {
+            throw new IllegalArgumentException("Body cannot be empty");
         } else {
             var size = 0;
             for (var part : parts) {
