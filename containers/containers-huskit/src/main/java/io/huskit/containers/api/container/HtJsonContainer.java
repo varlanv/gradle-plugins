@@ -35,7 +35,8 @@ public final class HtJsonContainer implements HtContainer {
 
     @Override
     public Instant createdAt() {
-        return Instant.parse(HtCollections.getFromMap("Created", source));
+        Integer created = HtCollections.getFromMap("Created", source);
+        return Instant.ofEpochMilli(created);
     }
 
     @Override

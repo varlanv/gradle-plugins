@@ -62,7 +62,7 @@ final class HttpCreateSpec implements HtCreateSpec, HtUrl {
 
     @Override
     public HttpCreateSpec withPortBinding(Number hostPort, Number containerPort) {
-        return withPortBindings(Map.of(containerPort, hostPort));
+        return withPortBindings(Map.of(hostPort, containerPort));
     }
 
     @Override
@@ -74,7 +74,7 @@ final class HttpCreateSpec implements HtCreateSpec, HtUrl {
         hostConfig.put("PortBindings", pb);
         body.put("HostConfig", hostConfig);
         var exposedPorts = new HashMap<String, Object>();
-        portBindings.forEach((containerPort, hostPort) -> exposedPorts.put(containerPort.toString() + "/tcp", new HashMap<>()));
+        portBindings.forEach((hostPort, containerPort) -> exposedPorts.put(containerPort.toString() + "/tcp", new HashMap<>()));
         body.put("ExposedPorts", exposedPorts);
         return this;
     }
