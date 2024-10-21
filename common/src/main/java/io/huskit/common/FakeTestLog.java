@@ -1,28 +1,20 @@
 package io.huskit.common;
 
-import io.huskit.common.function.MemoizedSupplier;
-
-import java.util.Objects;
+import java.util.List;
+import java.util.Queue;
+import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.function.Supplier;
 
 public class FakeTestLog implements Log {
 
-    Log delegate;
-
-    public FakeTestLog() {
-        this.delegate = new ConditionalLog(
-                new StdLog(),
-                MemoizedSupplier.of(() ->
-                        Objects.equals(
-                                System.getProperty(HtConstants.TEST_SYSTEM_PROPERTY),
-                                "true"
-                        )
-                )
-        );
-    }
+    Queue<String> debugMessages = new ConcurrentLinkedQueue<>();
 
     @Override
     public void debug(Supplier<String> message) {
-        delegate.debug(message);
+        debugMessages.add(message.get());
+    }
+
+    public List<String> debugMessages() {
+        return List.copyOf(debugMessages);
     }
 }

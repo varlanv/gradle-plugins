@@ -4,10 +4,14 @@ import io.huskit.common.HtConstants;
 import io.huskit.common.Log;
 import io.huskit.common.NoopLog;
 import io.huskit.common.function.MemoizedSupplier;
+import io.huskit.common.io.ByteBufferInputStream;
 import lombok.Getter;
+import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.experimental.NonFinal;
+import org.jetbrains.annotations.VisibleForTesting;
 
+import java.io.InputStream;
 import java.nio.ByteBuffer;
 import java.nio.channels.AsynchronousFileChannel;
 import java.nio.channels.CompletionHandler;
@@ -60,7 +64,7 @@ final class NpipeDocker implements DockerSocket {
                 if (state.isDirtyConnection().get()) {
                     state.resetConnection();
                 }
-                state.releaseLock();
+//                state.releaseLock();
             }
         }).handle((ignore, throwable) -> {
             if (throwable != null) {
@@ -84,26 +88,62 @@ final class NpipeDocker implements DockerSocket {
 final class NpipeChannel {
 
     @NonFinal
-    AsynchronousFileChannel channel;
+    volatile AsynchronousFileChannel channel;
     Log log;
     String socketFile;
-    Semaphore lock;
-    AtomicLong lockTime = new AtomicLong();
-    Integer bufferSize = 4096;
     AtomicBoolean isDirtyConnection;
+    NpipeChannelLock lock;
+    Integer bufferSize = 4096;
 
     NpipeChannel(String socketFile, Log log) {
         this.socketFile = socketFile;
         this.log = log;
         this.channel = openChannel();
-        this.lock = new Semaphore(1);
+        this.lock = new NpipeChannelLock(log);
         this.isDirtyConnection = new AtomicBoolean(false);
     }
+
+    public CompletableFuture<InputStream> writeAndRead(Request request) {
+        return new NpipeChannelIn(
+                channel,
+                isDirtyConnection,
+                lock
+        ).write(request).thenCompose(ignore ->
+                new NpipeChannelOut(
+                        channel,
+                        bufferSize
+                ).read()
+        );
+    }
+
+    @SneakyThrows
+    void resetConnection() {
+        channel.close();
+        channel = openChannel();
+        isDirtyConnection().set(false);
+    }
+
+    @SneakyThrows
+    private AsynchronousFileChannel openChannel() {
+        return AsynchronousFileChannel.open(
+                Paths.get(socketFile),
+                StandardOpenOption.READ,
+                StandardOpenOption.WRITE
+        );
+    }
+}
+
+@RequiredArgsConstructor
+final class NpipeChannelIn {
+
+    AsynchronousFileChannel channel;
+    AtomicBoolean isDirtyConnection;
+    NpipeChannelLock lock;
 
     @SneakyThrows
     CompletableFuture<Integer> write(Request request) {
         var body = request.http().body();
-        takeLock(() -> new String(body, StandardCharsets.UTF_8));
+        lock.acquire(() -> new String(body, StandardCharsets.UTF_8));
         var completion = new CompletableFuture<Integer>();
         channel.write(ByteBuffer.wrap(body), 0, null, new CompletionHandler<>() {
 
@@ -122,18 +162,23 @@ final class NpipeChannel {
         }
         return completion;
     }
+}
 
-    CompletableFuture<byte[]> read() {
-        var completion = new CompletableFuture<byte[]>();
+@RequiredArgsConstructor
+final class NpipeChannelOut {
+
+    AsynchronousFileChannel channel;
+    Integer bufferSize;
+
+    CompletableFuture<InputStream> read() {
+        var completion = new CompletableFuture<InputStream>();
         var buffer = ByteBuffer.allocate(bufferSize);
         channel.read(buffer, 0, null, new CompletionHandler<>() {
 
             @Override
             public void completed(Integer result, Object attachment) {
                 buffer.flip();
-                var bytes = new byte[buffer.remaining()];
-                buffer.get(bytes);
-                completion.complete(bytes);
+                completion.complete(new ByteBufferInputStream(buffer));
             }
 
             @Override
@@ -143,32 +188,32 @@ final class NpipeChannel {
         });
         return completion;
     }
+}
+
+@RequiredArgsConstructor
+final class NpipeChannelLock {
+
+    Semaphore lock = new Semaphore(1);
+    AtomicLong lockTime = new AtomicLong();
+    Log log;
 
     @SneakyThrows
-    void resetConnection() {
-        channel.close();
-        channel = openChannel();
-        isDirtyConnection().set(false);
-    }
-
-    @SneakyThrows
-    void takeLock(Supplier<String> request) {
+    void acquire(Supplier<String> request) {
         lock.acquire();
-        log.debug(() -> "Took lock for request -> " + request);
+        log.debug(() -> "Took lock for request -> " + request.get());
         lockTime.set(System.currentTimeMillis());
     }
 
     void releaseLock() {
+        if (!isAcquired()) {
+            throw new IllegalStateException("Trying to release lock that is not acquired");
+        }
         log.debug(() -> "Releasing lock, `lockTime` -> " + Duration.ofMillis(System.currentTimeMillis() - lockTime.get()));
         lock.release();
     }
 
-    @SneakyThrows
-    private AsynchronousFileChannel openChannel() {
-        return AsynchronousFileChannel.open(
-                Paths.get(socketFile),
-                StandardOpenOption.READ,
-                StandardOpenOption.WRITE
-        );
+    @VisibleForTesting
+    boolean isAcquired() {
+        return lock.availablePermits() == 0;
     }
 }
