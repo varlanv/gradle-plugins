@@ -28,6 +28,11 @@ class LookForNothing implements LookFor {
     }
 
     @Override
+    public Boolean isInBothStd() {
+        return false;
+    }
+
+    @Override
     public LookFor withTimeout(Duration timeout) {
         return this;
     }

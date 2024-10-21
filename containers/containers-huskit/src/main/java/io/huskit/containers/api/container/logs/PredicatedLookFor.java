@@ -49,6 +49,11 @@ public class PredicatedLookFor implements LookFor {
     }
 
     @Override
+    public Boolean isInBothStd() {
+        return !onlyInStdOut && !onlyInStdErr;
+    }
+
+    @Override
     public LookFor withTimeout(Duration timeout) {
         return new PredicatedLookFor(predicate, timeout, onlyInStdOut, onlyInStdErr);
     }

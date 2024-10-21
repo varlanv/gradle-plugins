@@ -13,6 +13,8 @@ public interface LookFor {
 
     Boolean isOnlyInStdErr();
 
+    Boolean isInBothStd();
+
     LookFor withTimeout(Duration timeout);
 
     Duration timeout();

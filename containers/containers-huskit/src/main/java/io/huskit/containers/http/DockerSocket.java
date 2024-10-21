@@ -83,6 +83,10 @@ final class Request {
         return repeatReadPredicate.maybe();
     }
 
+    public boolean repeatReadPredicatePresent() {
+        return repeatReadPredicate.isPresent();
+    }
+
     public Optional<ExpectedStatus> expectedStatus() {
         return expectedStatus.maybe();
     }

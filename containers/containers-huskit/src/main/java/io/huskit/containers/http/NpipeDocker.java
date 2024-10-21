@@ -7,6 +7,7 @@ import lombok.Getter;
 import lombok.SneakyThrows;
 import lombok.experimental.NonFinal;
 
+import java.io.ByteArrayInputStream;
 import java.nio.ByteBuffer;
 import java.nio.CharBuffer;
 import java.nio.channels.AsynchronousFileChannel;
@@ -17,6 +18,7 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
 import java.time.Duration;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
@@ -57,7 +59,6 @@ final class NpipeDocker implements DockerSocket {
                 readAndProcess(
                         new ReadState(
                                 request,
-                                state.decoder,
                                 rawResponse
                         )
                 );
@@ -88,45 +89,17 @@ final class NpipeDocker implements DockerSocket {
         } else {
             rs.request.repeatReadPredicate()
                     .ifPresentOrElse(repeatRead -> {
-                                var backoff = repeatRead.backoff().toMillis();
-                                var predicate = repeatRead.lookFor().predicate();
-                                if (repeatRead.lookFor().isOnlyInStdErr()) {
-                                    rs.buildStrderrStream()
-                                            .peek(System.out::println)
-                                            .filter(predicate)
-                                            .findFirst()
-                                            .ifPresent(ignore -> rs.isKeepReading = false);
-                                } else if (repeatRead.lookFor().isOnlyInStdOut()) {
-                                    rs.buildStdoutStream()
-                                            .peek(System.out::println)
-                                            .filter(predicate)
-                                            .findFirst()
-                                            .ifPresent(ignore -> rs.isKeepReading = false);
-                                } else {
-                                    Stream.concat(rs.buildStdoutStream(), rs.buildStrderrStream())
-                                            .peek(System.out::println)
-                                            .filter(predicate)
-                                            .findFirst()
-                                            .ifPresent(ignore -> rs.isKeepReading = false);
-                                }
-                                if (rs.isKeepReading) {
+                                if (rs.shouldReadMore) {
                                     try {
-                                        if (backoff > 0) {
-                                            Thread.sleep(backoff);
-                                        }
-                                        var nrs = new ReadState(rs);
-                                        nrs.isHead = false;
-                                        readAndProcess(nrs);
-                                    } catch (InterruptedException e) {
+                                        Thread.sleep(repeatRead.backoff().toMillis());
+                                        readAndProcess(new ReadState(rs));
+                                    } catch (Exception e) {
                                         throw Sneaky.rethrow(e);
                                     }
                                 } else {
                                     rs.response.complete(
                                             new Http.RawResponse.StdRawResponse(
-                                                    new DfHead(
-                                                            200,
-                                                            rs.headers
-                                                    ),
+                                                    new DfHead(200, new HashMap<>()),
                                                     rs.stdoutPipe,
                                                     rs.stderrPipe
                                             )
@@ -138,24 +111,35 @@ final class NpipeDocker implements DockerSocket {
         }
     }
 
-
     @SneakyThrows
     private void processBuffer(ReadState readState) {
-        readState.readBuffer.flip();
-        readState.chars = readState.decoder.decode(readState.readBuffer);
+        var copy = ByteBuffer.wrap(readState.readBuffer.array().clone());
+        copy.limit(readState.readBuffer.limit());
+        copy.position(readState.readBuffer.position());
+        var clone = Arrays.copyOfRange(copy.array(), copy.position(), copy.limit());
+        var fullString = new String(clone, StandardCharsets.UTF_8);
+        var bais = new ByteArrayInputStream(copy.array(), copy.position(), copy.limit());
+        var sb = new StringBuilder();
+        int i;
+        while ((i = bais.read()) != -1) {
+            var ch = (char) i;
+            sb.append(ch);
+            var kek = 0;
+            kek++;
+        }
         if (readState.isHead) {
             processHead(readState);
         }
         if (!readState.isHead) {
             processBody(readState);
         }
-        readState.decoder.reset();
         readState.readBuffer.clear();
     }
 
     private void processHead(ReadState readState) {
-        while (readState.chars.hasRemaining()) {
-            var ch = readState.chars.get();
+        while (readState.hasNext()) {
+            var i = readState.readNext();
+            var ch = (char) i;
             var prevCh = readState.prevChar;
             var isCrLf = ch == '\n' && prevCh == '\r';
             if (isCrLf) {
@@ -232,14 +216,15 @@ final class NpipeDocker implements DockerSocket {
             readState.bodyNotPresent = true;
         } else {
             if (readState.isChunked) {
-                if (readState.chars.remaining() == 0) {
+                if (!readState.hasNext()) {
                     readState.shouldReadMore = true;
                 } else {
                     if (readState.bodyLineCount == 0) {
                         readState.isChunkSizeEndPart = true;
                     }
-                    while (readState.chars.hasRemaining()) {
-                        var ch = readState.chars.get();
+                    while (readState.hasNext()) {
+                        var i = readState.readNext();
+                        var ch = (char) i;
                         if (readState.isChunkSizeEndPart) {
                             if (ch == '\r') {
                                 readState.chunkSizeBuffer.flip();
@@ -251,8 +236,8 @@ final class NpipeDocker implements DockerSocket {
                                     readState.shouldReadMore = false;
                                     break;
                                 }
-                                if (readState.chars.hasRemaining()) {
-                                    readState.chars.get();
+                                if (readState.hasNext()) {
+                                    readState.readNext();
                                     readState.bodyLineCount++;
                                 }
                             } else {
@@ -266,13 +251,11 @@ final class NpipeDocker implements DockerSocket {
                             readState.bodyNotPresent = true;
                             readState.currentReadChunkSize--;
                             if (readState.isMultiplexLineStart) {
-                                if (ch == '\u0001') {
+                                if (i == 1) {
                                     readState.isMultiplexStderr = false;
-                                } else if (ch == '\u0002') {
+                                } else if (i == 2) {
                                     readState.isMultiplexStderr = true;
-                                } else if (ch == 65533) {
-                                    throw new RuntimeException("Failed to decode multiplexed stream");
-                                } else if (ch != '\u0000') {
+                                } else if (i != 0) {
                                     readState.isMultiplexLineStart = false;
                                     readState.multiplexLineSize = ch;
                                 }
@@ -283,11 +266,14 @@ final class NpipeDocker implements DockerSocket {
                                     } else {
                                         readState.writeToStdoutBuffer(ch);
                                     }
+                                    if (readState.request.repeatReadPredicatePresent()) {
+                                        if (readState.checkReadPredicate()) {
+                                            readState.shouldReadMore = false;
+                                            return;
+                                        }
+                                    }
                                     if (readState.currentReadChunkSize == 0) {
                                         readState.isChunkSizeStartPart = true;
-                                        if (readState.request.repeatReadPredicate().isPresent()) {
-                                            readState.shouldReadMore = false;
-                                        }
                                     } else {
                                         readState.isMultiplexLineStart = true;
                                         readState.bodyLineCount++;
@@ -304,10 +290,10 @@ final class NpipeDocker implements DockerSocket {
                             readState.writeToBody(ch);
                             if (--readState.currentReadChunkSize == 0) {
                                 readState.bodyLineCount++;
-                                if (readState.chars.hasRemaining()) {
-                                    readState.chars.get();
-                                    if (readState.chars.hasRemaining()) {
-                                        readState.chars.get();
+                                if (readState.hasNext()) {
+                                    readState.readNext();
+                                    if (readState.hasNext()) {
+                                        readState.readNext();
                                     }
                                 }
                                 readState.isChunkSizeEndPart = true;
@@ -316,10 +302,10 @@ final class NpipeDocker implements DockerSocket {
                     }
                 }
             } else {
-                if (!readState.shouldReadMore && readState.chars.array()[readState.chars.limit() - 1] == '\n') {
-                    readState.chars.limit(readState.chars.limit() - 1);
-                }
-                readState.writeToBody(readState.chars);
+//                if (!readState.shouldReadMore && readState.readBuffer.array()[readState.readBuffer.limit() - 1] == '\n') {
+//                    readState.chars.limit(readState.chars.limit() - 1);
+//                }
+                readState.writeRemainingToBody();
             }
         }
     }
@@ -327,6 +313,7 @@ final class NpipeDocker implements DockerSocket {
     @SneakyThrows
     private void read(ReadState readState) {
         readState.resultSize = stateSupplier.get().channel.read(readState.readBuffer, 0).get();
+        readState.readBuffer.flip();
     }
 
 
@@ -403,7 +390,6 @@ final class NpipeDocker implements DockerSocket {
     private static final class ReadState {
 
         Request request;
-        CharsetDecoder decoder;
         CompletableFuture<Http.RawResponse> response;
         SimplePipe stdoutPipe;
         SimplePipe stderrPipe;
@@ -423,8 +409,6 @@ final class NpipeDocker implements DockerSocket {
         CharBuffer lineBuffer = CharBuffer.allocate(lineBufferSize);
         SimplePipe bodyPipe = new SimplePipe(readBufferSize);
         CharBuffer chunkSizeBuffer = CharBuffer.allocate(chunkSizeBufferSize);
-        @NonFinal
-        CharBuffer chars;
         Map<String, String> headers = new HashMap<>();
         @NonFinal
         String currentHeaderKey;
@@ -470,23 +454,19 @@ final class NpipeDocker implements DockerSocket {
         boolean isCompleted;
 
         public ReadState(Request request,
-                         CharsetDecoder decoder,
                          CompletableFuture<Http.RawResponse> response,
                          SimplePipe stdoutPipe,
                          SimplePipe stderrPipe) {
             this.request = request;
-            this.decoder = decoder;
             this.response = response;
             this.stdoutPipe = stdoutPipe;
             this.stderrPipe = stderrPipe;
         }
 
         public ReadState(Request request,
-                         CharsetDecoder decoder,
                          CompletableFuture<Http.RawResponse> response) {
             this(
                     request,
-                    decoder,
                     response,
                     new SimplePipe(4096),
                     new SimplePipe(4096)
@@ -496,7 +476,6 @@ final class NpipeDocker implements DockerSocket {
         public ReadState(ReadState rs) {
             this(
                     rs.request,
-                    rs.decoder,
                     rs.response,
                     rs.stdoutPipe,
                     rs.stderrPipe
@@ -510,18 +489,7 @@ final class NpipeDocker implements DockerSocket {
                     throw new IllegalStateException("Cannot create response from incomplete state");
                 }
                 var head = new DfHead(status, headers);
-                request.expectedStatus()
-                        .map(ExpectedStatus::status)
-                        .ifPresent(expectedStatus -> {
-                            if (!Objects.equals(status, expectedStatus)) {
-                                throw new RuntimeException(
-                                        String.format(
-                                                "Expected status %d but received %d",
-                                                expectedStatus, status
-                                        )
-                                );
-                            }
-                        });
+                verifyStatus();
                 if (request.repeatReadPredicate().isEmpty()) {
                     if (isMultiplexedStream) {
                         stdoutPipe.init();
@@ -546,12 +514,43 @@ final class NpipeDocker implements DockerSocket {
             }
         }
 
+        private void verifyStatus() {
+            request.expectedStatus()
+                    .map(ExpectedStatus::status)
+                    .ifPresent(expectedStatus -> {
+                        if (!Objects.equals(status, expectedStatus)) {
+                            throw new RuntimeException(
+                                    String.format(
+                                            "Expected status %d but received %d",
+                                            expectedStatus, status
+                                    )
+                            );
+                        }
+                    });
+        }
+
+        public int readNext() {
+            return readBuffer.get() & 0xFF;
+        }
+
+        public boolean hasNext() {
+            return readBuffer.hasRemaining();
+        }
+
         public void writeToStdoutBuffer(char ch) {
             stdoutPipe.write(ch);
         }
 
+        public void writeToStdoutBuffer(int i) {
+            stdoutPipe.writeToSinkStream(i);
+        }
+
         public void writeToStderrBuffer(char ch) {
             stderrPipe.write(ch);
+        }
+
+        public void writeToStderrBuffer(int i) {
+            stderrPipe.writeToSinkStream(i);
         }
 
         public void clearLineBuffer() {
@@ -563,6 +562,14 @@ final class NpipeDocker implements DockerSocket {
         }
 
         public void writeToBody(CharBuffer chars) {
+            bodyPipe.writeLine(chars);
+        }
+
+        public void writeRemainingToBody() {
+            var chars = new char[readBuffer.remaining()];
+            for (var i = 0; i < chars.length; i++) {
+                chars[i] = (char) readBuffer.get();
+            }
             bodyPipe.writeLine(chars);
         }
 
@@ -588,6 +595,58 @@ final class NpipeDocker implements DockerSocket {
             stdoutPipe.breakPipe();
             stderrPipe.breakPipe();
             bodyPipe.breakPipe();
+        }
+
+        public boolean checkReadPredicate() {
+            return request.repeatReadPredicate()
+                    .map(predicate -> {
+                        try {
+                            var lookFor = predicate.lookFor();
+                            var stderrWrites = stderrPipe.useWritesCount();
+                            if (stderrWrites > 0 && isMultiplexStderr && (lookFor.isOnlyInStdErr() || lookFor.isInBothStd())) {
+                                int i;
+                                var ss = stderrPipe.sourceStream();
+                                var line = new byte[stderrWrites];
+                                for (var r = 0; r < stderrWrites; r++) {
+                                    i = ss.read();
+                                    line[r] = (byte) i;
+                                }
+                                String string;
+                                if (line.length > 2 && line[stderrWrites - 1] == 10 && line[stderrWrites - 2] == 49) {
+                                    string = new String(line, 0, stderrWrites - 1, StandardCharsets.UTF_8);
+                                } else if (line.length > 2 && line[stderrWrites - 1] == 10) {
+                                    string = new String(line, 0, stderrWrites - 1, StandardCharsets.UTF_8);
+                                } else {
+                                    string = new String(line, StandardCharsets.UTF_8);
+                                }
+                                return lookFor.predicate().test(string);
+                            } else {
+                                var stdoutWrites = stdoutPipe.useWritesCount();
+                                if (stdoutWrites > 0 && !isMultiplexStderr && (lookFor.isOnlyInStdOut() || lookFor.isInBothStd())) {
+                                    int i;
+                                    var ss = stdoutPipe.sourceStream();
+                                    var line = new byte[stdoutWrites];
+                                    for (var r = 0; r < stdoutWrites; r++) {
+                                        i = ss.read();
+                                        line[r] = (byte) i;
+                                    }
+                                    String string;
+                                    if (line.length > 2 && line[stdoutWrites - 1] == 10 && line[stdoutWrites - 2] == 49) {
+                                        string = new String(line, 0, stdoutWrites - 1, StandardCharsets.UTF_8);
+                                    } else if (line.length > 2 && line[stdoutWrites - 1] == 10) {
+                                        string = new String(line, 0, stdoutWrites - 1, StandardCharsets.UTF_8);
+                                    } else {
+                                        string = new String(line, StandardCharsets.UTF_8);
+                                    }
+                                    return lookFor.predicate().test(string);
+                                }
+                            }
+                            return false;
+                        } catch (Exception e) {
+                            throw Sneaky.rethrow(e);
+                        }
+                    })
+                    .orElse(false);
         }
     }
 }

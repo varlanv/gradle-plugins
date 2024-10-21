@@ -18,11 +18,19 @@ public final class SimplePipe {
     PipedInputStream sourceStream;
     @NonFinal
     PipedOutputStream sinkStream;
+    @NonFinal
+    int writesCount;
     int size;
 
     @SneakyThrows
     public SimplePipe(int size) {
         this.size = size;
+    }
+
+    public int useWritesCount() {
+        int wc = writesCount;
+        writesCount = 0;
+        return wc;
     }
 
     public PipedInputStream sourceStream() {
@@ -39,6 +47,7 @@ public final class SimplePipe {
     public void writeToSinkStream(int i) {
         init();
         sinkStream.write(i);
+        writesCount++;
     }
 
     @SneakyThrows
@@ -68,8 +77,18 @@ public final class SimplePipe {
     @SneakyThrows
     public void writeLine(CharSequence charSequence) {
         init();
-        sink.write(charSequence.toString());
+        var str = charSequence.toString();
+        sink.write(str);
         sink.flush();
+        writesCount += str.length();
+    }
+
+    @SneakyThrows
+    public void writeLine(char[] chars) {
+        init();
+        sink.write(chars);
+        sink.flush();
+        writesCount += chars.length;
     }
 
     @SneakyThrows
@@ -77,6 +96,7 @@ public final class SimplePipe {
         init();
         sink.write(ch);
         sink.flush();
+        writesCount++;
     }
 
     @SneakyThrows
