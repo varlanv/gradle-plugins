@@ -11,7 +11,7 @@ import io.huskit.containers.api.container.run.HtRmSpec;
 import io.huskit.containers.api.container.run.HtRun;
 import io.huskit.containers.api.container.run.HtRunSpec;
 import io.huskit.containers.api.image.HtImgName;
-import io.huskit.containers.model.HtConstants;
+import io.huskit.common.HtConstants;
 import lombok.RequiredArgsConstructor;
 
 import java.util.Arrays;

@@ -3,7 +3,7 @@ package io.huskit.gradle.containers.plugin;
 import io.huskit.common.Sneaky;
 import io.huskit.containers.integration.DfHtStartedContainer;
 import io.huskit.containers.integration.FakeHtIntegratedDocker;
-import io.huskit.containers.model.HtConstants;
+import io.huskit.common.HtConstants;
 import io.huskit.containers.model.exception.NonUniqueContainerException;
 import io.huskit.gradle.commontest.GradleIntegrationTest;
 import io.huskit.gradle.containers.plugin.api.ContainersExtension;

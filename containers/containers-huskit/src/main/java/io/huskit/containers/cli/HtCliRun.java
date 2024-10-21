@@ -5,7 +5,7 @@ import io.huskit.containers.api.container.HtContainer;
 import io.huskit.containers.api.container.HtLazyContainer;
 import io.huskit.containers.api.container.logs.LookFor;
 import io.huskit.containers.api.container.run.HtRun;
-import io.huskit.containers.model.HtConstants;
+import io.huskit.common.HtConstants;
 import lombok.RequiredArgsConstructor;
 import lombok.With;
 

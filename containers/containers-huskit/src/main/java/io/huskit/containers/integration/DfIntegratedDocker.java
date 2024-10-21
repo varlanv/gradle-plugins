@@ -2,7 +2,7 @@ package io.huskit.containers.integration;
 
 import io.huskit.containers.integration.mongo.HtMongo;
 import io.huskit.containers.model.ContainerType;
-import io.huskit.containers.model.HtConstants;
+import io.huskit.common.HtConstants;
 import io.huskit.containers.model.StartedContainersRegistry;
 
 import java.util.LinkedHashMap;

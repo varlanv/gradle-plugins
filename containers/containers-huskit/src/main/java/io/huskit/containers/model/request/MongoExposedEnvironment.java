@@ -1,6 +1,6 @@
 package io.huskit.containers.model.request;
 
-import io.huskit.containers.model.HtConstants;
+import io.huskit.common.HtConstants;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 

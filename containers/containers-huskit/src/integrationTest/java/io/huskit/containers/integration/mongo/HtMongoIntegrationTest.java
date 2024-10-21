@@ -3,9 +3,7 @@ package io.huskit.containers.integration.mongo;
 import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoClients;
 import com.mongodb.client.model.Filters;
-import io.huskit.containers.api.docker.HtDocker;
-import io.huskit.containers.http.HtHttpDocker;
-import io.huskit.containers.model.HtConstants;
+import io.huskit.common.HtConstants;
 import io.huskit.gradle.commontest.DockerIntegrationTest;
 import io.huskit.log.ProfileLog;
 import org.bson.Document;
@@ -27,8 +25,8 @@ class HtMongoIntegrationTest implements DockerIntegrationTest {
                 .withContainerSpec(spec -> spec.reuse().enabledWithCleanupAfter(Duration.ofMinutes(120)))
                 .start();
         {
-//            var connectionString = subject.connectionString();
-//            verifyMongoConnection(connectionString);
+            var connectionString = subject.connectionString();
+            verifyMongoConnection(connectionString);
         }
 
         {

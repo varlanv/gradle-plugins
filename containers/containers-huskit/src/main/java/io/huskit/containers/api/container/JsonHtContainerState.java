@@ -1,7 +1,7 @@
 package io.huskit.containers.api.container;
 
 import io.huskit.common.collection.HtCollections;
-import io.huskit.containers.model.HtConstants;
+import io.huskit.common.HtConstants;
 import lombok.RequiredArgsConstructor;
 
 import java.time.Instant;

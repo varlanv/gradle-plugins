@@ -2,7 +2,7 @@ package io.huskit.containers.http;
 
 import io.huskit.common.Os;
 import io.huskit.common.Volatile;
-import io.huskit.containers.model.HtConstants;
+import io.huskit.common.HtConstants;
 
 final class DockerSockets {
 

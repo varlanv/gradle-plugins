@@ -8,7 +8,7 @@ import io.huskit.containers.api.docker.HtDocker;
 import io.huskit.containers.api.image.HtImgName;
 import io.huskit.containers.integration.*;
 import io.huskit.containers.model.ContainerType;
-import io.huskit.containers.model.HtConstants;
+import io.huskit.common.HtConstants;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 

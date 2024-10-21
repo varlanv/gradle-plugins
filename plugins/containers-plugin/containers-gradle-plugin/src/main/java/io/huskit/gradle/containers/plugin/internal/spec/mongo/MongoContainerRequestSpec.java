@@ -5,7 +5,7 @@ import io.huskit.containers.api.image.HtImgName;
 import io.huskit.containers.integration.ContainerSpec;
 import io.huskit.containers.integration.DefContainerSpec;
 import io.huskit.containers.model.ContainerType;
-import io.huskit.containers.model.HtConstants;
+import io.huskit.common.HtConstants;
 import io.huskit.containers.model.image.DefaultContainerImage;
 import io.huskit.containers.model.request.DefaultMongoRequestedContainer;
 import io.huskit.containers.model.request.MongoExposedEnvironment;

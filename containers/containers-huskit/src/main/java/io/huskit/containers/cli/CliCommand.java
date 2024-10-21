@@ -1,7 +1,7 @@
 package io.huskit.containers.cli;
 
 import io.huskit.containers.model.CommandType;
-import io.huskit.containers.model.HtConstants;
+import io.huskit.common.HtConstants;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.With;

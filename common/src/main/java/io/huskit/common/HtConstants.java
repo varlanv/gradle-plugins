@@ -1,4 +1,4 @@
-package io.huskit.containers.model;
+package io.huskit.common;
 
 import lombok.NoArgsConstructor;
 import org.intellij.lang.annotations.PrintFormat;
@@ -11,6 +11,12 @@ import java.util.function.Predicate;
 @NoArgsConstructor(access = lombok.AccessLevel.PRIVATE)
 public class HtConstants {
 
+    @Override
+    public boolean equals(Object obj) {
+        return super.equals(obj);
+    }
+
+    public static final String TEST_SYSTEM_PROPERTY = "htct.test";
     public static final Long ZERO_INSTANT_MILLIS = -62135596800000L;
     public static final String CONTAINER_HASH_LABEL = "HTCT_REUSABLE_HASH";
     public static final String CONTAINER_CLEANUP_AFTER_LABEL = "HTCT_CLEANUP_AFTER";
