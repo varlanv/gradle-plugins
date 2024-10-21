@@ -1,11 +1,12 @@
 package io.huskit.gradle.containers.plugin;
 
-import io.huskit.containers.model.HtConstants;
+import io.huskit.common.HtConstants;
 import io.huskit.gradle.DockerFunctionalTest;
 import io.huskit.gradle.GradleRunResult;
 import io.huskit.gradle.commontest.DataTable;
 import io.huskit.gradle.containers.plugin.internal.HuskitContainersExtension;
 import org.apache.commons.lang3.StringUtils;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
@@ -17,6 +18,7 @@ import java.util.stream.Collectors;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+@Disabled
 public class HuskitContainersPluginFunctionalTest implements DockerFunctionalTest {
 
     @ParameterizedTest

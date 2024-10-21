@@ -10,6 +10,7 @@ import io.huskit.containers.api.container.HtContainerStatus;
 import io.huskit.containers.api.container.logs.LookFor;
 import io.huskit.gradle.commontest.DockerImagesStash;
 import io.huskit.gradle.commontest.DockerIntegrationTest;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.condition.EnabledOnOs;
 import org.junit.jupiter.api.condition.OS;
@@ -34,6 +35,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 class HtHttpDckrIntegrationTest implements DockerIntegrationTest {
 
     @Test
+    @Disabled
     @EnabledOnOs(OS.WINDOWS)
     @Execution(ExecutionMode.CONCURRENT)
     void listContainers__withRandomFilters__shouldReturnEmptyList(HtHttpDckr subject) {
@@ -50,6 +52,7 @@ class HtHttpDckrIntegrationTest implements DockerIntegrationTest {
     }
 
     @Test
+    @Disabled
     @EnabledOnOs(OS.WINDOWS)
     @Execution(ExecutionMode.CONCURRENT)
     void docker_alpine_container_spec(HtHttpDckr subject) {

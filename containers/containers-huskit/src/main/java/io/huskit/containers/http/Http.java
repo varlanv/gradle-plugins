@@ -7,7 +7,6 @@ import lombok.RequiredArgsConstructor;
 import java.io.Reader;
 import java.util.Map;
 import java.util.NoSuchElementException;
-import java.util.Optional;
 import java.util.function.Supplier;
 
 public interface Http {

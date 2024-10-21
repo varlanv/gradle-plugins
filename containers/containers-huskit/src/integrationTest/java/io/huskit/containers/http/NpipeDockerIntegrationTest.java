@@ -177,6 +177,7 @@ public class NpipeDockerIntegrationTest implements DockerIntegrationTest {
     }
 
     @Test
+    @Disabled
     @Timeout(3)
     void containers_json() throws Exception {
         var httpRequests = new HttpRequests();

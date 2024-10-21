@@ -16,6 +16,7 @@ final class HttpLogsSpec implements HtUrl {
         return this;
     }
 
+    @Override
     public String url() {
         if (follow.require()) {
             return "/containers/" + containerId + "/logs?stdout=true&stderr=true&follow=true";

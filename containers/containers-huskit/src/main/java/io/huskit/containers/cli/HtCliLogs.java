@@ -1,6 +1,5 @@
 package io.huskit.containers.cli;
 
-import io.huskit.common.function.CloseableAccessor;
 import io.huskit.containers.api.container.logs.HtFollowedLogs;
 import io.huskit.containers.api.container.logs.HtLogs;
 import io.huskit.containers.api.container.logs.Logs;

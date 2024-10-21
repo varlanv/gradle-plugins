@@ -8,6 +8,7 @@ huskitConvention {
 }
 
 dependencies {
+    implementation(projects.common)
     implementation(projects.commonTest)
     implementation(projects.logging.loggingApi)
     implementation(projects.logging.loggingGradle)

@@ -3,12 +3,9 @@ package io.huskit.containers.cli;
 import io.huskit.containers.api.container.logs.HtFollowedLogs;
 import io.huskit.containers.api.container.logs.Logs;
 import io.huskit.containers.api.container.logs.LookFor;
-import io.huskit.containers.model.CommandType;
 import lombok.RequiredArgsConstructor;
 import lombok.With;
 
-import java.util.List;
-import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Stream;
 

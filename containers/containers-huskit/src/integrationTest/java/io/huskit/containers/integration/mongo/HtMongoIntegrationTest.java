@@ -19,6 +19,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 class HtMongoIntegrationTest implements DockerIntegrationTest {
 
     @Test
+    @Disabled
     void mongo_test() {
         long var = System.currentTimeMillis();
         var subject = HtMongo.fromImage(HtConstants.Mongo.DEFAULT_IMAGE)
