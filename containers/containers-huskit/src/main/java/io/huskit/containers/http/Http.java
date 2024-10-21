@@ -115,6 +115,14 @@ public interface Http {
         Integer status();
 
         Map<String, String> headers();
+
+        default Boolean isChunked() {
+            return "chunked".equals(headers().get("Transfer-Encoding"));
+        }
+
+        default Boolean isMultiplexedStream() {
+            return "application/vnd.docker.multiplexed-stream".equals(headers().get("Content-Type"));
+        }
     }
 
     interface StringBody extends Body<String> {
