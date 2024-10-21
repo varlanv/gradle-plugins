@@ -22,6 +22,7 @@ class HtMongoIntegrationTest implements DockerIntegrationTest {
 
     @Test
     void mongo_test() {
+        long var = System.currentTimeMillis();
         var subject = HtMongo.fromImage(HtConstants.Mongo.DEFAULT_IMAGE)
                 .withContainerSpec(spec -> spec.reuse().enabledWithCleanupAfter(Duration.ofMinutes(120)))
                 .start();

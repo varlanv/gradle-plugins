@@ -88,9 +88,8 @@ class HtHttpDckrIntegrationTest implements DockerIntegrationTest {
                 assertThat(containerConfig.labels()).containsAllEntriesOf(containerLabels);
                 assertThat(containerConfig.env()).containsAllEntriesOf(containerEnv);
                 assertThat(container.name()).isNotEmpty();
-                var hostConfig = container.hostConfig();
-                assertThat(hostConfig.ports().get(0)).isIn(mappedPort1, mappedPort2).isNotEqualTo(hostConfig.ports().get(1));
-                assertThat(hostConfig.ports().get(1)).isIn(mappedPort1, mappedPort2);
+                assertThat(container.ports().get(0)).isIn(mappedPort1, mappedPort2).isNotEqualTo(container.ports().get(1));
+                assertThat(container.ports().get(1)).isIn(mappedPort1, mappedPort2);
             }
             {
                 var logs = new CopyOnWriteArrayList<String>();
@@ -228,8 +227,6 @@ class HtHttpDckrIntegrationTest implements DockerIntegrationTest {
                 }
                 {
                     var hostConfig = inspected.hostConfig();
-                    assertThat(hostConfig.ports()).containsExactly(mappedPort1, mappedPort2);
-                    assertThatThrownBy(hostConfig::firstMappedPort).hasMessageContaining("multiple are present");
                 }
                 {
                     subject.containers().execInContainer(

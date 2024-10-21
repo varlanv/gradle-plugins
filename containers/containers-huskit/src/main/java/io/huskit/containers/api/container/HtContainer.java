@@ -1,5 +1,7 @@
 package io.huskit.containers.api.container;
 
+import io.huskit.common.port.MappedPort;
+
 import java.time.Instant;
 import java.util.List;
 import java.util.Map;
@@ -44,7 +46,9 @@ public interface HtContainer {
 
     String logPath();
 
+    Integer firstMappedPort();
 
+    List<MappedPort> ports();
 
     Map<String, Object> toJsonMap();
 }

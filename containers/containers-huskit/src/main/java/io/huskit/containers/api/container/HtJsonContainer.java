@@ -1,12 +1,11 @@
 package io.huskit.containers.api.container;
 
 import io.huskit.common.collection.HtCollections;
+import io.huskit.common.port.MappedPort;
 import lombok.RequiredArgsConstructor;
 
 import java.time.Instant;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 @RequiredArgsConstructor
 public final class HtJsonContainer implements HtContainer {
@@ -35,8 +34,14 @@ public final class HtJsonContainer implements HtContainer {
 
     @Override
     public Instant createdAt() {
-        Integer created = HtCollections.getFromMap("Created", source);
-        return Instant.ofEpochMilli(created);
+        Object created = HtCollections.getFromMap("Created", source);
+        if (created instanceof String) {
+            return Instant.parse((String) created);
+        } else if (created instanceof Number) {
+            return Instant.ofEpochSecond(((Number) created).longValue());
+        } else {
+            throw new IllegalStateException("Failed to parse created date: " + created);
+        }
     }
 
     @Override
@@ -112,5 +117,68 @@ public final class HtJsonContainer implements HtContainer {
     @Override
     public Map<String, Object> toJsonMap() {
         return Collections.unmodifiableMap(source);
+    }
+
+    @Override
+    public Integer firstMappedPort() {
+        var ports = ports();
+        var size = ports.size();
+        if (size == 0) {
+            throw new IllegalStateException("No mapped ports present");
+        } else if (size > 1) {
+            throw new IllegalStateException("Cannot pick first mapped port when multiple are present - " + ports);
+        }
+        return ports.get(0).host();
+    }
+
+    @Override
+    public List<MappedPort> ports() {
+        return portsFromHostConfig()
+                .or(this::portsFromSource)
+                .orElse(List.of());
+    }
+
+    @SuppressWarnings("unchecked")
+    private Optional<List<MappedPort>> portsFromHostConfig() {
+        var hc = source.get("HostConfig");
+        if (hc == null) {
+            return Optional.empty();
+        }
+        var hostConfig = (Map<String, Object>) hc;
+        var pb = hostConfig.get("PortBindings");
+        if (pb == null) {
+            return Optional.empty();
+        }
+        var ports = (Map<String, Object>) pb;
+        var mappedPorts = new ArrayList<MappedPort>();
+        for (var portEntry : ports.entrySet()) {
+            var values = (List<Map<String, String>>) portEntry.getValue();
+            if (values.isEmpty()) {
+                throw new IllegalStateException(String.format("Port '%s' is not mapped to any host port", portEntry.getKey()));
+            }
+            var mappedPort = values.get(0);
+            var hostPort = Integer.parseInt(mappedPort.get("HostPort"));
+            mappedPorts.add(new MappedPort(hostPort, Integer.parseInt(portEntry.getKey().split("/")[0])));
+        }
+        return Optional.of(Collections.unmodifiableList(mappedPorts));
+    }
+
+    @SuppressWarnings("unchecked")
+    private Optional<List<MappedPort>> portsFromSource() {
+        var p = source.get("Ports");
+        if (p == null) {
+            return Optional.empty();
+        }
+        var ports = (List<Map<String, Object>>) p;
+        var mappedPorts = new ArrayList<MappedPort>();
+        for (var port : ports) {
+            var privatePort = Integer.parseInt(port.get("PrivatePort").toString());
+            var publicPort = port.get("PublicPort");
+            if (publicPort == null) {
+                continue;
+            }
+            mappedPorts.add(new MappedPort(Integer.parseInt(publicPort.toString()), privatePort));
+        }
+        return Optional.of(Collections.unmodifiableList(mappedPorts));
     }
 }

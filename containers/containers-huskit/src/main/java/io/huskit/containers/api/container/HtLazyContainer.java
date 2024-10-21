@@ -2,6 +2,7 @@ package io.huskit.containers.api.container;
 
 import io.huskit.common.function.MemoizedSupplier;
 import io.huskit.common.function.ThrowingSupplier;
+import io.huskit.common.port.MappedPort;
 import lombok.Getter;
 
 import java.time.Instant;
@@ -107,6 +108,16 @@ public class HtLazyContainer implements HtContainer {
     @Override
     public String logPath() {
         return delegate.get().logPath();
+    }
+
+    @Override
+    public Integer firstMappedPort() {
+        return delegate.get().firstMappedPort();
+    }
+
+    @Override
+    public List<MappedPort> ports() {
+        return delegate.get().ports();
     }
 
     @Override
