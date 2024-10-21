@@ -95,6 +95,11 @@ public class HtLazyContainer implements HtContainer {
     }
 
     @Override
+    public HtContainerHostConfig hostConfig() {
+        return delegate.get().hostConfig();
+    }
+
+    @Override
     public String resolvConfPath() {
         return delegate.get().resolvConfPath();
     }

@@ -9,7 +9,7 @@ import java.util.List;
 import java.util.Map;
 
 @RequiredArgsConstructor
-public class HtJsonContainer implements HtContainer {
+public final class HtJsonContainer implements HtContainer {
 
     Map<String, Object> source;
 
@@ -91,6 +91,11 @@ public class HtJsonContainer implements HtContainer {
     @Override
     public HtContainerState state() {
         return new JsonHtContainerState(HtCollections.getFromMap("State", source));
+    }
+
+    @Override
+    public HtContainerHostConfig hostConfig() {
+        return new JsonHtContainerHostConfig(HtCollections.getFromMap("HostConfig", source));
     }
 
     @Override

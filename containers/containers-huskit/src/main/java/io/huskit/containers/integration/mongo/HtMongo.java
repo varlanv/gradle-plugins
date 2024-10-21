@@ -102,7 +102,7 @@ public final class HtMongo implements HtServiceContainer {
                     )
                     .exec();
         });
-        var port = container.network().firstMappedPort();
+        var port = container.hostConfig().firstMappedPort();
         var dbName = Mutable.<String>of();
         Supplier<Map<String, String>> mapSupplier = () -> {
             var connectionString = Mutable.<String>of();
@@ -110,12 +110,12 @@ public final class HtMongo implements HtServiceContainer {
                 var counter = databaseNameCounter.incrementAndGet();
                 var db = databaseName.require() + "_" + counter;
                 var conn = String.format(HtConstants.Mongo.CONNECTION_STRING_PATTERN,
-                        "localhost", container.network().firstMappedPort()) + "/" + db;
+                        "localhost", container.hostConfig().firstMappedPort()) + "/" + db;
                 dbName.set(db);
                 connectionString.set(conn);
             } else {
                 var conn = String.format(HtConstants.Mongo.CONNECTION_STRING_PATTERN,
-                        "localhost", container.network().firstMappedPort());
+                        "localhost", container.hostConfig().firstMappedPort());
                 dbName.set(databaseName.require());
                 connectionString.set(conn);
             }

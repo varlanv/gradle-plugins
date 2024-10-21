@@ -38,6 +38,8 @@ public interface HtContainer {
 
     HtContainerState state();
 
+    HtContainerHostConfig hostConfig();
+
     String resolvConfPath();
 
     String logPath();

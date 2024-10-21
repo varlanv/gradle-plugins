@@ -88,9 +88,9 @@ class HtHttpDckrIntegrationTest implements DockerIntegrationTest {
                 assertThat(containerConfig.labels()).containsAllEntriesOf(containerLabels);
                 assertThat(containerConfig.env()).containsAllEntriesOf(containerEnv);
                 assertThat(container.name()).isNotEmpty();
-                var containerNetwork = container.network();
-//                assertThat(containerNetwork.ports().get(0)).isIn(mappedPort1, mappedPort2).isNotEqualTo(containerNetwork.ports().get(1));
-//                assertThat(containerNetwork.ports().get(1)).isIn(mappedPort1, mappedPort2);
+                var hostConfig = container.hostConfig();
+                assertThat(hostConfig.ports().get(0)).isIn(mappedPort1, mappedPort2).isNotEqualTo(hostConfig.ports().get(1));
+                assertThat(hostConfig.ports().get(1)).isIn(mappedPort1, mappedPort2);
             }
             {
                 var logs = new CopyOnWriteArrayList<String>();
@@ -190,7 +190,6 @@ class HtHttpDckrIntegrationTest implements DockerIntegrationTest {
                 }
                 {
                     var containerNetwork = inspected.network();
-//                    assertThat(containerNetwork.ports()).containsExactly(mappedPort1, mappedPort2);
                     assertThat(containerNetwork.gateway()).isNotEmpty();
                     assertThat(containerNetwork.ipAddress()).isNotEmpty();
                     assertThat(containerNetwork.ipPrefixLen()).isPositive();
@@ -207,7 +206,6 @@ class HtHttpDckrIntegrationTest implements DockerIntegrationTest {
                     assertThat(containerNetwork.sandboxKey()).isNotEmpty();
                     assertThat(containerNetwork.secondaryIpAddresses()).isEmpty();
                     assertThat(containerNetwork.secondaryIpV6Addresses()).isEmpty();
-//                    assertThatThrownBy(containerNetwork::firstMappedPort).hasMessageContaining("multiple are present");
                 }
                 {
                     var containerState = inspected.state();
@@ -227,6 +225,11 @@ class HtHttpDckrIntegrationTest implements DockerIntegrationTest {
                     var containerGraphDriver = inspected.graphDriver();
                     assertThat(containerGraphDriver.data()).isNotEmpty();
                     assertThat(containerGraphDriver.name()).isNotEmpty();
+                }
+                {
+                    var hostConfig = inspected.hostConfig();
+                    assertThat(hostConfig.ports()).containsExactly(mappedPort1, mappedPort2);
+                    assertThatThrownBy(hostConfig::firstMappedPort).hasMessageContaining("multiple are present");
                 }
                 {
                     subject.containers().execInContainer(

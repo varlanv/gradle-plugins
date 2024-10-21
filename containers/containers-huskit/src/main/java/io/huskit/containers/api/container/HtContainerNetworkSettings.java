@@ -1,8 +1,5 @@
 package io.huskit.containers.api.container;
 
-import io.huskit.common.port.MappedPort;
-
-import java.util.List;
 import java.util.Optional;
 
 public interface HtContainerNetworkSettings {
@@ -16,8 +13,6 @@ public interface HtContainerNetworkSettings {
     String globalIpv6Address();
 
     Integer globalIpv6PrefixLen();
-
-    List<MappedPort> ports();
 
     Integer ipPrefixLen();
 
@@ -40,6 +35,4 @@ public interface HtContainerNetworkSettings {
     String ipAddress();
 
     String bridge();
-
-    Integer firstMappedPort();
 }
