@@ -20,13 +20,6 @@ public class FlexCharBuffer {
         delegate.put(c);
     }
 
-    public void append(CharSequence cs) {
-        if (delegate.remaining() < cs.length()) {
-            grow();
-        }
-        delegate.put(cs.toString());
-    }
-
     public String read() {
         delegate.flip();
         var string = delegate.toString();

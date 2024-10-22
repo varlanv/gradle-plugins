@@ -5,7 +5,6 @@ import io.huskit.common.Log;
 import io.huskit.common.NoopLog;
 import io.huskit.common.function.MemoizedSupplier;
 import io.huskit.common.io.ByteBufferInputStream;
-import io.huskit.common.io.FlexCharBuffer;
 import io.huskit.common.io.LoopInputStream;
 import lombok.Getter;
 import lombok.Locked;
@@ -14,7 +13,9 @@ import lombok.SneakyThrows;
 import lombok.experimental.NonFinal;
 import org.jetbrains.annotations.VisibleForTesting;
 
+import java.io.BufferedReader;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.nio.ByteBuffer;
 import java.nio.channels.AsynchronousFileChannel;
 import java.nio.channels.CompletionHandler;
@@ -110,83 +111,29 @@ final class HeadFromStream implements Http.Head {
 
     @SneakyThrows
     Http.Head parse(InputStream stream) {
-        var char4 = '\0';
-        var char3 = '\0';
-        var char2 = '\0';
-        var char1 = '\0';
-        var status = -1;
-        var headLineCount = 0;
-        var statusReads = -1;
-        var isHeaderKeyPart = false;
-        var isHeaderValuePart = false;
-        var isHeaderValueSkipPart = false;
-        var currentHeaderKey = "";
-        var buffer = new FlexCharBuffer(512);
-        var headers = new HashMap<String, String>();
-        while (true) {
-            var i = stream.read();
-            char1 = (char) i;
-            if (i == -1) {
-                throw new RuntimeException("Failed to build head with given stream");
-            }
-            var isCrLf = char1 == '\n' && char2 == '\r';
-            if (isCrLf) {
-                if (char3 == '\n' && char4 == '\r') {
-                    break;
-                }
-            }
-            if (headLineCount == 0) {
-                if (statusReads >= 0 && statusReads <= 3) {
-                    if (statusReads == 0) {
-                        status = (char1 - '0') * 100;
-                    } else if (status == 1) {
-                        statusReads = status + (char1 - '0') * 10;
-                    } else if (status == 2) {
-                        statusReads = status + (char1 - '0');
-                    }
-                    statusReads++;
-                } else {
-                    if (char1 == ' ' && status == -1) {
-                        statusReads++;
-                    }
-                }
-            } else if (isHeaderKeyPart) {
-                if (char1 == ':') {
-                    isHeaderKeyPart = false;
-                    currentHeaderKey = buffer.read();
-                    isHeaderValuePart = true;
-                    isHeaderValueSkipPart = true;
-                } else {
-                    if (!isCrLf) {
-                        buffer.append(char1);
-                    }
-                }
-            } else if (isHeaderValuePart) {
-                if (isHeaderValueSkipPart) {
-                    isHeaderValueSkipPart = false;
-                } else {
-                    if (isCrLf) {
-                        var headerVal = buffer.readWithoutLastChar();
-                        headers.put(currentHeaderKey, headerVal);
-                    } else {
-                        buffer.append(char1);
-                    }
-                }
-            }
-            if (isCrLf) {
-                headLineCount++;
-                isHeaderKeyPart = true;
-                isHeaderValuePart = false;
-                buffer.clear();
-            }
-            char4 = char3;
-            char3 = char2;
-            char2 = char1;
+        var reader = new BufferedReader(new InputStreamReader(stream, StandardCharsets.UTF_8), 1024);
+        var statusLine = reader.readLine();
+        if (statusLine == null || statusLine.isEmpty()) {
+            throw new RuntimeException("Failed to build head with given stream");
         }
-        return new DfHead(
-                status,
-                headers
-        );
+        var statusParts = statusLine.split(" ");
+        if (statusParts.length < 2) {
+            throw new RuntimeException("Invalid status line: " + statusLine);
+        }
+        var status = Integer.parseInt(statusParts[1]);
+        var headers = new HashMap<String, String>();
+        String line;
+        while ((line = reader.readLine()) != null && !line.isEmpty()) {
+            var colonIndex = line.indexOf(':');
+            if (colonIndex == -1) {
+                throw new RuntimeException("Invalid header line: " + line);
+            }
+            var key = line.substring(0, colonIndex).trim();
+            var value = line.substring(colonIndex + 1).trim();
+            headers.put(key, value);
+        }
+
+        return new DfHead(status, headers);
     }
 }
 
