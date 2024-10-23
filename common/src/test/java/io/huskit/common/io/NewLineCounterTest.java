@@ -17,7 +17,7 @@ class NewLineCounterTest implements UnitTest {
     @Test
     void performance_check() {
         var bytes = "qwerty\r\n".repeat(100000).getBytes(StandardCharsets.UTF_8);
-        microBenchmark(() -> NewLineCounter.positions(bytes));
+        microBenchmark(200, () -> new NewLineCounter(bytes).positions());
     }
 
     @MethodSource
@@ -93,7 +93,13 @@ class NewLineCounterTest implements UnitTest {
 
     private void verify(String input, int[] expected) {
         var array = input.getBytes(StandardCharsets.UTF_8);
-        var res = NewLineCounter.positions(array);
+        var subject = new NewLineCounter(array);
+        var res = subject.positions();
         assertThat(res).containsExactly(expected);
+
+        for (int pos : expected) {
+            assertThat(subject.nextPosition()).isEqualTo(pos);
+        }
+        assertThat(subject.nextPosition()).isEqualTo(-1);
     }
 }
