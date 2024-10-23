@@ -17,11 +17,23 @@ class NewLineCounterTest implements UnitTest {
 
     @Test
     void long_input_performance_check() {
-        var longInput = "qwerty\r\n".repeat(100000).getBytes(StandardCharsets.UTF_8);
-        microBenchmark(200, "Long input", () -> new NewLineCounter(longInput).positions());
+        var iterations = 200;
+        {
+            var longInput = "qwerty\r\n".repeat(100000).getBytes(StandardCharsets.UTF_8);
+            microBenchmark(iterations, "Long input", () -> new NewLineCounter(longInput).positions());
+        }
+        {
+            var shortInput = "qwertyasdfghzxcvbn: qweqwrqwras\r\n".repeat(15).getBytes(StandardCharsets.UTF_8);
+            microBenchmark(iterations, "Short input", () -> new NewLineCounter(shortInput).positions());
+        }
+    }
 
-        var shortInput = "qwertyasdfghzxcvbn: qweqwrqwras\r\n".repeat(15).getBytes(StandardCharsets.UTF_8);
-        microBenchmark(200, "Short input", () -> new NewLineCounter(shortInput).positions());
+    @Test
+    void positions_varied_length_line() {
+        verify(
+                "\r\na\r\nbb\r\n\r\nccc\r\ndddd\r\n",
+                new int[]{0, 3, 7, 9, 14, 20}
+        );
     }
 
     @MethodSource
@@ -99,10 +111,12 @@ class NewLineCounterTest implements UnitTest {
         var array = input.getBytes(StandardCharsets.UTF_8);
         var subject = new NewLineCounter(array);
         var res = subject.positions();
-        assertThat(res.limit()).isEqualTo(expected.length);
-        assertThat(Arrays.copyOf(res.array(), res.limit())).isEqualTo(expected);
+        assertThat(res).satisfies(
+                ignore -> assertThat(res.limit()).isEqualTo(expected.length),
+                ignore -> assertThat(Arrays.copyOf(res.array(), res.limit())).isEqualTo(expected)
+        );
 
-        for (int pos : expected) {
+        for (var pos : expected) {
             assertThat(subject.nextPosition()).isEqualTo(pos);
         }
         assertThat(subject.nextPosition()).isEqualTo(-1);
