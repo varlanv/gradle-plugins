@@ -2,6 +2,7 @@ package io.huskit.common.io;
 
 import lombok.experimental.NonFinal;
 
+import java.nio.charset.StandardCharsets;
 import java.util.function.Supplier;
 
 public class LineReader {
@@ -55,7 +56,7 @@ public class LineReader {
                 currentBuffer = mergedBuf;
                 nestCount++;
             } else {
-                var line = new String(bytes, currentBufferIndex, currentOffset - 2);
+                var line = new String(bytes, currentBufferIndex, currentOffset - 2, StandardCharsets.UTF_8);
                 currentBufferIndex = currentIndex + 1;
                 if (currentBufferIndex >= bytes.length) {
                     currentBuffer = null;

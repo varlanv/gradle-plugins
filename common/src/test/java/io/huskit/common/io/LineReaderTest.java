@@ -62,6 +62,22 @@ class LineReaderTest implements UnitTest {
     }
 
     @Test
+    void when_read_many_lines__should_work_correctly() {
+        var linesCount = 20;
+        var wordBase = "qwerty";
+        var bytes = IntStream.rangeClosed(0, linesCount)
+                .mapToObj(i -> "qwerty" + i + "\r\n")
+                .collect(Collectors.joining())
+                .getBytes(StandardCharsets.UTF_8);
+
+        var subject = new LineReader(() -> bytes);
+
+        for (var i = 0; i < linesCount; i++) {
+            assertThat(subject.readLine()).isEqualTo(wordBase + i);
+        }
+    }
+
+    @Test
     void when_input_contains_two_lines_in_same_input__then_should_read_it_correctly() {
         var subject = new LineReader(() -> "qwe\r\nrty\r\n".getBytes(StandardCharsets.UTF_8));
 
