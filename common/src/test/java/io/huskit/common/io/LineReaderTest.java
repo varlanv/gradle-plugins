@@ -337,8 +337,8 @@ class LineReaderTest implements UnitTest {
         lineReaderTimeMicros.get();
         bufferedTimeMicros.get();
 
-
-        var lineReaderTimeAverage = IntStream.range(0, 10)
+        var iterationsCount = 1000;
+        var lineReaderTimeAverage = IntStream.range(0, iterationsCount)
                 .mapToLong(i -> {
                     try {
                         return lineReaderTimeMicros.get();
@@ -348,7 +348,7 @@ class LineReaderTest implements UnitTest {
                 })
                 .average()
                 .orElseThrow();
-        var bufferedTimeAverage = IntStream.range(0, 100)
+        var bufferedTimeAverage = IntStream.range(0, iterationsCount)
                 .mapToLong(i -> {
                     try {
                         return bufferedTimeMicros.get();
