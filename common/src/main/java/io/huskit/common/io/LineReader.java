@@ -3,6 +3,7 @@ package io.huskit.common.io;
 import lombok.experimental.NonFinal;
 
 import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
 import java.util.function.Supplier;
 
 public class LineReader {
@@ -12,6 +13,8 @@ public class LineReader {
     int nestLimit;
     @NonFinal
     byte[] currentBuffer;
+    @NonFinal
+    NewLineCounter currentLineCounter;
     @NonFinal
     int currentBufferIndex;
 

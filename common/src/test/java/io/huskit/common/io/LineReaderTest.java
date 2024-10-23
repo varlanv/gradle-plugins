@@ -1,6 +1,5 @@
 package io.huskit.common.io;
 
-import io.huskit.common.function.ThrowingSupplier;
 import io.huskit.gradle.commontest.UnitTest;
 import org.junit.jupiter.api.Test;
 
@@ -310,59 +309,26 @@ class LineReaderTest implements UnitTest {
                     return newBytes;
                 });
 
-        ThrowingSupplier<Long> lineReaderTimeMicros = () -> {
+        var iterations = 1000;
+        microBenchmark(iterations, "LineReader", () -> {
             var lineReader = new LineReader(() -> bytes);
             var iterationsCount = new AtomicInteger();
-            var nanos = System.nanoTime();
             for (var i = 0; i < lines.length; i++) {
                 assertThat(lineReader.readLine()).isNotEmpty();
                 iterationsCount.incrementAndGet();
             }
-            assertThat(iterationsCount.get()).isEqualTo(lines.length);
-            return (System.nanoTime() - nanos) / 1000;
-        };
-        ThrowingSupplier<Long> bufferedTimeMicros = () -> {
+            return iterationsCount;
+        });
+
+        microBenchmark(iterations, "BufferedReader", () -> {
             var bufferedReader = new BufferedReader(new InputStreamReader(new ByteArrayInputStream(bytes)));
             var iterationsCount = new AtomicInteger();
-            var nanos = System.nanoTime();
             String line;
             while ((line = bufferedReader.readLine()) != null) {
                 assertThat(line).isNotEmpty();
                 iterationsCount.incrementAndGet();
             }
-            assertThat(iterationsCount.get()).isEqualTo(lines.length);
-            return (System.nanoTime() - nanos) / 1000;
-        };
-
-        lineReaderTimeMicros.get();
-        bufferedTimeMicros.get();
-
-        var iterationsCount = 1000;
-        var lineReaderTimeAverage = IntStream.range(0, iterationsCount)
-                .mapToLong(i -> {
-                    try {
-                        return lineReaderTimeMicros.get();
-                    } catch (Exception e) {
-                        throw new RuntimeException(e);
-                    }
-                })
-                .average()
-                .orElseThrow();
-        var bufferedTimeAverage = IntStream.range(0, iterationsCount)
-                .mapToLong(i -> {
-                    try {
-                        return bufferedTimeMicros.get();
-                    } catch (Exception e) {
-                        throw new RuntimeException(e);
-                    }
-                })
-                .average()
-                .orElseThrow();
-
-        System.out.printf("%nLines size - %s, Lines length - %s%n" +
-                        "LineReader: %s micros%n" +
-                        "BufferedReader: %s micros%n%n",
-                lines.length, lines.length > 0 ? lines[0].length() : 0, lineReaderTimeAverage, bufferedTimeAverage
-        );
+            return iterationsCount.get();
+        });
     }
 }
