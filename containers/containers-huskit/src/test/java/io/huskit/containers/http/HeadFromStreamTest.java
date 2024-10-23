@@ -1,6 +1,7 @@
 package io.huskit.containers.http;
 
 import io.huskit.common.io.ByteBufferInputStream;
+import io.huskit.common.io.LoopInputStream;
 import io.huskit.gradle.commontest.UnitTest;
 import org.junit.jupiter.api.Test;
 
@@ -12,6 +13,9 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 class HeadFromStreamTest implements UnitTest {
+
+    String osTypeHeader = "linux".repeat(10000);
+
 
     @Test
     void parse_head__when_minusone_from_reader__throw_exception() {
@@ -29,6 +33,21 @@ class HeadFromStreamTest implements UnitTest {
         var subject = new HeadFromStream(
                 new ByteArrayInputStream(
                         httpHeadString.getBytes(StandardCharsets.UTF_8)
+                )
+        );
+
+        verifyHead(subject);
+    }
+
+    @Test
+    void parse_head_without_body__small_buffer__success() {
+        var httpHeadString = headers();
+
+        var subject = new HeadFromStream(
+                new LoopInputStream(
+                        () -> new ByteArrayInputStream(
+                                httpHeadString.getBytes(StandardCharsets.UTF_8)
+                        )
                 )
         );
 
@@ -56,7 +75,7 @@ class HeadFromStreamTest implements UnitTest {
                 + "Content-Type: application/json\r\n"
                 + "Date: Tue, 22 Oct 2024 01:15:00 GMT\r\n"
                 + "Docker-Experimental: false\r\n"
-                + "Ostype: " + "linux".repeat(10000) + "\r\n"
+                + "Ostype: " + osTypeHeader + "\r\n"
                 + "Server: Docker/27.0.3 (linux)\r\n"
                 + "Content-Length: 3\r\n"
                 + "\r\n";
@@ -70,7 +89,7 @@ class HeadFromStreamTest implements UnitTest {
         assertThat(subject.headers()).containsEntry("Content-Type", "application/json");
         assertThat(subject.headers()).containsEntry("Date", "Tue, 22 Oct 2024 01:15:00 GMT");
         assertThat(subject.headers()).containsEntry("Docker-Experimental", "false");
-        assertThat(subject.headers()).containsEntry("Ostype", "linux".repeat(10000));
+        assertThat(subject.headers()).containsEntry("Ostype", osTypeHeader);
         assertThat(subject.headers()).containsEntry("Server", "Docker/27.0.3 (linux)");
         assertThat(subject.headers()).containsEntry("Content-Length", "3");
         assertThat(subject.headers()).hasSize(7);
