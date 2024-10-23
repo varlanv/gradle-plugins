@@ -3,10 +3,10 @@ package io.huskit.gradle.commontest;
 import lombok.NonNull;
 import lombok.SneakyThrows;
 import org.apache.commons.io.FileDeleteStrategy;
-import org.assertj.core.api.Assertions;
 import org.assertj.core.api.Condition;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.TestInstance;
+import org.junit.jupiter.api.function.ThrowingSupplier;
 
 import java.io.File;
 import java.io.IOException;
@@ -18,6 +18,9 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.setMaxStackTraceElementsDisplayed;
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 public interface BaseTest {
@@ -32,7 +35,7 @@ public interface BaseTest {
 
     @BeforeAll
     default void setupAssertjParent() {
-        Assertions.setMaxStackTraceElementsDisplayed(Integer.MAX_VALUE);
+        setMaxStackTraceElementsDisplayed(Integer.MAX_VALUE);
     }
 
     default <T> T parseJson(String json, Class<T> type) {
@@ -147,5 +150,31 @@ public interface BaseTest {
 
     interface ThrowingConsumer<T> {
         void accept(T t) throws Exception;
+    }
+
+    @SneakyThrows
+    default void microBenchmark(ThrowingSupplier<?> action) {
+        microBenchmark(100, action);
+    }
+
+    @SneakyThrows
+    default void microBenchmark(Integer iterations, ThrowingSupplier<?> action) {
+        assertThat(action.get()).isNotNull();
+
+        var nanosBefore = 0L;
+        var average = 0L;
+        for (var i = 0; i < iterations; i++) {
+            nanosBefore = System.nanoTime();
+            assertThat(action.get()).matches(it -> true);
+            average += System.nanoTime() - nanosBefore;
+        }
+        average /= iterations;
+        if (average > 1_000_000) {
+            System.out.printf("%nTime millis -> %d%n%n", (average / 1_000_000));
+        } else if (average > 1_000) {
+            System.out.printf("%nTime micros -> %d%n%n", (average / 1_000));
+        } else {
+            System.out.printf("%nTime nanos -> %d%n%n", average);
+        }
     }
 }
