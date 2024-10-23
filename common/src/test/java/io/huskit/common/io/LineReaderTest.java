@@ -1,10 +1,18 @@
 package io.huskit.common.io;
 
+import io.huskit.common.function.ThrowingSupplier;
 import io.huskit.gradle.commontest.UnitTest;
 import org.junit.jupiter.api.Test;
 
+import java.io.BufferedReader;
+import java.io.ByteArrayInputStream;
+import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayDeque;
+import java.util.Arrays;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
@@ -97,5 +105,87 @@ class LineReaderTest implements UnitTest {
         var actual = subject.readLine();
 
         assertThat(actual).isEqualTo("qwe");
+    }
+
+    @Test
+    void buffered_reader_performance_test_big_lines() throws Exception {
+//        compareWithBufferedReader("abc", "qwerty".repeat(100000), "asdfg".repeat(100));
+        var linesCount = 300;
+        var linesSize = 1000;
+        var lines = new String[linesCount];
+        IntStream.range(0, linesCount)
+                .forEach(i -> lines[i] = String.valueOf(i).repeat(linesSize));
+        compareWithBufferedReader(lines);
+    }
+
+    private void compareWithBufferedReader(String... lines) throws Exception {
+        var linesList = Arrays.stream(lines)
+                .map(line -> line + "\r\n")
+                .collect(Collectors.toList());
+        var bytes = linesList.stream()
+                .map(line -> line.getBytes(StandardCharsets.UTF_8))
+                .reduce(new byte[0], (acc, line) -> {
+                    var newBytes = new byte[acc.length + line.length];
+                    System.arraycopy(acc, 0, newBytes, 0, acc.length);
+                    System.arraycopy(line, 0, newBytes, acc.length, line.length);
+                    return newBytes;
+                });
+
+        ThrowingSupplier<Long> lineReaderTimeMicros = () -> {
+            var linesQueue = new ArrayDeque<>(linesList);
+            var lineReader = new LineReader(() -> linesQueue.poll().getBytes(StandardCharsets.UTF_8));
+            var linesQueueSize = linesQueue.size();
+            var iterationsCount = new AtomicInteger();
+            var nanos = System.nanoTime();
+            for (var i = 0; i < linesQueueSize; i++) {
+                assertThat(lineReader.readLine()).isNotEmpty();
+                iterationsCount.incrementAndGet();
+            }
+            assertThat(iterationsCount.get()).isEqualTo(linesList.size());
+            return (System.nanoTime() - nanos) / 1000;
+        };
+        ThrowingSupplier<Long> bufferedTimeMicros = () -> {
+            var bufferedReader = new BufferedReader(new InputStreamReader(new ByteArrayInputStream(bytes)));
+            var iterationsCount = new AtomicInteger();
+            var nanos = System.nanoTime();
+            String line;
+            while ((line = bufferedReader.readLine()) != null) {
+                assertThat(line).isNotEmpty();
+                iterationsCount.incrementAndGet();
+            }
+            assertThat(iterationsCount.get()).isEqualTo(linesList.size());
+            return (System.nanoTime() - nanos) / 1000;
+        };
+
+        lineReaderTimeMicros.get();
+        bufferedTimeMicros.get();
+
+
+        var lineReaderTimeAverage = IntStream.range(0, 10)
+                .mapToLong(i -> {
+                    try {
+                        return lineReaderTimeMicros.get();
+                    } catch (Exception e) {
+                        throw new RuntimeException(e);
+                    }
+                })
+                .average()
+                .orElseThrow();
+        var bufferedTimeAverage = IntStream.range(0, 100)
+                .mapToLong(i -> {
+                    try {
+                        return bufferedTimeMicros.get();
+                    } catch (Exception e) {
+                        throw new RuntimeException(e);
+                    }
+                })
+                .average()
+                .orElseThrow();
+
+        System.out.printf("%nLines size - %s, Lines length - %s%n" +
+                        "LineReader: %s micros%n" +
+                        "BufferedReader: %s micros%n%n",
+                lines.length, lines.length > 0 ? lines[0].length() : 0, lineReaderTimeAverage, bufferedTimeAverage
+        );
     }
 }
