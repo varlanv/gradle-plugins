@@ -7,8 +7,7 @@ public class NewLineCounter {
     static int[] positions(byte[] array) {
         var buf = new int[30];
         var index = 0;
-        var len = array.length;
-        for (var i = 0; i < len - 1; i++) {
+        for (var i = 0; i < array.length - 1; i++) {
             if (array[i] == '\r' && array[i + 1] == '\n') {
                 if (buf.length == index) {
                     buf = Arrays.copyOf(buf, buf.length * 2);
@@ -19,5 +18,3 @@ public class NewLineCounter {
         return Arrays.copyOf(buf, index);
     }
 }
-
-

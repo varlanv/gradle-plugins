@@ -154,11 +154,21 @@ public interface BaseTest {
 
     @SneakyThrows
     default void microBenchmark(ThrowingSupplier<?> action) {
-        microBenchmark(100, action);
+        microBenchmark(100, "", action);
+    }
+
+    @SneakyThrows
+    default void microBenchmark(String message, ThrowingSupplier<?> action) {
+        microBenchmark(100, message, action);
     }
 
     @SneakyThrows
     default void microBenchmark(Integer iterations, ThrowingSupplier<?> action) {
+        microBenchmark(iterations, "", action);
+    }
+
+    @SneakyThrows
+    default void microBenchmark(Integer iterations, String message, ThrowingSupplier<?> action) {
         assertThat(action.get()).isNotNull();
 
         var nanosBefore = 0L;
@@ -169,12 +179,14 @@ public interface BaseTest {
             average += System.nanoTime() - nanosBefore;
         }
         average /= iterations;
-        if (average > 1_000_000) {
-            System.out.printf("%nTime millis -> %d%n%n", (average / 1_000_000));
-        } else if (average > 1_000) {
-            System.out.printf("%nTime micros -> %d%n%n", (average / 1_000));
+        var msg = message.isEmpty() ? message : message + " ";
+        var avgMicros = average / 1_000;
+        if (avgMicros > 0 && avgMicros < 10000) {
+            System.out.printf("%nTime micros %s-> %d%n%n", msg, (average / 1_000));
+        } else if (avgMicros == 0) {
+            System.out.printf("%nTime nanos %s-> %d%n%n", msg, average);
         } else {
-            System.out.printf("%nTime nanos -> %d%n%n", average);
+            System.out.printf("%nTime millis %s-> %d%n%n", msg, (average / 1_000_000));
         }
     }
 }
