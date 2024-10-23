@@ -36,11 +36,13 @@ public class LineReader {
             var currentIndex = previousIndex;
             var isContinue = true;
             var prev = prevByte;
+            var currentOffset = 0;
             for (var i = previousIndex; i < bytes.length && isContinue; i++) {
                 var curr = bytes[i];
                 isContinue = !(curr == '\n' && prev == '\r');
                 currentIndex = i;
                 prev = curr;
+                currentOffset++;
             }
             if (isContinue) {
                 if (nestCount >= nestLimit) {
@@ -53,7 +55,7 @@ public class LineReader {
                 currentBuffer = mergedBuf;
                 nestCount++;
             } else {
-                var line = new String(bytes, currentBufferIndex, currentIndex - 1);
+                var line = new String(bytes, currentBufferIndex, currentOffset - 2);
                 currentBufferIndex = currentIndex + 1;
                 if (currentBufferIndex >= bytes.length) {
                     currentBuffer = null;

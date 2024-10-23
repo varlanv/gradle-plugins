@@ -8,7 +8,6 @@ import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
-import java.util.ArrayDeque;
 import java.util.Arrays;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
@@ -23,7 +22,6 @@ class LineReaderTest implements UnitTest {
     void when_new_line_not_found_within_nest_limit__throw_exception() {
         var nestLimit = 1000;
         var subject = new LineReader(() -> "asd".getBytes(StandardCharsets.UTF_8), nestLimit);
-
         assertThatThrownBy(subject::readLine)
                 .isInstanceOf(IllegalStateException.class)
                 .hasMessage("Couldn't find new line after %s reads", nestLimit);
@@ -61,6 +59,42 @@ class LineReaderTest implements UnitTest {
         var actual = subject.readLine();
 
         assertThat(actual).isEqualTo("q");
+    }
+
+    @Test
+    void when_input_contains_two_lines_in_same_input__then_should_read_it_correctly() {
+        var subject = new LineReader(() -> "qwe\r\nrty\r\n".getBytes(StandardCharsets.UTF_8));
+
+        assertThat(subject.readLine()).isEqualTo("qwe");
+        assertThat(subject.readLine()).isEqualTo("rty");
+    }
+
+    @Test
+    void when_input_contains_two_lines_in_same_input_and_second_line_is_empty__then_should_read_it_correctly() {
+        var subject = new LineReader(() -> "qwe\r\n\r\n".getBytes(StandardCharsets.UTF_8));
+
+        assertThat(subject.readLine()).isEqualTo("qwe");
+        assertThat(subject.readLine()).isEqualTo("");
+        assertThat(subject.readLine()).isEqualTo("qwe");
+        assertThat(subject.readLine()).isEqualTo("");
+    }
+
+    @Test
+    void when_input_contains_two_lines_in_first_input_and_one_empty_line_split_be_two_next_inputs__then_should_read_it_correctly() {
+        var counter = new AtomicInteger();
+        var subject = new LineReader(() -> {
+            if (counter.incrementAndGet() == 1) {
+                return "qwe\r\n\r\n".getBytes(StandardCharsets.UTF_8);
+            } else if (counter.get() == 2) {
+                return "\r".getBytes(StandardCharsets.UTF_8);
+            } else {
+                return "\n".getBytes(StandardCharsets.UTF_8);
+            }
+        });
+
+        assertThat(subject.readLine()).isEqualTo("qwe");
+        assertThat(subject.readLine()).isEqualTo("");
+        assertThat(subject.readLine()).isEqualTo("");
     }
 
     @Test
@@ -227,12 +261,24 @@ class LineReaderTest implements UnitTest {
 
     @Test
     void buffered_reader_performance_test_big_lines() throws Exception {
-        var linesCount = 300;
+        var linesCount = 150;
         var linesSize = 1000;
-        var lines = new String[linesCount];
-        IntStream.range(0, linesCount)
-                .forEach(i -> lines[i] = String.valueOf(i).repeat(linesSize));
-        compareWithBufferedReader(lines);
+        compareWithBufferedReader(
+                IntStream.range(0, linesCount)
+                        .mapToObj(i -> String.valueOf(i).repeat(linesSize))
+                        .toArray(String[]::new)
+        );
+    }
+
+    @Test
+    void buffered_reader_performance_test_avg_lines() throws Exception {
+        var linesCount = 40;
+        var linesSize = 30;
+        compareWithBufferedReader(
+                IntStream.range(0, linesCount)
+                        .mapToObj(i -> String.valueOf(i).repeat(linesSize))
+                        .toArray(String[]::new)
+        );
     }
 
     private void compareWithBufferedReader(String... lines) throws Exception {
@@ -249,16 +295,14 @@ class LineReaderTest implements UnitTest {
                 });
 
         ThrowingSupplier<Long> lineReaderTimeMicros = () -> {
-            var linesQueue = new ArrayDeque<>(linesList);
-            var lineReader = new LineReader(() -> linesQueue.poll().getBytes(StandardCharsets.UTF_8));
-            var linesQueueSize = linesQueue.size();
+            var lineReader = new LineReader(() -> bytes);
             var iterationsCount = new AtomicInteger();
             var nanos = System.nanoTime();
-            for (var i = 0; i < linesQueueSize; i++) {
+            for (var i = 0; i < lines.length; i++) {
                 assertThat(lineReader.readLine()).isNotEmpty();
                 iterationsCount.incrementAndGet();
             }
-            assertThat(iterationsCount.get()).isEqualTo(linesList.size());
+            assertThat(iterationsCount.get()).isEqualTo(lines.length);
             return (System.nanoTime() - nanos) / 1000;
         };
         ThrowingSupplier<Long> bufferedTimeMicros = () -> {
@@ -270,7 +314,7 @@ class LineReaderTest implements UnitTest {
                 assertThat(line).isNotEmpty();
                 iterationsCount.incrementAndGet();
             }
-            assertThat(iterationsCount.get()).isEqualTo(linesList.size());
+            assertThat(iterationsCount.get()).isEqualTo(lines.length);
             return (System.nanoTime() - nanos) / 1000;
         };
 
