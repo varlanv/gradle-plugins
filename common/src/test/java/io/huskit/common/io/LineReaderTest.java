@@ -309,7 +309,7 @@ class LineReaderTest implements UnitTest {
                     return newBytes;
                 });
 
-        var iterations = 1000;
+        var iterations = 100;
         microBenchmark(iterations, "LineReader", () -> {
             var lineReader = new LineReader(() -> bytes);
             var iterationsCount = new AtomicInteger();

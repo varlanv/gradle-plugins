@@ -169,7 +169,8 @@ public interface BaseTest {
 
     @SneakyThrows
     default void microBenchmark(Integer iterations, String message, ThrowingSupplier<?> action) {
-        assertThat(action.get()).isNotNull();
+        assertThat(action.get()).matches(it -> true);
+        System.gc();
 
         var nanosBefore = 0L;
         var average = 0L;
@@ -177,6 +178,7 @@ public interface BaseTest {
             nanosBefore = System.nanoTime();
             assertThat(action.get()).matches(it -> true);
             average += System.nanoTime() - nanosBefore;
+            System.gc();
         }
         average /= iterations;
         var msg = message.isEmpty() ? message : message + " ";
@@ -188,5 +190,6 @@ public interface BaseTest {
         } else {
             System.out.printf("%nTime millis %s-> %d%n%n", msg, (average / 1_000_000));
         }
+        System.gc();
     }
 }

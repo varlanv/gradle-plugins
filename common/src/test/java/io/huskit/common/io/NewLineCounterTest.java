@@ -16,9 +16,12 @@ import static org.assertj.core.api.Assertions.assertThat;
 class NewLineCounterTest implements UnitTest {
 
     @Test
-    void performance_check() {
-        var bytes = "qwerty\r\n".repeat(100000).getBytes(StandardCharsets.UTF_8);
-        microBenchmark(500, () -> new NewLineCounter(bytes).positions());
+    void long_input_performance_check() {
+        var longInput = "qwerty\r\n".repeat(100000).getBytes(StandardCharsets.UTF_8);
+        microBenchmark(200, "Long input", () -> new NewLineCounter(longInput).positions());
+
+        var shortInput = "qwertyasdfghzxcvbn: qweqwrqwras\r\n".repeat(15).getBytes(StandardCharsets.UTF_8);
+        microBenchmark(200, "Short input", () -> new NewLineCounter(shortInput).positions());
     }
 
     @MethodSource
