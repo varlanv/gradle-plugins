@@ -7,6 +7,7 @@ import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 
 import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
@@ -17,7 +18,7 @@ class NewLineCounterTest implements UnitTest {
     @Test
     void performance_check() {
         var bytes = "qwerty\r\n".repeat(100000).getBytes(StandardCharsets.UTF_8);
-        microBenchmark(200, () -> new NewLineCounter(bytes).positions());
+        microBenchmark(500, () -> new NewLineCounter(bytes).positions());
     }
 
     @MethodSource
@@ -95,7 +96,8 @@ class NewLineCounterTest implements UnitTest {
         var array = input.getBytes(StandardCharsets.UTF_8);
         var subject = new NewLineCounter(array);
         var res = subject.positions();
-        assertThat(res).containsExactly(expected);
+        assertThat(res.limit()).isEqualTo(expected.length);
+        assertThat(Arrays.copyOf(res.array(), res.limit())).isEqualTo(expected);
 
         for (int pos : expected) {
             assertThat(subject.nextPosition()).isEqualTo(pos);

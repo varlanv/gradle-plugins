@@ -2,48 +2,33 @@ package io.huskit.common.io;
 
 import lombok.experimental.NonFinal;
 
+import java.nio.IntBuffer;
 import java.util.Arrays;
 
-public class NewLineCounter {
+public final class NewLineCounter {
 
-    byte[] array;
     @NonFinal
-    int currentPosition = -1;
-    @NonFinal
-    int[] positions;
+    IntBuffer positions;
 
     public NewLineCounter(byte[] array) {
-        this.array = array;
+        var buf = new int[10];
+        var index = 0;
+        for (var i = 0; i < array.length - 1; i++) {
+            if (array[i] == '\r' && array[i + 1] == '\n') {
+                if (buf.length == index) {
+                    buf = Arrays.copyOf(buf, buf.length * 2);
+                }
+                buf[index++] = i;
+            }
+        }
+        positions = IntBuffer.wrap(buf, 0, index);
     }
 
     public int nextPosition() {
-        positions();
-        if (currentPosition == -1) {
-            return -1;
-        } else {
-            if (positions.length < currentPosition + 1) {
-                return -1;
-            } else {
-                return positions[currentPosition++];
-            }
-        }
+        return positions.hasRemaining() ? positions.get() : -1;
     }
 
-    int[] positions() {
-        if (positions == null) {
-            var buf = new int[30];
-            var index = 0;
-            for (var i = 0; i < array.length - 1; i++) {
-                if (array[i] == '\r' && array[i + 1] == '\n') {
-                    if (buf.length == index) {
-                        buf = Arrays.copyOf(buf, buf.length * 2);
-                    }
-                    buf[index++] = i;
-                }
-            }
-            positions = Arrays.copyOf(buf, index);
-            currentPosition = positions.length > 0 ? 0 : -1;
-        }
+    IntBuffer positions() {
         return positions;
     }
 }
