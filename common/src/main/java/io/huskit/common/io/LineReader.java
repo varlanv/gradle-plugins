@@ -38,7 +38,7 @@ public class LineReader {
             var prev = prevByte;
             for (var i = previousIndex; i < bytes.length && isContinue; i++) {
                 var curr = bytes[i];
-                isContinue = !(curr == '\n' || prev == '\r');
+                isContinue = !(curr == '\n' && prev == '\r');
                 currentIndex = i;
                 prev = curr;
             }
@@ -53,7 +53,7 @@ public class LineReader {
                 currentBuffer = mergedBuf;
                 nestCount++;
             } else {
-                var line = new String(bytes, currentBufferIndex, prev == '\r' ? currentIndex : currentIndex - 1);
+                var line = new String(bytes, currentBufferIndex, currentIndex - 1);
                 currentBufferIndex = currentIndex + 1;
                 if (currentBufferIndex >= bytes.length) {
                     currentBuffer = null;

@@ -30,6 +30,124 @@ class LineReaderTest implements UnitTest {
     }
 
     @Test
+    void when_input_contains_only_crlf__then_return_empty_line() {
+        var subject = new LineReader(() -> "\r\n".getBytes(StandardCharsets.UTF_8));
+
+        var actual = subject.readLine();
+
+        assertThat(actual).isEqualTo("");
+    }
+
+    @Test
+    void when_input_contains_only_crlf_split_between_two_inputs__then_return_empty_line() {
+        var counter = new AtomicInteger();
+        var subject = new LineReader(() -> {
+            if (counter.getAndIncrement() == 0) {
+                return "\r".getBytes(StandardCharsets.UTF_8);
+            } else {
+                return "\n".getBytes(StandardCharsets.UTF_8);
+            }
+        });
+
+        var actual = subject.readLine();
+
+        assertThat(actual).isEqualTo("");
+    }
+
+    @Test
+    void when_input_contains_only_1_letter_and_then_crlf__then_return_1_letter() {
+        var subject = new LineReader(() -> "q\r\n".getBytes(StandardCharsets.UTF_8));
+
+        var actual = subject.readLine();
+
+        assertThat(actual).isEqualTo("q");
+    }
+
+    @Test
+    void when_input_contains_4_letters_and_then_crlf__then_return_1_letter() {
+        var subject = new LineReader(() -> "asdf\r\n".getBytes(StandardCharsets.UTF_8));
+
+        var actual = subject.readLine();
+
+        assertThat(actual).isEqualTo("asdf");
+    }
+
+    @Test
+    void when_input_contains_4_letters_and_then_crlf_inputs__then_return_1_letter() {
+        var counter = new AtomicInteger();
+        var subject = new LineReader(() -> {
+            if (counter.getAndIncrement() == 0) {
+                return "asdf".getBytes(StandardCharsets.UTF_8);
+            } else {
+                return "\r\n".getBytes(StandardCharsets.UTF_8);
+            }
+        });
+
+        var actual = subject.readLine();
+
+        assertThat(actual).isEqualTo("asdf");
+    }
+
+    @Test
+    void when_input_contains_2_crlf_split_between_4_inputs__then_return_2_empty_lines() {
+        var counter = new AtomicInteger();
+        var subject = new LineReader(() -> {
+            if (counter.getAndIncrement() == 0) {
+                return "\r".getBytes(StandardCharsets.UTF_8);
+            } else if (counter.get() == 2) {
+                return "\n".getBytes(StandardCharsets.UTF_8);
+            } else if (counter.get() == 3) {
+                return "\r".getBytes(StandardCharsets.UTF_8);
+            } else if (counter.get() == 4) {
+                return "\n".getBytes(StandardCharsets.UTF_8);
+            } else {
+                return "\r".getBytes(StandardCharsets.UTF_8);
+            }
+        });
+
+        assertThat(subject.readLine()).isEqualTo("");
+        assertThat(subject.readLine()).isEqualTo("");
+        assertThatThrownBy(subject::readLine)
+                .isInstanceOf(IllegalStateException.class);
+    }
+
+    @Test
+    void when_input_contains_only_1_letter_and_then_crlf_split_between_two_inputs__then_return_1_letter() {
+        var counter = new AtomicInteger();
+        var subject = new LineReader(() -> {
+            if (counter.getAndIncrement() == 0) {
+                return "q".getBytes(StandardCharsets.UTF_8);
+            } else if (counter.get() == 2) {
+                return "\r".getBytes(StandardCharsets.UTF_8);
+            } else {
+                return "\n".getBytes(StandardCharsets.UTF_8);
+            }
+        });
+
+        var actual = subject.readLine();
+
+        assertThat(actual).isEqualTo("q");
+    }
+
+    @Test
+    void when_input_contains_only_asdf_letter_and_then_crlf_split_between_two_inputs__then_return_1_letter() {
+        var counter = new AtomicInteger();
+        var subject = new LineReader(() -> {
+            if (counter.getAndIncrement() == 0) {
+                return "asdf".getBytes(StandardCharsets.UTF_8);
+            } else if (counter.get() == 2) {
+                return "\r".getBytes(StandardCharsets.UTF_8);
+            } else {
+                return "\n".getBytes(StandardCharsets.UTF_8);
+            }
+        });
+
+        var actual = subject.readLine();
+
+        assertThat(actual).isEqualTo("asdf");
+    }
+
+    @Test
     void when_new_line_found_on_first_read__return_line() {
         var subject = new LineReader(() -> "qwe\r\n".getBytes(StandardCharsets.UTF_8));
 
@@ -109,7 +227,6 @@ class LineReaderTest implements UnitTest {
 
     @Test
     void buffered_reader_performance_test_big_lines() throws Exception {
-//        compareWithBufferedReader("abc", "qwerty".repeat(100000), "asdfg".repeat(100));
         var linesCount = 300;
         var linesSize = 1000;
         var lines = new String[linesCount];
