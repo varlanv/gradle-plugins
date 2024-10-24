@@ -1,7 +1,7 @@
 [versions]
 spock = "2.3-groovy-4.0"
 groovy = "3.0.22"
-testContainers = "1.20.2"
+testContainers = "1.20.3"
 junitJupiter = "5.11.2"
 junitPlatform = "1.11.2"
 lombok = "1.18.34"
