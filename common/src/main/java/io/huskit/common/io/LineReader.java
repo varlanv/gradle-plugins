@@ -2,9 +2,10 @@ package io.huskit.common.io;
 
 import lombok.experimental.NonFinal;
 
+import java.util.Arrays;
 import java.util.function.Supplier;
 
-public class LineReader {
+public final class LineReader {
 
     private static final int NEST_LIMIT = 1000;
     Supplier<byte[]> bufferSupplier;
@@ -23,19 +24,33 @@ public class LineReader {
     public LineReader(Supplier<byte[]> bufferSupplier, int nestLimit) {
         this.bufferSupplier = bufferSupplier;
         this.nestLimit = nestLimit;
+        this.currentBuffer = bufferSupplier.get();
+        this.currentLineCounter = new NewLineCounter(currentBuffer);
+
     }
 
     public String readLine() {
-        if (currentBuffer == null) {
-            currentBuffer = bufferSupplier.get();
-            currentLineCounter = new NewLineCounter(currentBuffer);
-        }
         String res = null;
-
-        var idx = currentLineCounter.nextPosition();
-
-        res = new String(currentBuffer, currentBufferIndex, idx - currentBufferIndex);
-        currentBufferIndex = idx + 2;
+        var currentNest = 0;
+        while (res == null) {
+            var idx = currentLineCounter.nextPosition();
+            if (idx == -1) {
+                if (currentNest++ > nestLimit) {
+                    throw new IllegalStateException(String.format("Couldn't find new line after %s reads", nestLimit));
+                }
+                var oldBuffer = currentBuffer;
+                var newBuffer = bufferSupplier.get();
+                if (newBuffer.length == 0) {
+                    continue;
+                }
+                currentBuffer = Arrays.copyOf(oldBuffer, oldBuffer.length + newBuffer.length);
+                System.arraycopy(newBuffer, 0, currentBuffer, oldBuffer.length, newBuffer.length);
+                currentLineCounter = new NewLineCounter(currentBuffer, currentBufferIndex);
+            } else {
+                res = new String(currentBuffer, currentBufferIndex, idx - currentBufferIndex);
+                currentBufferIndex = idx + 2;
+            }
+        }
         return res;
     }
 }

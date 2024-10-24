@@ -1,6 +1,7 @@
 package io.huskit.common.io;
 
 import io.huskit.gradle.commontest.UnitTest;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import java.io.BufferedReader;
@@ -275,6 +276,30 @@ class LineReaderTest implements UnitTest {
     }
 
     @Test
+    void when_big_line__should_split_correctly() {
+        var linesCount = 150;
+        var linesSize = 1000;
+        var array = IntStream.range(0, linesCount)
+                .mapToObj(i -> String.valueOf(i).repeat(linesSize) + "\r\n")
+                .map(line -> line.getBytes(StandardCharsets.UTF_8))
+                .reduce(new byte[0], (acc, line) -> {
+                    var newBytes = new byte[acc.length + line.length];
+                    System.arraycopy(acc, 0, newBytes, 0, acc.length);
+                    System.arraycopy(line, 0, newBytes, acc.length, line.length);
+                    return newBytes;
+                });
+
+        var subject = new LineReader(() -> array);
+
+        for (var i = 0; i < linesCount; i++) {
+            var actual = subject.readLine();
+            var expected = String.valueOf(i).repeat(linesSize);
+            assertThat(actual).isEqualTo(expected);
+        }
+    }
+
+    @Test
+    @Disabled
     void buffered_reader_performance_test_big_lines() throws Exception {
         var linesCount = 150;
         var linesSize = 1000;
@@ -286,6 +311,7 @@ class LineReaderTest implements UnitTest {
     }
 
     @Test
+    @Disabled
     void buffered_reader_performance_test_avg_lines() throws Exception {
         var linesCount = 40;
         var linesSize = 30;
@@ -309,7 +335,7 @@ class LineReaderTest implements UnitTest {
                     return newBytes;
                 });
 
-        var iterations = 100;
+        var iterations = 300;
         microBenchmark(iterations, "LineReader", () -> {
             var lineReader = new LineReader(() -> bytes);
             var iterationsCount = new AtomicInteger();

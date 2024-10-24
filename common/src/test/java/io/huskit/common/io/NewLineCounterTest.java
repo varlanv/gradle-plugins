@@ -59,6 +59,42 @@ class NewLineCounterTest implements UnitTest {
     }
 
     @Test
+    void positions_qwerty_repeated_3_start_at_2() {
+        verify(
+                "qwerty\r\nqwerty\r\nqwerty\r\n",
+                2,
+                new int[]{6, 14, 22}
+        );
+    }
+
+    @Test
+    void positions_qwerty_repeated_3_start_at_7() {
+        verify(
+                "qwerty\r\nqwerty\r\nqwerty\r\n",
+                7,
+                new int[]{14, 22}
+        );
+    }
+
+    @Test
+    void positions_qwerty_repeated_3_start_at_15() {
+        verify(
+                "qwerty\r\nqwerty\r\nqwerty\r\n",
+                15,
+                new int[]{22}
+        );
+    }
+
+    @Test
+    void positions_qwerty_repeated_3_start_at_6() {
+        verify(
+                "qwerty\r\nqwerty\r\nqwerty\r\n",
+                6,
+                new int[]{6, 14, 22}
+        );
+    }
+
+    @Test
     void positions_qwerty_repeated_3_with_new_line_at_start() {
         verify(
                 "\r\nqwerty\r\nqwerty\r\nqwerty\r\n",
@@ -108,8 +144,12 @@ class NewLineCounterTest implements UnitTest {
     }
 
     private void verify(String input, int[] expected) {
+        verify(input, 0, expected);
+    }
+
+    private void verify(String input, Integer initialPosition, int[] expected) {
         var array = input.getBytes(StandardCharsets.UTF_8);
-        var subject = new NewLineCounter(array);
+        var subject = new NewLineCounter(array, initialPosition);
         var res = subject.positions();
         assertThat(res).satisfies(
                 ignore -> assertThat(res.limit()).isEqualTo(expected.length),
