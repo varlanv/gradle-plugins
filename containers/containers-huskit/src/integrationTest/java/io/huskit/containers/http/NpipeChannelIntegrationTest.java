@@ -25,7 +25,7 @@ public class NpipeChannelIntegrationTest implements DockerIntegrationTest {
                             )
                     )
             ).join();
-            var head = new HeadFromStream(stream);
+            var head = new HeadFromLines(stream);
             System.out.println(head.status());
         });
     }

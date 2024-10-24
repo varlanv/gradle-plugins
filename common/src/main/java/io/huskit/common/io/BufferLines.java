@@ -3,9 +3,10 @@ package io.huskit.common.io;
 import lombok.experimental.NonFinal;
 
 import java.util.Arrays;
+import java.util.Optional;
 import java.util.function.Supplier;
 
-public final class LineReader {
+public final class BufferLines implements Lines {
 
     private static final int NEST_LIMIT = 1000;
     Supplier<byte[]> bufferSupplier;
@@ -17,11 +18,11 @@ public final class LineReader {
     @NonFinal
     int currentBufferIndex;
 
-    public LineReader(Supplier<byte[]> bufferSupplier) {
+    public BufferLines(Supplier<byte[]> bufferSupplier) {
         this(bufferSupplier, NEST_LIMIT);
     }
 
-    public LineReader(Supplier<byte[]> bufferSupplier, int nestLimit) {
+    public BufferLines(Supplier<byte[]> bufferSupplier, int nestLimit) {
         this.bufferSupplier = bufferSupplier;
         this.nestLimit = nestLimit;
         this.currentBuffer = bufferSupplier.get();
@@ -29,7 +30,8 @@ public final class LineReader {
 
     }
 
-    public String readLine() {
+    @Override
+    public Line next() {
         String res = null;
         var currentNest = 0;
         while (res == null) {
@@ -51,6 +53,6 @@ public final class LineReader {
                 currentBufferIndex = idx + 2;
             }
         }
-        return res;
+        return new Line(res);
     }
 }

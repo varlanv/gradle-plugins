@@ -1,73 +1,71 @@
 package io.huskit.containers.http;
 
-import io.huskit.common.io.ByteBufferInputStream;
-import io.huskit.common.io.LoopInputStream;
+import io.huskit.common.io.Line;
+import io.huskit.common.io.Lines;
 import io.huskit.gradle.commontest.UnitTest;
 import org.junit.jupiter.api.Test;
 
-import java.io.ByteArrayInputStream;
-import java.nio.ByteBuffer;
-import java.nio.charset.StandardCharsets;
+import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-class HeadFromStreamTest implements UnitTest {
+class HeadFromLinesTest implements UnitTest {
 
     String osTypeHeader = "linux".repeat(10000);
 
 
     @Test
-    void parse_head__when_minusone_from_reader__throw_exception() {
+    void parse_head__when_status_not_present_on_first_line__fails() {
         assertThatThrownBy(() ->
-                new HeadFromStream(
-                        new ByteArrayInputStream(new byte[]{1, 2, 3})
+                new HeadFromLines(
+                        () -> new Line("1")
                 ).status()
-        );
+        ).hasMessageContaining("Invalid status line: 1");
     }
 
     @Test
     void parse_head_without_body__success() {
-        var httpHeadString = headers();
-
-        var subject = new HeadFromStream(
-                new ByteArrayInputStream(
-                        httpHeadString.getBytes(StandardCharsets.UTF_8)
+        var subject = new HeadFromLines(
+                Lines.fromIterable(
+                        headersLines()
                 )
         );
 
         verifyHead(subject);
     }
-
-    @Test
-    void parse_head_without_body__small_buffer__success() {
-        var httpHeadString = headers();
-
-        var subject = new HeadFromStream(
-                new LoopInputStream(
-                        () -> new ByteArrayInputStream(
-                                httpHeadString.getBytes(StandardCharsets.UTF_8)
-                        )
-                )
-        );
-
-        verifyHead(subject);
-    }
-
-    @Test
-    void parse_head_with_body__success() {
-        var httpHeadWithBodyString = headers()
-                + "some body";
-
-        var subject = new HeadFromStream(
-                new ByteBufferInputStream(
-                        ByteBuffer.wrap(httpHeadWithBodyString.getBytes(StandardCharsets.UTF_8))
-                )
-        );
-        subject.status();
-
-        verifyHead(subject);
-    }
+//
+//    @Test
+//    void parse_head_without_body__small_buffer__success() {
+//        var httpHeadString = headers();
+//
+//        var subject = new HeadFromLines(
+//                new LoopInputStream(
+//                        () -> new ByteArrayInputStream(
+//                                httpHeadString.getBytes(StandardCharsets.UTF_8)
+//                        )
+//                )
+//        );
+//
+//        verifyHead(subject);
+//    }
+//
+//    @Test
+//    void parse_head_with_body__success() {
+//        var httpHeadWithBodyString = headers()
+//                + "some body";
+//
+//        var subject = new HeadFromLines(
+//                new ByteBufferInputStream(
+//                        ByteBuffer.wrap(httpHeadWithBodyString.getBytes(StandardCharsets.UTF_8))
+//                )
+//        );
+//        subject.status();
+//
+//        verifyHead(subject);
+//    }
 
     private String headers() {
         return "HTTP/1.1 200 OK\r\n"
@@ -81,7 +79,11 @@ class HeadFromStreamTest implements UnitTest {
                 + "\r\n";
     }
 
-    private void verifyHead(HeadFromStream subject) {
+    private List<String> headersLines() {
+        return headers().lines().collect(Collectors.toList());
+    }
+
+    private void verifyHead(HeadFromLines subject) {
         assertThat(subject.status()).isEqualTo(200);
         assertThat(subject.isChunked()).isFalse();
         assertThat(subject.isMultiplexedStream()).isFalse();

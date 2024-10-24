@@ -4,8 +4,8 @@ import io.huskit.common.HtConstants;
 import io.huskit.common.Log;
 import io.huskit.common.NoopLog;
 import io.huskit.common.function.MemoizedSupplier;
-import io.huskit.common.io.ByteBufferInputStream;
-import io.huskit.common.io.LoopInputStream;
+import io.huskit.common.io.BufferLines;
+import io.huskit.common.io.Lines;
 import lombok.Getter;
 import lombok.Locked;
 import lombok.RequiredArgsConstructor;
@@ -13,9 +13,6 @@ import lombok.SneakyThrows;
 import lombok.experimental.NonFinal;
 import org.jetbrains.annotations.VisibleForTesting;
 
-import java.io.BufferedReader;
-import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.nio.ByteBuffer;
 import java.nio.channels.AsynchronousFileChannel;
 import java.nio.channels.CompletionHandler;
@@ -23,10 +20,10 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
 import java.time.Duration;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
@@ -91,12 +88,12 @@ final class NpipeDocker implements DockerSocket {
     }
 }
 
-final class HeadFromStream implements Http.Head {
+final class HeadFromLines implements Http.Head {
 
     Supplier<Http.Head> headSupplier;
 
-    HeadFromStream(InputStream stream) {
-        this.headSupplier = MemoizedSupplier.ofLocal(() -> parse(stream));
+    HeadFromLines(Lines lines) {
+        this.headSupplier = MemoizedSupplier.ofLocal(() -> parse(lines));
     }
 
     @Override
@@ -110,26 +107,29 @@ final class HeadFromStream implements Http.Head {
     }
 
     @SneakyThrows
-    Http.Head parse(InputStream stream) {
-        var reader = new BufferedReader(new InputStreamReader(stream, StandardCharsets.UTF_8), 1024);
-        var statusLine = reader.readLine();
-        if (statusLine == null || statusLine.isEmpty()) {
+    Http.Head parse(Lines lines) {
+        var statusLine = lines.next();
+        if (statusLine.isBlank()) {
             throw new RuntimeException("Failed to build head with given stream");
         }
-        var statusParts = statusLine.split(" ");
+        var statusParts = statusLine.value().split(" ");
         if (statusParts.length < 2) {
             throw new RuntimeException("Invalid status line: " + statusLine);
         }
         var status = Integer.parseInt(statusParts[1]);
         var headers = new HashMap<String, String>();
-        String line;
-        while ((line = reader.readLine()) != null && !line.isEmpty()) {
-            var colonIndex = line.indexOf(':');
+        while (true) {
+            var line = lines.next();
+            if (line.isEmpty()) {
+                break;
+            }
+            var lineVal = line.value();
+            var colonIndex = lineVal.indexOf(':');
             if (colonIndex == -1) {
                 throw new RuntimeException("Invalid header line: " + line);
             }
-            var key = line.substring(0, colonIndex).trim();
-            var value = line.substring(colonIndex + 1).trim();
+            var key = lineVal.substring(0, colonIndex).trim();
+            var value = lineVal.substring(colonIndex + 1).trim();
             headers.put(key, value);
         }
 
@@ -165,7 +165,7 @@ final class NpipeChannel {
         );
     }
 
-    CompletableFuture<LoopInputStream> writeAndRead(Request request) {
+    CompletableFuture<Lines> writeAndRead(Request request) {
         return new NpipeChannelIn(
                 channel,
                 isDirtyConnection,
@@ -241,17 +241,19 @@ final class NpipeChannelOut {
     Integer bufferSize;
 
     @SneakyThrows
-    CompletableFuture<LoopInputStream> read() {
+    CompletableFuture<Lines> read() {
         return CompletableFuture.supplyAsync(() ->
-                new LoopInputStream(() ->
-                        new ByteBufferInputStream(
-                                readToBuffer()
-                        )
+                new BufferLines(
+                        () -> {
+                            var buffer = readToBuffer();
+                            return Arrays.copyOf(buffer.array(), buffer.limit());
+                        }
                 )
         );
     }
 
-    private ByteBuffer readToBuffer() throws InterruptedException, ExecutionException {
+    @SneakyThrows
+    private ByteBuffer readToBuffer() {
         var buffer = ByteBuffer.allocate(bufferSize);
         channel.read(buffer, 0).get();
         buffer.flip();
