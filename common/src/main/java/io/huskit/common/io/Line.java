@@ -4,14 +4,21 @@ import java.util.Objects;
 
 public final class Line {
 
+    int endIndex;
     private final String value;
 
     public Line() {
         this.value = null;
+        this.endIndex = -1;
+    }
+
+    public Line(String value, int endIndex) {
+        this.value = Objects.requireNonNull(value);
+        this.endIndex = endIndex;
     }
 
     public Line(String value) {
-        this.value = Objects.requireNonNull(value);
+        this(value, -1);
     }
 
     public String value() {
@@ -40,5 +47,9 @@ public final class Line {
     @Override
     public String toString() {
         return value;
+    }
+
+    public int endIndex() {
+        return endIndex;
     }
 }

@@ -3,7 +3,6 @@ package io.huskit.common.io;
 import lombok.experimental.NonFinal;
 
 import java.util.Arrays;
-import java.util.Optional;
 import java.util.function.Supplier;
 
 public final class BufferLines implements Lines {
@@ -36,7 +35,10 @@ public final class BufferLines implements Lines {
         var currentNest = 0;
         while (res == null) {
             var idx = currentLineCounter.nextPosition();
-            if (idx == -1) {
+            if (idx != -1) {
+                res = new String(currentBuffer, currentBufferIndex, idx - currentBufferIndex);
+                currentBufferIndex = idx + 2;
+            } else {
                 if (currentNest++ > nestLimit) {
                     throw new IllegalStateException(String.format("Couldn't find new line after %s reads", nestLimit));
                 }
@@ -48,11 +50,8 @@ public final class BufferLines implements Lines {
                 currentBuffer = Arrays.copyOf(oldBuffer, oldBuffer.length + newBuffer.length);
                 System.arraycopy(newBuffer, 0, currentBuffer, oldBuffer.length, newBuffer.length);
                 currentLineCounter = new NewLineCounter(currentBuffer, currentBufferIndex);
-            } else {
-                res = new String(currentBuffer, currentBufferIndex, idx - currentBufferIndex);
-                currentBufferIndex = idx + 2;
             }
         }
-        return new Line(res);
+        return new Line(res, currentBufferIndex);
     }
 }

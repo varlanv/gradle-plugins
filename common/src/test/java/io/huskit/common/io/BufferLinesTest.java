@@ -300,7 +300,7 @@ class BufferLinesTest implements UnitTest {
 
     @Test
     @Disabled
-    void buffered_reader_performance_test_big_lines() throws Exception {
+    void performance_test_big_lines() throws Exception {
         var linesCount = 150;
         var linesSize = 1000;
         compareWithBufferedReader(
@@ -312,7 +312,7 @@ class BufferLinesTest implements UnitTest {
 
     @Test
     @Disabled
-    void buffered_reader_performance_test_avg_lines() throws Exception {
+    void performance_test_avg_lines() throws Exception {
         var linesCount = 40;
         var linesSize = 30;
         compareWithBufferedReader(
@@ -336,6 +336,7 @@ class BufferLinesTest implements UnitTest {
                 });
 
         var iterations = 300;
+//        var newLineCounter = new NewLineCounter(bytes);
         microBenchmark(iterations, "LineReader", () -> {
             var lineReader = new BufferLines(() -> bytes);
             var iterationsCount = new AtomicInteger();
@@ -354,6 +355,18 @@ class BufferLinesTest implements UnitTest {
                 assertThat(line).isNotEmpty();
                 iterationsCount.incrementAndGet();
             }
+            return iterationsCount.get();
+        });
+
+        var string = new String(bytes, StandardCharsets.UTF_8);
+        microBenchmark(iterations, "String.lines()", () -> {
+            var iterationsCount = new AtomicInteger();
+            string.lines().forEach(line -> {
+                assertThat(line).isNotEmpty();
+                iterationsCount.incrementAndGet();
+
+            });
+            assertThat(iterationsCount.get()).isEqualTo(lines.length);
             return iterationsCount.get();
         });
     }

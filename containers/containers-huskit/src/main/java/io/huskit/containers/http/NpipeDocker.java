@@ -90,6 +90,8 @@ final class NpipeDocker implements DockerSocket {
 
 final class HeadFromLines implements Http.Head {
 
+    @NonFinal
+    Integer indexOfHeadEnd;
     Supplier<Http.Head> headSupplier;
 
     HeadFromLines(Lines lines) {
@@ -121,6 +123,7 @@ final class HeadFromLines implements Http.Head {
         while (true) {
             var line = lines.next();
             if (line.isEmpty()) {
+                indexOfHeadEnd = line.endIndex();
                 break;
             }
             var lineVal = line.value();
@@ -134,6 +137,14 @@ final class HeadFromLines implements Http.Head {
         }
 
         return new DfHead(status, headers);
+    }
+
+    public Integer indexOfHeadEnd() {
+        headSupplier.get();
+        if (indexOfHeadEnd == null) {
+            throw new IllegalStateException("Head not parsed yet");
+        }
+        return indexOfHeadEnd;
     }
 }
 

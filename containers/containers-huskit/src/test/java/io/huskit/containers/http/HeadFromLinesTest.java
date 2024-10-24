@@ -1,13 +1,14 @@
 package io.huskit.containers.http;
 
+import io.huskit.common.io.BufferLines;
 import io.huskit.common.io.Line;
 import io.huskit.common.io.Lines;
 import io.huskit.gradle.commontest.UnitTest;
 import org.junit.jupiter.api.Test;
 
-import java.util.List;
-import java.util.Optional;
+import java.nio.charset.StandardCharsets;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -30,42 +31,53 @@ class HeadFromLinesTest implements UnitTest {
     void parse_head_without_body__success() {
         var subject = new HeadFromLines(
                 Lines.fromIterable(
-                        headersLines()
+                        headersLines().collect(Collectors.toList())
                 )
         );
 
         verifyHead(subject);
     }
-//
-//    @Test
-//    void parse_head_without_body__small_buffer__success() {
-//        var httpHeadString = headers();
-//
-//        var subject = new HeadFromLines(
-//                new LoopInputStream(
-//                        () -> new ByteArrayInputStream(
-//                                httpHeadString.getBytes(StandardCharsets.UTF_8)
-//                        )
-//                )
-//        );
-//
-//        verifyHead(subject);
-//    }
-//
-//    @Test
-//    void parse_head_with_body__success() {
-//        var httpHeadWithBodyString = headers()
-//                + "some body";
-//
-//        var subject = new HeadFromLines(
-//                new ByteBufferInputStream(
-//                        ByteBuffer.wrap(httpHeadWithBodyString.getBytes(StandardCharsets.UTF_8))
-//                )
-//        );
-//        subject.status();
-//
-//        verifyHead(subject);
-//    }
+
+    @Test
+    void parse_head_without_body__should_correctly_calculate_last_index() {
+        var bytes = headers().getBytes(StandardCharsets.UTF_8);
+        var subject = new HeadFromLines(
+                new BufferLines(() -> bytes)
+        );
+
+        assertThat(subject.indexOfHeadEnd())
+                .isNotNull()
+                .isEqualTo(bytes.length);
+    }
+
+    @Test
+    void parse_head_with_body__should_correctly_calculate_last_index() {
+        var headers = headers();
+        var bytes = (headers + "some body").getBytes(StandardCharsets.UTF_8);
+        var subject = new HeadFromLines(
+                new BufferLines(() -> bytes)
+        );
+
+        assertThat(subject.indexOfHeadEnd())
+                .isNotNull()
+                .isEqualTo(headers.length());
+    }
+
+    @Test
+    void parse_head_with_body__success() {
+        var httpHeadWithBodyString = Stream.concat(headersLines(), Stream.of("some body"))
+                .collect(Collectors.toList());
+
+        var subject = new HeadFromLines(
+                Lines.fromIterable(
+                        httpHeadWithBodyString
+                )
+        );
+
+        subject.status();
+
+        verifyHead(subject);
+    }
 
     private String headers() {
         return "HTTP/1.1 200 OK\r\n"
@@ -79,11 +91,11 @@ class HeadFromLinesTest implements UnitTest {
                 + "\r\n";
     }
 
-    private List<String> headersLines() {
-        return headers().lines().collect(Collectors.toList());
+    private Stream<String> headersLines() {
+        return headers().lines();
     }
 
-    private void verifyHead(HeadFromLines subject) {
+    private void verifyHead(Http.Head subject) {
         assertThat(subject.status()).isEqualTo(200);
         assertThat(subject.isChunked()).isFalse();
         assertThat(subject.isMultiplexedStream()).isFalse();
