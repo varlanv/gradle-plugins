@@ -1,5 +1,6 @@
 package io.huskit.common.io;
 
+import lombok.Getter;
 import lombok.experimental.NonFinal;
 
 import java.util.Arrays;
@@ -10,6 +11,7 @@ public final class BufferLines implements Lines {
     private static final int NEST_LIMIT = 1000;
     Supplier<byte[]> bufferSupplier;
     int nestLimit;
+    @Getter
     @NonFinal
     byte[] currentBuffer;
     @NonFinal

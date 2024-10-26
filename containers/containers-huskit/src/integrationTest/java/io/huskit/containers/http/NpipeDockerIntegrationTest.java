@@ -11,10 +11,12 @@ import org.junit.jupiter.api.Timeout;
 import org.junit.jupiter.api.condition.EnabledOnOs;
 import org.junit.jupiter.api.condition.OS;
 
+import java.io.FileWriter;
 import java.nio.ByteBuffer;
 import java.nio.channels.AsynchronousFileChannel;
 import java.nio.channels.FileChannel;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
 import java.time.Duration;
@@ -25,6 +27,41 @@ import java.util.HashMap;
 public class NpipeDockerIntegrationTest implements DockerIntegrationTest {
 
     String dockerNpipe = "\\\\.\\pipe\\docker_engine";
+
+    @Test
+    @Disabled
+    void async_file_channel_raw_logs_follow() throws Exception {
+        var containerId = "e8a77c25edb4d88115aa4e8ea8f0baf9521e6b4136e3a499fa2768e69d58afbb";
+        var request = "GET /containers/" + containerId + "/logs?stdout=true&stderr=true&follow=true " +
+                "HTTP/1.1\r\n" +
+                "Host: localhost\r\n" +
+                "Connection: keep-alive\r\n" +
+                "\r\n";
+        try (var channel = AsynchronousFileChannel.open(
+                Paths.get(dockerNpipe),
+                StandardOpenOption.READ,
+                StandardOpenOption.WRITE)) {
+            channel.write(ByteBuffer.wrap(request.getBytes(StandardCharsets.UTF_8)), 0).get();
+            var buffer = ByteBuffer.allocate(8192);
+            channel.read(buffer, 0).get();
+            buffer.flip();
+            var array = Arrays.copyOfRange(buffer.array(), buffer.position(), buffer.limit());
+            var sb = new StringBuilder(8192);
+            buffer.clear();
+            channel.read(buffer, 0).get();
+            buffer.flip();
+            array = Arrays.copyOf(array, array.length + buffer.remaining());
+            System.arraycopy(buffer.array(), buffer.position(), array, array.length - buffer.remaining(), buffer.remaining());
+            buffer.clear();
+            channel.read(buffer, 0).get();
+            buffer.flip();
+            array = Arrays.copyOf(array, array.length + buffer.remaining());
+            System.arraycopy(buffer.array(), buffer.position(), array, array.length - buffer.remaining(), buffer.remaining());
+            sb.append(new String(array, StandardCharsets.UTF_8));
+
+            Files.write(Paths.get("logs.txt"), sb.toString().getBytes(StandardCharsets.UTF_8));
+        }
+    }
 
     @Test
     @Disabled

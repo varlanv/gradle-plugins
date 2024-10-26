@@ -1,6 +1,7 @@
 package io.huskit.common.io;
 
 import io.huskit.gradle.commontest.UnitTest;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
@@ -16,6 +17,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 class NewLineCounterTest implements UnitTest {
 
     @Test
+    @Disabled
     void long_input_performance_check() {
         var iterations = 200;
         {

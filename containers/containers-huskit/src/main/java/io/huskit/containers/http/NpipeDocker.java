@@ -88,6 +88,21 @@ final class NpipeDocker implements DockerSocket {
     }
 }
 
+final class HttpMultiplexedStream {
+
+    Supplier<ByteBuffer> byteBufferSupplier;
+    ByteBuffer currentBuffer;
+
+    HttpMultiplexedStream(Supplier<ByteBuffer> byteBufferSupplier) {
+        this.byteBufferSupplier = byteBufferSupplier;
+        this.currentBuffer = byteBufferSupplier.get();
+    }
+
+    byte get() {
+        return currentBuffer.get();
+    }
+}
+
 final class HeadFromLines implements Http.Head {
 
     @NonFinal
@@ -108,8 +123,16 @@ final class HeadFromLines implements Http.Head {
         return headSupplier.get().headers();
     }
 
+    public Integer indexOfHeadEnd() {
+        headSupplier.get();
+        if (indexOfHeadEnd == null) {
+            throw new IllegalStateException("Head not parsed yet");
+        }
+        return indexOfHeadEnd;
+    }
+
     @SneakyThrows
-    Http.Head parse(Lines lines) {
+    private Http.Head parse(Lines lines) {
         var statusLine = lines.next();
         if (statusLine.isBlank()) {
             throw new RuntimeException("Failed to build head with given stream");
@@ -120,6 +143,10 @@ final class HeadFromLines implements Http.Head {
         }
         var status = Integer.parseInt(statusParts[1]);
         var headers = new HashMap<String, String>();
+        var contentTypeHeaderFound = false;
+        var transferEncodingHeaderFound = false;
+        var isChunked = false;
+        var isDockerMultiplex = false;
         while (true) {
             var line = lines.next();
             if (line.isEmpty()) {
@@ -133,18 +160,18 @@ final class HeadFromLines implements Http.Head {
             }
             var key = lineVal.substring(0, colonIndex).trim();
             var value = lineVal.substring(colonIndex + 1).trim();
+            if (!contentTypeHeaderFound && "Content-Type".equalsIgnoreCase(key)) {
+                contentTypeHeaderFound = true;
+                isChunked = "chunked".equalsIgnoreCase(value);
+            }
+            if (!transferEncodingHeaderFound && "Transfer-Encoding".equalsIgnoreCase(key)) {
+                transferEncodingHeaderFound = true;
+                isDockerMultiplex = "application/vnd.docker.multiplexed-stream".equalsIgnoreCase(value);
+            }
             headers.put(key, value);
         }
 
-        return new DfHead(status, headers);
-    }
-
-    public Integer indexOfHeadEnd() {
-        headSupplier.get();
-        if (indexOfHeadEnd == null) {
-            throw new IllegalStateException("Head not parsed yet");
-        }
-        return indexOfHeadEnd;
+        return new DfHead(status, headers, isChunked, isDockerMultiplex);
     }
 }
 
@@ -176,7 +203,7 @@ final class NpipeChannel {
         );
     }
 
-    CompletableFuture<Lines> writeAndRead(Request request) {
+    CompletableFuture<BufferLines> writeAndRead(Request request) {
         return new NpipeChannelIn(
                 channel,
                 isDirtyConnection,
@@ -252,7 +279,7 @@ final class NpipeChannelOut {
     Integer bufferSize;
 
     @SneakyThrows
-    CompletableFuture<Lines> read() {
+    CompletableFuture<BufferLines> read() {
         return CompletableFuture.supplyAsync(() ->
                 new BufferLines(
                         () -> {
