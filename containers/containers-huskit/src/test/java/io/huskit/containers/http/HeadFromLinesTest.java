@@ -4,6 +4,7 @@ import io.huskit.common.io.BufferLines;
 import io.huskit.common.io.Line;
 import io.huskit.common.io.Lines;
 import io.huskit.gradle.commontest.UnitTest;
+import org.apache.commons.io.IOUtils;
 import org.junit.jupiter.api.Test;
 
 import java.nio.charset.StandardCharsets;
@@ -16,7 +17,6 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 class HeadFromLinesTest implements UnitTest {
 
     String osTypeHeader = "linux".repeat(10000);
-
 
     @Test
     void parse_head__when_status_not_present_on_first_line__fails() {
@@ -74,9 +74,31 @@ class HeadFromLinesTest implements UnitTest {
                 )
         );
 
-        subject.status();
-
         verifyHead(subject);
+    }
+
+    @Test
+    void should_correctly_parse_head_from_logs_response() throws Exception {
+        var bytes = IOUtils.resourceToByteArray("/logs.txt");
+
+        var subject = new HeadFromLines(
+                new BufferLines(() -> bytes)
+        );
+
+        assertThat(subject.status()).isEqualTo(200);
+        assertThat(subject.isChunked()).isTrue();
+        assertThat(subject.isMultiplexedStream()).isTrue();
+        assertThat(subject.headers()).containsEntry("Api-Version", "1.46");
+        assertThat(subject.headers()).containsEntry("Content-Type", "application/vnd.docker.multiplexed-stream");
+        assertThat(subject.headers()).containsEntry("Date", "Fri, 25 Oct 2024 00:52:40 GMT");
+        assertThat(subject.headers()).containsEntry("Docker-Experimental", "false");
+        assertThat(subject.headers()).containsEntry("Ostype", "linux");
+        assertThat(subject.headers()).containsEntry("Server", "Docker/27.0.3 (linux)");
+        assertThat(subject.headers()).containsEntry("Transfer-Encoding", "chunked");
+        assertThat(subject.headers()).hasSize(7);
+        assertThat(subject.indexOfHeadEnd()).isEqualTo(234);
+        assertThat(subject.isChunked()).isTrue();
+        assertThat(subject.isMultiplexedStream()).isTrue();
     }
 
     private String headers() {
