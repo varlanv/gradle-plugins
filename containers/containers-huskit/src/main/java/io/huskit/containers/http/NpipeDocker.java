@@ -124,9 +124,11 @@ final class HeadFromLines implements Http.Head {
     }
 
     public Integer indexOfHeadEnd() {
-        headSupplier.get();
         if (indexOfHeadEnd == null) {
-            throw new IllegalStateException("Head not parsed yet");
+            headSupplier.get();
+            if (indexOfHeadEnd == null) {
+                throw new RuntimeException("Failed to build head with given stream");
+            }
         }
         return indexOfHeadEnd;
     }
