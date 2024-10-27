@@ -14,12 +14,14 @@ public interface Sneaky {
     }
 
     @SuppressWarnings("PMD.EmptyCatchBlock")
-    static Runnable quiet(ThrowingRunnable runnable) {
+    static Runnable quiet(ThrowingRunnable... actions) {
         return () -> {
-            try {
-                runnable.run();
-            } catch (Exception ignore) {
-                // no-op
+            for (var action : actions) {
+                try {
+                    action.run();
+                } catch (Exception ignore) {
+                    // no-op
+                }
             }
         };
     }

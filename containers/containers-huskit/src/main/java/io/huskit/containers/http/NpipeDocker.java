@@ -23,8 +23,7 @@ import java.time.Duration;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.Semaphore;
+import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Supplier;
@@ -88,19 +87,66 @@ final class NpipeDocker implements DockerSocket {
     }
 }
 
-final class HttpMultiplexedStream {
+final class DockerHttpMultiplexedStream {
 
-    Supplier<ByteBuffer> byteBufferSupplier;
-    ByteBuffer currentBuffer;
+    Supplier<byte[]> byteBufferSupplier;
+    @NonFinal
+    byte[] currentBuffer;
+    Boolean stdout;
+    Boolean stderr;
 
-    HttpMultiplexedStream(Supplier<ByteBuffer> byteBufferSupplier) {
+    DockerHttpMultiplexedStream(Boolean stdout, Boolean stderr, Supplier<byte[]> byteBufferSupplier) {
+        if (!stdout && !stderr) {
+            throw new IllegalArgumentException("At least one of stdout or stderr must be true");
+        }
         this.byteBufferSupplier = byteBufferSupplier;
         this.currentBuffer = byteBufferSupplier.get();
+        this.stdout = stdout;
+        this.stderr = stderr;
     }
 
-    byte get() {
-        return currentBuffer.get();
+    DockerHttpMultiplexedStream(Supplier<byte[]> byteBufferSupplier) {
+        this(true, true, byteBufferSupplier);
     }
+
+    @SneakyThrows
+    MultiplexedResponse get() {
+        var queue = new LinkedBlockingQueue<MultiplexedFrame>();
+        var stopSignal = new AtomicBoolean(false);
+        ForkJoinPool.commonPool().execute(() -> {
+            while (true) {
+                if (stopSignal.get()) {
+                    break;
+                }
+            }
+        });
+        return new MultiplexedResponse(queue, stopSignal);
+    }
+}
+
+@Getter
+@RequiredArgsConstructor
+final class MultiplexedFrame {
+
+    byte[] data;
+    FrameType type;
+}
+
+@RequiredArgsConstructor
+final class MultiplexedResponse {
+
+    @Getter
+    BlockingQueue<MultiplexedFrame> frames;
+    AtomicBoolean stopSignal;
+
+    void stop() {
+        stopSignal.set(true);
+    }
+}
+
+enum FrameType {
+    STDOUT,
+    STDERR
 }
 
 final class HeadFromLines implements Http.Head {
