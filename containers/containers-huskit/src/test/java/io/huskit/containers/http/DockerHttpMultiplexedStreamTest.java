@@ -5,6 +5,8 @@ import io.huskit.gradle.commontest.UnitTest;
 import lombok.SneakyThrows;
 import org.apache.commons.io.IOUtils;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.parallel.Execution;
+import org.junit.jupiter.api.parallel.ExecutionMode;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.EnumSource;
 
@@ -15,6 +17,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+@Execution(ExecutionMode.CONCURRENT)
 class DockerHttpMultiplexedStreamTest implements UnitTest {
 
     @Test
@@ -23,7 +26,6 @@ class DockerHttpMultiplexedStreamTest implements UnitTest {
                 "/docker_http_responses/logs/follow_all_stdout.txt",
                 StreamType.STDOUT,
                 FrameType.STDOUT,
-                true,
                 27,
                 2
         );
@@ -79,7 +81,6 @@ class DockerHttpMultiplexedStreamTest implements UnitTest {
                 "/docker_http_responses/logs/follow_all_stderr.txt",
                 StreamType.STDERR,
                 FrameType.STDERR,
-                true,
                 24,
                 2
         );
@@ -99,7 +100,6 @@ class DockerHttpMultiplexedStreamTest implements UnitTest {
         var subject = buildSubject(
                 "/docker_http_responses/logs/follow_mix.txt",
                 StreamType.STDOUT,
-                true,
                 readsCounter
         );
         var expectedElementsCount = 20;
@@ -131,7 +131,6 @@ class DockerHttpMultiplexedStreamTest implements UnitTest {
         var subject = buildSubject(
                 "/docker_http_responses/logs/follow_mix.txt",
                 StreamType.STDERR,
-                true,
                 readsCounter
         );
         var expectedElementsCount = 21;
@@ -163,7 +162,6 @@ class DockerHttpMultiplexedStreamTest implements UnitTest {
         var subject = buildSubject(
                 "/docker_http_responses/logs/follow_mix.txt",
                 StreamType.ALL,
-                true,
                 readsCounter
         );
         var expectedElementsCount = 41;
@@ -195,7 +193,6 @@ class DockerHttpMultiplexedStreamTest implements UnitTest {
         var subject = buildSubject(
                 "/docker_http_responses/logs/mix.txt",
                 StreamType.STDOUT,
-                false,
                 readsCounter
         );
         var expectedElementsCount = 11;
@@ -224,7 +221,6 @@ class DockerHttpMultiplexedStreamTest implements UnitTest {
         var subject = buildSubject(
                 "/docker_http_responses/logs/mix.txt",
                 StreamType.STDERR,
-                false,
                 readsCounter
         );
         var expectedElementsCount = 11;
@@ -253,7 +249,6 @@ class DockerHttpMultiplexedStreamTest implements UnitTest {
         var subject = buildSubject(
                 "/docker_http_responses/logs/mix.txt",
                 StreamType.ALL,
-                false,
                 readsCounter
         );
         var expectedElementsCount = 22;
@@ -283,7 +278,6 @@ class DockerHttpMultiplexedStreamTest implements UnitTest {
         var subject = buildSubject(
                 "/docker_http_responses/logs/empty.txt",
                 streamType,
-                false,
                 readsCounter
         );
         try (var actual = subject.get()) {
@@ -301,7 +295,6 @@ class DockerHttpMultiplexedStreamTest implements UnitTest {
         var subject = buildSubject(
                 "/docker_http_responses/logs/follow_empty.txt",
                 streamType,
-                true,
                 readsCounter
         );
         try (var actual = subject.get()) {
@@ -315,7 +308,6 @@ class DockerHttpMultiplexedStreamTest implements UnitTest {
     @SneakyThrows
     private DockerHttpMultiplexedStream buildSubject(String resource,
                                                      StreamType streamType,
-                                                     Boolean follow,
                                                      AtomicInteger readsCounter) {
         var bytes = IOUtils.resourceToByteArray(resource);
         var head = new HeadFromLines(
@@ -327,22 +319,19 @@ class DockerHttpMultiplexedStreamTest implements UnitTest {
                 () -> {
                     readsCounter.incrementAndGet();
                     return ByteBuffer.wrap(bytes, idx, bytes.length - idx);
-                },
-                follow
+                }
         );
     }
 
     private void testWithFollow(String resource,
                                 StreamType streamType,
                                 FrameType frameType,
-                                Boolean follow,
                                 Integer expectedElementsCount,
                                 Integer expectedReads) throws Exception {
         var readsCounter = new AtomicInteger();
         var subject = buildSubject(
                 resource,
                 streamType,
-                follow,
                 readsCounter
         );
         try (var actual = subject.get()) {
@@ -371,7 +360,6 @@ class DockerHttpMultiplexedStreamTest implements UnitTest {
         var subject = buildSubject(
                 resource,
                 stderr,
-                true,
                 readsCounter
         );
         try (var actual = subject.get()) {
@@ -390,7 +378,6 @@ class DockerHttpMultiplexedStreamTest implements UnitTest {
         var subject = buildSubject(
                 resource,
                 streamType,
-                false,
                 readsCounter
         );
         try (var actual = subject.get()) {
@@ -417,7 +404,6 @@ class DockerHttpMultiplexedStreamTest implements UnitTest {
         var subject = buildSubject(
                 resource,
                 stderr,
-                false,
                 readsCounter
         );
         try (var actual = subject.get()) {

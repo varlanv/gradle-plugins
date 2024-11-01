@@ -97,16 +97,14 @@ final class DockerHttpMultiplexedStream {
 
     ByteFlow byteFlow;
     StreamType streamType;
-    boolean follow;
 
-    DockerHttpMultiplexedStream(StreamType streamType, Supplier<ByteBuffer> byteBufferSupplier, Boolean follow) {
+    DockerHttpMultiplexedStream(StreamType streamType, Supplier<ByteBuffer> byteBufferSupplier) {
         this.byteFlow = new ByteFlow(byteBufferSupplier, Duration.ofMillis(30));
         this.streamType = Objects.requireNonNull(streamType);
-        this.follow = follow;
     }
 
     DockerHttpMultiplexedStream(Supplier<ByteBuffer> byteBufferSupplier) {
-        this(StreamType.ALL, byteBufferSupplier, false);
+        this(StreamType.ALL, byteBufferSupplier);
     }
 
     @SneakyThrows
