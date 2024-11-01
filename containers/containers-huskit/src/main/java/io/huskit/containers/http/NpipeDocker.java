@@ -116,60 +116,10 @@ final class DockerHttpMultiplexedStream {
         var stopSignal = new AtomicBoolean(false);
         var latch = new CountDownLatch(1);
         ForkJoinPool.commonPool().execute(() -> {
-            threadRef.set(Thread.currentThread());
-            latch.countDown();
-            while (true) {
-                if (stopSignal.get()) {
-                    break;
-                }
-                FrameType type = null;
-                var currentStreamFrameSize = -1;
-                byte[] currentFrameBuffer = null;
-                var isStreamHeader = true;
-                var currentChunkSize = readChunkSize();
-                if (currentChunkSize == 0) {
-                    break;
-                }
-                var framesCounter = 0;
-                while (currentChunkSize >= 0) {
-                    var currentByte = byteFlow.nextByte();
-                    if (currentByte == '\r' && isStreamHeader) {
-                        byteFlow.nextByte();
-                        break;
-                    } else {
-                        if (isStreamHeader) {
-                            type = currentByte == 1 ? FrameType.STDOUT : FrameType.STDERR;
-                            byteFlow.skip(3);
-                            currentStreamFrameSize = Math.toIntExact(byteFlow.nextUnsignedInt());
-                            currentFrameBuffer = new byte[currentStreamFrameSize];
-                            currentChunkSize -= 8;
-                            isStreamHeader = false;
-                        } else {
-                            currentChunkSize -= currentStreamFrameSize;
-                            if ((type == FrameType.STDERR && streamType == StreamType.STDOUT) ||
-                                    (type == FrameType.STDOUT && streamType == StreamType.STDERR)) {
-                                byteFlow.skip(currentStreamFrameSize - 1);
-                                currentStreamFrameSize = -1;
-                            } else {
-                                while (currentStreamFrameSize-- > 0) {
-                                    currentFrameBuffer[currentFrameBuffer.length - currentStreamFrameSize - 1] = currentByte;
-                                    if (currentStreamFrameSize == 0) {
-                                        break;
-                                    }
-                                    currentByte = byteFlow.nextByte();
-                                }
-                                queue.add(
-                                        new MultiplexedFrame(
-                                                Objects.requireNonNull(currentFrameBuffer),
-                                                Objects.requireNonNull(type)
-                                        )
-                                );
-                            }
-                            framesCounter++;
-                            isStreamHeader = true;
-                        }
-                    }
-                }
+            try {
+                parse(threadRef, latch, stopSignal, queue);
+            } catch (InterruptedException ignore) {
+                Thread.currentThread().interrupt();
             }
         });
         if (!latch.await(5, TimeUnit.SECONDS)) {
@@ -177,6 +127,67 @@ final class DockerHttpMultiplexedStream {
             throw new TimeoutException("Failed start thread in 5 seconds");
         }
         return new DfMultiplexedResponseFollow(queue, threadRef.get(), stopSignal);
+    }
+
+    private void parse(AtomicReference<Thread> threadRef,
+                       CountDownLatch latch,
+                       AtomicBoolean stopSignal,
+                       LinkedBlockingQueue<MultiplexedFrame> queue) throws InterruptedException {
+        threadRef.set(Thread.currentThread());
+        latch.countDown();
+        while (true) {
+            if (stopSignal.get()) {
+                break;
+            }
+            FrameType type = null;
+            var currentStreamFrameSize = -1;
+            byte[] currentFrameBuffer = null;
+            var isStreamHeader = true;
+            var currentChunkSize = readChunkSize();
+            if (currentChunkSize == 0) {
+                break;
+            }
+            var framesCounter = 0;
+            while (currentChunkSize >= 0) {
+                var currentByte = byteFlow.nextByte();
+                if (currentByte == '\r' && isStreamHeader) {
+                    byteFlow.nextByte();
+                    break;
+                } else {
+                    if (isStreamHeader) {
+                        type = currentByte == 1 ? FrameType.STDOUT : FrameType.STDERR;
+                        byteFlow.skip(3);
+                        currentStreamFrameSize = Math.toIntExact(byteFlow.nextUnsignedInt());
+                        currentFrameBuffer = new byte[currentStreamFrameSize];
+                        currentChunkSize -= 8;
+                        isStreamHeader = false;
+                    } else {
+                        currentChunkSize -= currentStreamFrameSize;
+                        if ((type == FrameType.STDERR && streamType == StreamType.STDOUT) ||
+                                (type == FrameType.STDOUT && streamType == StreamType.STDERR)) {
+                            byteFlow.skip(currentStreamFrameSize - 1);
+                            currentStreamFrameSize = -1;
+                        } else {
+                            while (currentStreamFrameSize-- > 0) {
+                                currentFrameBuffer[currentFrameBuffer.length - currentStreamFrameSize - 1] = currentByte;
+                                if (currentStreamFrameSize == 0) {
+                                    break;
+                                }
+                                currentByte = byteFlow.nextByte();
+                            }
+                            queue.add(
+                                    new MultiplexedFrame(
+                                            Objects.requireNonNull(currentFrameBuffer),
+                                            Objects.requireNonNull(type)
+                                    )
+                            );
+                        }
+                        framesCounter++;
+                        isStreamHeader = true;
+                    }
+                }
+            }
+        }
     }
 
     int readChunkSize() {
@@ -257,7 +268,7 @@ final class HeadFromLines implements Http.Head {
     Supplier<Http.Head> headSupplier;
 
     HeadFromLines(Lines lines) {
-        this.headSupplier = MemoizedSupplier.ofLocal(() -> parse(lines));
+        this.headSupplier = MemoizedSupplier.of(() -> parse(lines));
     }
 
     @Override
@@ -329,7 +340,6 @@ final class NpipeChannel {
     @NonFinal
     @Getter
     volatile AsynchronousFileChannel channel;
-    Log log;
     String socketFile;
     AtomicBoolean isDirtyConnection;
     NpipeChannelLock lock;
@@ -337,7 +347,6 @@ final class NpipeChannel {
 
     NpipeChannel(String socketFile, Log log, Integer bufferSize) {
         this.socketFile = socketFile;
-        this.log = log;
         this.channel = openChannel();
         this.lock = new NpipeChannelLock(log);
         this.isDirtyConnection = new AtomicBoolean(false);

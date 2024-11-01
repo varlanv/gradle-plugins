@@ -11,6 +11,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.stream.IntStream;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -235,5 +236,17 @@ class StrategyMemoizedSupplierTest implements UnitTest {
         assertThat(subject.isInitialized()).isFalse();
         subject.get();
         assertThat(subject.isInitialized()).isTrue();
+    }
+
+    @Test
+    void test_perf() {
+        var subject = MemoizedSupplier.ofLocal(() -> 1);
+        var result = 0;
+
+        var time = System.currentTimeMillis();
+        for (int i = 0; i < 500_000_000; i++) {
+            result += subject.get();
+        }
+        System.out.println("Finished in " + (System.currentTimeMillis() - time) + "ms");
     }
 }

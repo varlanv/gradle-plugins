@@ -11,12 +11,10 @@ import org.junit.jupiter.api.Timeout;
 import org.junit.jupiter.api.condition.EnabledOnOs;
 import org.junit.jupiter.api.condition.OS;
 
-import java.io.FileWriter;
 import java.nio.ByteBuffer;
 import java.nio.channels.AsynchronousFileChannel;
 import java.nio.channels.FileChannel;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
 import java.time.Duration;
@@ -29,10 +27,10 @@ public class NpipeDockerIntegrationTest implements DockerIntegrationTest {
     String dockerNpipe = "\\\\.\\pipe\\docker_engine";
 
     @Test
-    @Disabled
+//    @Disabled
     void async_file_channel_raw_logs_follow() throws Exception {
-        var containerId = "51683e2d33f3";
-        var request = "GET /containers/" + containerId + "/logs?stdout=true&stderr=true " +
+        var containerId = "550993efd418";
+        var request = "GET /containers/" + containerId + "/logs?stdout=true&stderr=true&follow=true " +
                 "HTTP/1.1\r\n" +
                 "Host: localhost\r\n" +
                 "Connection: keep-alive\r\n" +
@@ -53,7 +51,7 @@ public class NpipeDockerIntegrationTest implements DockerIntegrationTest {
             array = Arrays.copyOf(array, array.length + buffer.remaining());
             System.arraycopy(buffer.array(), buffer.position(), array, array.length - buffer.remaining(), buffer.remaining());
             sb = new StringBuilder(new String(array, StandardCharsets.UTF_8));
-            Files.write(Paths.get("logs.txt"), sb.toString().getBytes(StandardCharsets.UTF_8));
+//            Files.write(Paths.get("logs.txt"), sb.toString().getBytes(StandardCharsets.UTF_8));
             buffer.clear();
             channel.read(buffer, 0).get();
             buffer.flip();
@@ -61,6 +59,7 @@ public class NpipeDockerIntegrationTest implements DockerIntegrationTest {
             System.arraycopy(buffer.array(), buffer.position(), array, array.length - buffer.remaining(), buffer.remaining());
             sb = new StringBuilder(new String(array, StandardCharsets.UTF_8));
 
+            System.out.println();
 //            Files.write(Paths.get("logs.txt"), sb.toString().getBytes(StandardCharsets.UTF_8));
         }
     }
