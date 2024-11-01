@@ -25,26 +25,27 @@ import java.util.*;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
-import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Supplier;
 
 final class NpipeDocker implements DockerSocket {
 
     Log log;
+    Executor executor;
     MemoizedSupplier<NpipeChannel> stateSupplier;
 
-    public NpipeDocker(String socketFile, Log log) {
+    public NpipeDocker(String socketFile, Executor executor, Log log) {
         this.log = log;
-        this.stateSupplier = MemoizedSupplier.of(() -> new NpipeChannel(socketFile, log, 4096));
+        this.executor = executor;
+        this.stateSupplier = MemoizedSupplier.of(() -> new NpipeChannel(socketFile, executor, log, 4096));
 
     }
 
-    NpipeDocker(String socketFile) {
-        this(socketFile, new NoopLog());
+    NpipeDocker(String socketFile, Executor executor) {
+        this(socketFile, executor, new NoopLog());
     }
 
-    public NpipeDocker() {
-        this(HtConstants.NPIPE_SOCKET);
+    public NpipeDocker(Executor executor) {
+        this(HtConstants.NPIPE_SOCKET, executor);
     }
 
     @Override
@@ -60,21 +61,25 @@ final class NpipeDocker implements DockerSocket {
     private CompletableFuture<Http.RawResponse> sendAsyncInternal(Request request) {
         var state = stateSupplier.get();
         var rawResponse = new CompletableFuture<Http.RawResponse>();
-        CompletableFuture.runAsync(() -> {
-            try {
-                log.debug(() -> "todo");
-            } finally {
-                if (state.isDirtyConnection()) {
-                    state.resetConnection();
-                }
-//                state.releaseLock();
-            }
-        }).handle((ignore, throwable) -> {
-            if (throwable != null) {
-                rawResponse.completeExceptionally(throwable);
-            }
-            return null;
-        });
+        CompletableFuture.runAsync(
+                () -> {
+                    try {
+                        log.debug(() -> "todo");
+                    } finally {
+                        if (state.isDirtyConnection()) {
+                            state.resetConnection();
+                        }
+                        // state.releaseLock();
+                    }
+                },
+                executor
+        ).handle(
+                (ignore, throwable) -> {
+                    if (throwable != null) {
+                        rawResponse.completeExceptionally(throwable);
+                    }
+                    return null;
+                });
         return CompletableFuture.completedFuture(rawResponse.join());
     }
 
@@ -97,46 +102,37 @@ final class DockerHttpMultiplexedStream {
 
     ByteFlow byteFlow;
     StreamType streamType;
+    Executor executor;
 
-    DockerHttpMultiplexedStream(StreamType streamType, Supplier<ByteBuffer> byteBufferSupplier) {
+    DockerHttpMultiplexedStream(StreamType streamType, Executor executor, Supplier<ByteBuffer> byteBufferSupplier) {
         this.byteFlow = new ByteFlow(byteBufferSupplier, Duration.ofMillis(30));
         this.streamType = Objects.requireNonNull(streamType);
+        this.executor = executor;
     }
 
-    DockerHttpMultiplexedStream(Supplier<ByteBuffer> byteBufferSupplier) {
-        this(StreamType.ALL, byteBufferSupplier);
+    DockerHttpMultiplexedStream(Executor executor, Supplier<ByteBuffer> byteBufferSupplier) {
+        this(StreamType.ALL, executor, byteBufferSupplier);
     }
 
     @SneakyThrows
     MultiplexedResponseFollow get() {
         var queue = new LinkedBlockingQueue<MultiplexedFrame>();
-        var threadRef = new AtomicReference<Thread>();
-        var stopSignal = new AtomicBoolean(false);
         var latch = new CountDownLatch(1);
-        ForkJoinPool.commonPool().execute(() -> {
-            try {
-                parse(threadRef, latch, stopSignal, queue);
-            } catch (InterruptedException ignore) {
-                Thread.currentThread().interrupt();
-            }
-        });
+        var completion = CompletableFuture.runAsync(
+                () -> {
+                    latch.countDown();
+                    parse(queue);
+                },
+                executor
+        );
         if (!latch.await(5, TimeUnit.SECONDS)) {
-            Optional.ofNullable(threadRef.get()).ifPresent(Thread::interrupt);
-            throw new TimeoutException("Failed start thread in 5 seconds");
+            throw new RuntimeException("Failed to start multiplexed stream task in 5 seconds");
         }
-        return new DfMultiplexedResponseFollow(queue, threadRef.get(), stopSignal);
+        return new DfMultiplexedResponseFollow(queue, completion);
     }
 
-    private void parse(AtomicReference<Thread> threadRef,
-                       CountDownLatch latch,
-                       AtomicBoolean stopSignal,
-                       LinkedBlockingQueue<MultiplexedFrame> queue) throws InterruptedException {
-        threadRef.set(Thread.currentThread());
-        latch.countDown();
+    private void parse(LinkedBlockingQueue<MultiplexedFrame> queue) {
         while (true) {
-            if (stopSignal.get()) {
-                break;
-            }
             FrameType type = null;
             var currentStreamFrameSize = -1;
             byte[] currentFrameBuffer = null;
@@ -210,19 +206,13 @@ final class MultiplexedFrame {
     FrameType type;
 }
 
-interface MultiplexedResponseFollow extends MultiplexedResponse, AutoCloseable {
+interface MultiplexedResponseFollow extends AutoCloseable {
 
     Optional<MultiplexedFrame> nextFrame(Duration timeout);
 
-    @Override
     default Optional<MultiplexedFrame> nextFrame() {
         return nextFrame(Duration.ofMinutes(5));
     }
-}
-
-interface MultiplexedResponse {
-
-    Optional<MultiplexedFrame> nextFrame();
 }
 
 @RequiredArgsConstructor
@@ -230,8 +220,7 @@ final class DfMultiplexedResponseFollow implements MultiplexedResponseFollow {
 
     @Getter
     BlockingQueue<MultiplexedFrame> frames;
-    Thread parentThread;
-    AtomicBoolean stopSignal;
+    CompletableFuture<Void> completion;
 
     @Override
     @SneakyThrows
@@ -246,10 +235,9 @@ final class DfMultiplexedResponseFollow implements MultiplexedResponseFollow {
 
     @Override
     public void close() throws Exception {
-        if (parentThread.isAlive() && !Thread.currentThread().equals(parentThread)) {
-            parentThread.interrupt();
+        if (!completion.isDone()) {
+            completion.cancel(true);
         }
-        stopSignal.set(true);
     }
 }
 
@@ -339,21 +327,24 @@ final class NpipeChannel {
     @Getter
     volatile AsynchronousFileChannel channel;
     String socketFile;
+    Executor executor;
     AtomicBoolean isDirtyConnection;
     NpipeChannelLock lock;
     Integer bufferSize;
 
-    NpipeChannel(String socketFile, Log log, Integer bufferSize) {
+    NpipeChannel(String socketFile, Executor executor, Log log, Integer bufferSize) {
         this.socketFile = socketFile;
+        this.executor = executor;
         this.channel = openChannel();
         this.lock = new NpipeChannelLock(log);
         this.isDirtyConnection = new AtomicBoolean(false);
         this.bufferSize = bufferSize;
     }
 
-    NpipeChannel(Log log, Integer bufferSize) {
+    NpipeChannel(Log log, Executor executor, Integer bufferSize) {
         this(
                 HtConstants.NPIPE_SOCKET,
+                executor,
                 log,
                 bufferSize
         );
@@ -367,6 +358,7 @@ final class NpipeChannel {
         ).write(request).thenCompose(ignore ->
                 new NpipeChannelOut(
                         channel,
+                        executor,
                         bufferSize
                 ).read()
         );
@@ -432,17 +424,19 @@ final class NpipeChannelIn {
 final class NpipeChannelOut {
 
     AsynchronousFileChannel channel;
+    Executor executor;
     Integer bufferSize;
 
     @SneakyThrows
     CompletableFuture<BufferLines> read() {
-        return CompletableFuture.supplyAsync(() ->
-                new BufferLines(
+        return CompletableFuture.supplyAsync(
+                () -> new BufferLines(
                         () -> {
                             var buffer = readToBuffer();
                             return Arrays.copyOf(buffer.array(), buffer.limit());
                         }
-                )
+                ),
+                executor
         );
     }
 
@@ -520,13 +514,5 @@ final class ByteFlow {
         for (int i = 0; i < n; i++) {
             nextByte();
         }
-    }
-
-    byte[] nextBytes(int n) {
-        var bytes = new byte[n];
-        for (int i = 0; i < n; i++) {
-            bytes[i] = nextByte();
-        }
-        return bytes;
     }
 }

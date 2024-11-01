@@ -13,6 +13,8 @@ import org.junit.jupiter.params.provider.EnumSource;
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ForkJoinPool;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -316,6 +318,7 @@ class DockerHttpMultiplexedStreamTest implements UnitTest {
         var idx = head.indexOfHeadEnd();
         return new DockerHttpMultiplexedStream(
                 streamType,
+                Executors.newSingleThreadExecutor(),
                 () -> {
                     readsCounter.incrementAndGet();
                     return ByteBuffer.wrap(bytes, idx, bytes.length - idx);

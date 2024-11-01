@@ -7,6 +7,10 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.condition.EnabledOnOs;
 import org.junit.jupiter.api.condition.OS;
 
+import java.util.concurrent.ForkJoinPool;
+
+import static org.assertj.core.api.Assertions.assertThat;
+
 @EnabledOnOs(OS.WINDOWS)
 public class NpipeChannelIntegrationTest implements DockerIntegrationTest {
 
@@ -14,20 +18,23 @@ public class NpipeChannelIntegrationTest implements DockerIntegrationTest {
     HttpRequests httpRequests = new HttpRequests();
 
     @Test
-    void asd() throws Exception {
+    void when_request_containers__then_status_200() {
         var url = "/containers/json?all=true";
         var log = new FakeTestLog();
-        useSubject(new NpipeChannel(log, bufferSize), subject -> {
-            var stream = subject.writeAndRead(
-                    new Request(
-                            httpRequests.get(
-                                    HtUrl.of(url)
+        useSubject(
+                new NpipeChannel(log, ForkJoinPool.commonPool(), bufferSize),
+                subject -> {
+                    var stream = subject.writeAndRead(
+                            new Request(
+                                    httpRequests.get(
+                                            HtUrl.of(url)
+                                    )
                             )
-                    )
-            ).join();
-            var head = new HeadFromLines(stream);
-            System.out.println(head.status());
-        });
+                    ).join();
+                    var head = new HeadFromLines(stream);
+                    assertThat(head.status()).isEqualTo(200);
+                }
+        );
     }
 
     @SneakyThrows

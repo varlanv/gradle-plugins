@@ -20,6 +20,7 @@ import java.nio.file.StandardOpenOption;
 import java.time.Duration;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.concurrent.Executors;
 
 @EnabledOnOs(OS.WINDOWS)
 public class NpipeDockerIntegrationTest implements DockerIntegrationTest {
@@ -219,7 +220,7 @@ public class NpipeDockerIntegrationTest implements DockerIntegrationTest {
     @Timeout(3)
     void containers_json() throws Exception {
         var httpRequests = new HttpRequests();
-        try (var subject = new NpipeDocker(dockerNpipe).closeable()) {
+        try (var subject = new NpipeDocker(dockerNpipe, Executors.newSingleThreadExecutor()).closeable()) {
             ThrowingRunnable r = () -> {
                 var before = System.currentTimeMillis();
                 subject.sendAsync(
@@ -229,12 +230,14 @@ public class NpipeDockerIntegrationTest implements DockerIntegrationTest {
                                         )
                                 )
                         )
-                        .thenApply(rawResponse ->
-                                new JSONArray(
-                                        new JSONTokener(
-                                                rawResponse.bodyReader()
-                                        )
-                                ).toList())
+                        .thenApply(
+                                rawResponse ->
+                                        new JSONArray(
+                                                new JSONTokener(
+                                                        rawResponse.bodyReader()
+                                                )
+                                        ).toList()
+                        )
                         .thenAccept(System.out::println)
                         .whenComplete((it, e) -> System.out.println("Time: " + (System.currentTimeMillis() - before) + "ms"))
                         .join();
