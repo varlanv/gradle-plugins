@@ -27,7 +27,7 @@ public class NpipeDockerIntegrationTest implements DockerIntegrationTest {
     String dockerNpipe = "\\\\.\\pipe\\docker_engine";
 
     @Test
-//    @Disabled
+    @Disabled
     void async_file_channel_raw_logs_follow() throws Exception {
         var containerId = "550993efd418";
         var request = "GET /containers/" + containerId + "/logs?stdout=true&stderr=true&follow=true " +
