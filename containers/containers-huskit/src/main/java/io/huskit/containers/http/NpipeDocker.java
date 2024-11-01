@@ -6,6 +6,7 @@ import io.huskit.common.NoopLog;
 import io.huskit.common.function.MemoizedSupplier;
 import io.huskit.common.io.BufferLines;
 import io.huskit.common.io.Lines;
+import io.huskit.common.number.Hexadecimal;
 import lombok.Getter;
 import lombok.Locked;
 import lombok.RequiredArgsConstructor;
@@ -20,12 +21,11 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
 import java.time.Duration;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Supplier;
 
 final class NpipeDocker implements DockerSocket {
@@ -87,40 +87,109 @@ final class NpipeDocker implements DockerSocket {
     }
 }
 
+enum StreamType {
+    STDOUT,
+    STDERR,
+    ALL
+}
+
 final class DockerHttpMultiplexedStream {
 
-    Supplier<byte[]> byteBufferSupplier;
-    @NonFinal
-    byte[] currentBuffer;
-    Boolean stdout;
-    Boolean stderr;
+    ByteFlow byteFlow;
+    StreamType streamType;
+    boolean follow;
 
-    DockerHttpMultiplexedStream(Boolean stdout, Boolean stderr, Supplier<byte[]> byteBufferSupplier) {
-        if (!stdout && !stderr) {
-            throw new IllegalArgumentException("At least one of stdout or stderr must be true");
-        }
-        this.byteBufferSupplier = byteBufferSupplier;
-        this.currentBuffer = byteBufferSupplier.get();
-        this.stdout = stdout;
-        this.stderr = stderr;
+    DockerHttpMultiplexedStream(StreamType streamType, Supplier<ByteBuffer> byteBufferSupplier, Boolean follow) {
+        this.byteFlow = new ByteFlow(byteBufferSupplier, Duration.ofMillis(30));
+        this.streamType = Objects.requireNonNull(streamType);
+        this.follow = follow;
     }
 
-    DockerHttpMultiplexedStream(Supplier<byte[]> byteBufferSupplier) {
-        this(true, true, byteBufferSupplier);
+    DockerHttpMultiplexedStream(Supplier<ByteBuffer> byteBufferSupplier) {
+        this(StreamType.ALL, byteBufferSupplier, false);
     }
 
     @SneakyThrows
-    MultiplexedResponse get() {
+    DfMultiplexedResponse get() {
         var queue = new LinkedBlockingQueue<MultiplexedFrame>();
+        var threadRef = new AtomicReference<Thread>();
         var stopSignal = new AtomicBoolean(false);
+        var latch = new CountDownLatch(1);
         ForkJoinPool.commonPool().execute(() -> {
+            threadRef.set(Thread.currentThread());
+            latch.countDown();
             while (true) {
                 if (stopSignal.get()) {
                     break;
                 }
+                FrameType type = null;
+                var currentStreamFrameSize = -1;
+                byte[] currentFrameBuffer = null;
+                var isStreamHeader = true;
+                var currentChunkSize = readChunkSize();
+                if (currentChunkSize == 0) {
+                    break;
+                }
+                var framesCounter = 0;
+                while (currentChunkSize >= 0) {
+                    var currentByte = byteFlow.nextByte();
+                    if (currentByte == '\r' && isStreamHeader) {
+                        byteFlow.nextByte();
+                        break;
+                    } else {
+                        if (isStreamHeader) {
+                            type = currentByte == 1 ? FrameType.STDOUT : FrameType.STDERR;
+                            byteFlow.skip(3);
+                            currentStreamFrameSize = Math.toIntExact(byteFlow.nextUnsignedInt());
+                            currentFrameBuffer = new byte[currentStreamFrameSize];
+                            currentChunkSize -= 8;
+                            isStreamHeader = false;
+                        } else {
+                            currentChunkSize -= currentStreamFrameSize;
+                            if ((type == FrameType.STDERR && streamType == StreamType.STDOUT) ||
+                                    (type == FrameType.STDOUT && streamType == StreamType.STDERR)) {
+                                byteFlow.skip(currentStreamFrameSize - 1);
+                                currentStreamFrameSize = -1;
+                            } else {
+                                while (currentStreamFrameSize-- > 0) {
+                                    currentFrameBuffer[currentFrameBuffer.length - currentStreamFrameSize - 1] = currentByte;
+                                    if (currentStreamFrameSize == 0) {
+                                        break;
+                                    }
+                                    currentByte = byteFlow.nextByte();
+                                }
+                                queue.add(
+                                        new MultiplexedFrame(
+                                                Objects.requireNonNull(currentFrameBuffer),
+                                                Objects.requireNonNull(type)
+                                        )
+                                );
+                            }
+                            framesCounter++;
+                            isStreamHeader = true;
+                        }
+                    }
+                }
             }
         });
-        return new MultiplexedResponse(queue, stopSignal);
+        if (!latch.await(5, TimeUnit.SECONDS)) {
+            Optional.ofNullable(threadRef.get()).ifPresent(Thread::interrupt);
+            throw new TimeoutException("Failed start thread in 5 seconds");
+        }
+        return new DfMultiplexedResponse(queue, threadRef.get(), stopSignal);
+    }
+
+    int readChunkSize() {
+        var currentChunkSize = Hexadecimal.fromHexChars();
+        while (true) {
+            var currentByte = byteFlow.nextByte();
+            if (currentByte == '\r') {
+                byteFlow.nextByte();
+                break;
+            }
+            currentChunkSize = currentChunkSize.withHexChar((char) currentByte);
+        }
+        return currentChunkSize.intValue();
     }
 }
 
@@ -132,14 +201,23 @@ final class MultiplexedFrame {
     FrameType type;
 }
 
+interface MultiplexedResponse extends AutoCloseable {
+
+}
+
 @RequiredArgsConstructor
-final class MultiplexedResponse {
+final class DfMultiplexedResponse implements AutoCloseable {
 
     @Getter
     BlockingQueue<MultiplexedFrame> frames;
+    Thread parentThread;
     AtomicBoolean stopSignal;
 
-    void stop() {
+    @Override
+    public void close() throws Exception {
+        if (parentThread.isAlive() && !Thread.currentThread().equals(parentThread)) {
+            parentThread.interrupt();
+        }
         stopSignal.set(true);
     }
 }
@@ -372,5 +450,53 @@ final class NpipeChannelLock {
     @VisibleForTesting
     boolean isAcquired() {
         return lock.availablePermits() == 0;
+    }
+}
+
+final class ByteFlow {
+
+    Supplier<ByteBuffer> byteBufferSupplier;
+    @NonFinal
+    ByteBuffer currentBuffer;
+    Duration pollBackoff;
+
+    ByteFlow(Supplier<ByteBuffer> byteBufferSupplier, Duration pollBackoff) {
+        this.byteBufferSupplier = byteBufferSupplier;
+        this.currentBuffer = byteBufferSupplier.get();
+        this.pollBackoff = pollBackoff;
+    }
+
+    @SneakyThrows
+    byte nextByte() {
+        if (currentBuffer.hasRemaining()) {
+            return currentBuffer.get();
+        }
+        var backoff = pollBackoff.toMillis();
+        if (backoff > 0) {
+            Thread.sleep(backoff);
+        }
+        currentBuffer = byteBufferSupplier.get();
+        return currentBuffer.get();
+    }
+
+    long nextUnsignedInt() {
+        return ((nextByte() & 0xFFL) << 24) |
+                ((nextByte() & 0xFFL) << 16) |
+                ((nextByte() & 0xFFL) << 8) |
+                (nextByte() & 0xFFL);
+    }
+
+    void skip(int n) {
+        for (int i = 0; i < n; i++) {
+            nextByte();
+        }
+    }
+
+    byte[] nextBytes(int n) {
+        var bytes = new byte[n];
+        for (int i = 0; i < n; i++) {
+            bytes[i] = nextByte();
+        }
+        return bytes;
     }
 }
