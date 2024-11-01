@@ -74,7 +74,7 @@ class HeadFromLinesTest implements UnitTest {
 
     @Test
     void should_correctly_parse_head_from_logs_response() throws Exception {
-        var bytes = IOUtils.resourceToByteArray("/logs.txt");
+        var bytes = IOUtils.resourceToByteArray("/docker_http_responses/logs/follow_all_stdout.txt");
 
         var subject = new HeadFromLines(
                 new BufferLines(() -> bytes)

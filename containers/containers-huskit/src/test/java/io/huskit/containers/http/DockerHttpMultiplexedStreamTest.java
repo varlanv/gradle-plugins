@@ -8,7 +8,7 @@ import org.junit.jupiter.api.Test;
 
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
-import java.util.concurrent.TimeUnit;
+import java.time.Duration;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -28,7 +28,7 @@ class DockerHttpMultiplexedStreamTest implements UnitTest {
             var expectedElementsCountInFile = 27;
             ThrowingRunnable runnable = () -> {
                 for (int idx = 0; idx <= expectedElementsCountInFile; idx++) {
-                    var frame = actual.frames().poll(2, TimeUnit.SECONDS);
+                    var frame = actual.nextFrame(Duration.ofSeconds(2)).orElseThrow();
                     assertThat(frame)
                             .as("Frame %s", idx)
                             .isNotNull();
@@ -56,8 +56,8 @@ class DockerHttpMultiplexedStreamTest implements UnitTest {
                 readsCounter
         );
         try (var actual = subject.get()) {
-            assertThat(actual.frames().poll(100, TimeUnit.MILLISECONDS))
-                    .isNull();
+            assertThat(actual.nextFrame(Duration.ofMillis(100))
+                    .isEmpty());
             assertThat(readsCounter.get())
                     .isGreaterThanOrEqualTo(1);
         }
@@ -75,7 +75,7 @@ class DockerHttpMultiplexedStreamTest implements UnitTest {
         try (var actual = subject.get()) {
             var expectedElementsCountInFile = 75;
             for (int idx = 0; idx <= expectedElementsCountInFile; idx++) {
-                var frame = actual.frames().poll(2, TimeUnit.SECONDS);
+                var frame = actual.nextFrame(Duration.ofSeconds(2)).orElseThrow();
                 assertThat(frame)
                         .as("Frame %s", idx)
                         .isNotNull();
@@ -85,8 +85,8 @@ class DockerHttpMultiplexedStreamTest implements UnitTest {
                 assertThat(frame.type())
                         .isEqualTo(FrameType.STDOUT);
             }
-            assertThat(actual.frames().poll(100, TimeUnit.MILLISECONDS))
-                    .isNull();
+            assertThat(actual.nextFrame(Duration.ofMillis(100))
+                    .isEmpty());
             assertThat(readsCounter.get())
                     .isEqualTo(1);
         }
@@ -102,8 +102,8 @@ class DockerHttpMultiplexedStreamTest implements UnitTest {
                 readsCounter
         );
         try (var actual = subject.get()) {
-            assertThat(actual.frames().poll(100, TimeUnit.MILLISECONDS))
-                    .isNull();
+            assertThat(actual.nextFrame(Duration.ofMillis(100))
+                    .isEmpty());
             assertThat(readsCounter.get())
                     .isEqualTo(1);
         }

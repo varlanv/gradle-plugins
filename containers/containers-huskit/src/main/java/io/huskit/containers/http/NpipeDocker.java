@@ -110,7 +110,7 @@ final class DockerHttpMultiplexedStream {
     }
 
     @SneakyThrows
-    DfMultiplexedResponse get() {
+    MultiplexedResponseFollow get() {
         var queue = new LinkedBlockingQueue<MultiplexedFrame>();
         var threadRef = new AtomicReference<Thread>();
         var stopSignal = new AtomicBoolean(false);
@@ -176,7 +176,7 @@ final class DockerHttpMultiplexedStream {
             Optional.ofNullable(threadRef.get()).ifPresent(Thread::interrupt);
             throw new TimeoutException("Failed start thread in 5 seconds");
         }
-        return new DfMultiplexedResponse(queue, threadRef.get(), stopSignal);
+        return new DfMultiplexedResponseFollow(queue, threadRef.get(), stopSignal);
     }
 
     int readChunkSize() {
@@ -201,17 +201,39 @@ final class MultiplexedFrame {
     FrameType type;
 }
 
-interface MultiplexedResponse extends AutoCloseable {
+interface MultiplexedResponseFollow extends MultiplexedResponse, AutoCloseable {
 
+    Optional<MultiplexedFrame> nextFrame(Duration timeout);
+
+    @Override
+    default Optional<MultiplexedFrame> nextFrame() {
+        return nextFrame(Duration.ofMinutes(5));
+    }
+}
+
+interface MultiplexedResponse {
+
+    Optional<MultiplexedFrame> nextFrame();
 }
 
 @RequiredArgsConstructor
-final class DfMultiplexedResponse implements AutoCloseable {
+final class DfMultiplexedResponseFollow implements MultiplexedResponseFollow {
 
     @Getter
     BlockingQueue<MultiplexedFrame> frames;
     Thread parentThread;
     AtomicBoolean stopSignal;
+
+    @Override
+    @SneakyThrows
+    public Optional<MultiplexedFrame> nextFrame(Duration timeout) {
+        return Optional.ofNullable(
+                frames.poll(
+                        timeout.toMillis(),
+                        TimeUnit.MILLISECONDS
+                )
+        );
+    }
 
     @Override
     public void close() throws Exception {
@@ -223,6 +245,7 @@ final class DfMultiplexedResponse implements AutoCloseable {
 }
 
 enum FrameType {
+
     STDOUT,
     STDERR
 }
