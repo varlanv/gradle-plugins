@@ -2,6 +2,7 @@ package io.huskit.containers.http;
 
 import io.huskit.common.HtConstants;
 import io.huskit.common.Log;
+import io.huskit.common.Mutable;
 import io.huskit.common.NoopLog;
 import io.huskit.common.function.MemoizedSupplier;
 import io.huskit.common.io.BufferLines;
@@ -325,7 +326,103 @@ interface FutureResponse<T> {
 
     T value();
 
-    boolean apply(ByteBuffer byteBuffer);
+    Optional<T> apply(ByteBuffer byteBuffer);
+}
+
+final class FutureHead {
+
+    Mutable<Http.Head> head = Mutable.of();
+    List<String> lines = new ArrayList<>();
+    @NonFinal
+    StringBuilder lineBuilder = new StringBuilder(64);
+    @NonFinal
+    char previousChar;
+
+    Http.Head head() {
+        return head.require();
+    }
+
+    synchronized Optional<Http.Head> push(ByteBuffer byteBuffer) {
+        if (head.isPresent()) {
+            return head.maybe();
+        }
+        while (byteBuffer.hasRemaining()) {
+            var currentChar = (char) (byteBuffer.get() & 0xFF);
+            if (currentChar == '\n' && previousChar == '\r') {
+                if (lineBuilder.length() == 1) {
+                    var head = parse(Lines.fromIterable(lines));
+                    this.head.set(head);
+                    return Optional.of(head);
+                } else {
+                    lineBuilder.deleteCharAt(lineBuilder.length() - 1);
+                    lines.add(lineBuilder.toString());
+                    lineBuilder = new StringBuilder(64);
+                }
+            } else {
+                lineBuilder.append(currentChar);
+            }
+            previousChar = currentChar;
+        }
+        return Optional.empty();
+    }
+
+    @SneakyThrows
+    private Http.Head parse(Lines lines) {
+        var statusLine = lines.next();
+        if (statusLine.isBlank()) {
+            throw new RuntimeException("Failed to build head with given stream");
+        }
+        var statusParts = statusLine.value().split(" ");
+        if (statusParts.length < 2) {
+            throw new RuntimeException("Invalid status line: " + statusLine);
+        }
+        var status = Integer.parseInt(statusParts[1]);
+        var headers = new HashMap<String, String>();
+        var contentTypeHeaderFound = false;
+        var transferEncodingHeaderFound = false;
+        var isChunked = false;
+        var isDockerMultiplex = false;
+        while (true) {
+            var line = lines.next();
+            if (line.isEmpty()) {
+                break;
+            }
+            var lineVal = line.value();
+            var colonIndex = lineVal.indexOf(':');
+            if (colonIndex == -1) {
+                throw new RuntimeException("Invalid header line: " + line);
+            }
+            var key = lineVal.substring(0, colonIndex).trim();
+            var value = lineVal.substring(colonIndex + 1).trim();
+            if (!contentTypeHeaderFound && "Content-Type".equalsIgnoreCase(key)) {
+                contentTypeHeaderFound = true;
+                isChunked = "chunked".equalsIgnoreCase(value);
+            }
+            if (!transferEncodingHeaderFound && "Transfer-Encoding".equalsIgnoreCase(key)) {
+                transferEncodingHeaderFound = true;
+                isDockerMultiplex = "application/vnd.docker.multiplexed-stream".equalsIgnoreCase(value);
+            }
+            headers.put(key, value);
+        }
+
+        return new DfHead(status, headers, isChunked, isDockerMultiplex);
+    }
+}
+
+@RequiredArgsConstructor
+final class HttpFutureResponse implements FutureResponse<Http.Head> {
+
+    FutureHead futureHead;
+
+    @Override
+    public Http.Head value() {
+        return futureHead.head();
+    }
+
+    @Override
+    public Optional<Http.Head> apply(ByteBuffer byteBuffer) {
+        return futureHead.push(byteBuffer);
+    }
 }
 
 @RequiredArgsConstructor
@@ -344,8 +441,7 @@ final class NpipeRead {
                          CompletableFuture<T> completion) {
         bytesSupplier.get().thenAccept(buffer -> {
             try {
-                var apply = action.apply(buffer);
-                if (apply) {
+                if (action.apply(buffer).isPresent()) {
                     completion.complete(action.value());
                 } else {
                     executorService.submit(() -> act(action, completion));

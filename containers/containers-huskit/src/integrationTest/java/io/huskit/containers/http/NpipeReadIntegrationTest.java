@@ -7,6 +7,7 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
 import java.nio.ByteBuffer;
+import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -58,11 +59,11 @@ class NpipeReadIntegrationTest implements IntegrationTest {
             }
 
             @Override
-            public boolean apply(ByteBuffer byteBuffer) {
+            public Optional<String> apply(ByteBuffer byteBuffer) {
                 if (counter.incrementAndGet() == 3) {
                     throw new RuntimeException(exceptionMessage);
                 }
-                return false;
+                return Optional.empty();
             }
         };
     }
