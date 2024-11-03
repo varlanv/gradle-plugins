@@ -321,6 +321,42 @@ final class HeadFromLines implements Http.Head {
     }
 }
 
+interface FutureResponse<T> {
+
+    T value();
+
+    boolean apply(ByteBuffer byteBuffer);
+}
+
+@RequiredArgsConstructor
+final class NpipeRead {
+
+    Supplier<CompletableFuture<ByteBuffer>> bytesSupplier;
+    ExecutorService executorService;
+
+    <T> CompletableFuture<T> read(FutureResponse<T> action) {
+        var completion = new CompletableFuture<T>();
+        act(action, completion);
+        return completion;
+    }
+
+    private <T> void act(FutureResponse<T> action,
+                         CompletableFuture<T> completion) {
+        bytesSupplier.get().thenAccept(buffer -> {
+            try {
+                var apply = action.apply(buffer);
+                if (apply) {
+                    completion.complete(action.value());
+                } else {
+                    executorService.submit(() -> act(action, completion));
+                }
+            } catch (Exception e) {
+                completion.completeExceptionally(e);
+            }
+        });
+    }
+}
+
 final class NpipeChannel implements AutoCloseable {
 
     @NonFinal
@@ -374,6 +410,10 @@ final class NpipeChannel implements AutoCloseable {
                 bufferSize
         );
         return in.write(bytes, dirtiesConnection).thenApply(ignore -> out::readToBufferAsync);
+    }
+
+    CompletableFuture<Supplier<CompletableFuture<ByteBuffer>>> writeAndReadAsync(byte[] bytes) {
+        return writeAndReadAsync(bytes, false);
     }
 
     Boolean isDirtyConnection() {
