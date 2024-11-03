@@ -358,7 +358,6 @@ final class NpipeChannel {
         ).write(request).thenCompose(ignore ->
                 new NpipeChannelOut(
                         channel,
-                        executor,
                         bufferSize
                 ).read()
         );
@@ -423,12 +422,18 @@ final class NpipeChannelIn {
     }
 }
 
-@RequiredArgsConstructor
 final class NpipeChannelOut {
 
     AsynchronousFileChannel channel;
-    Executor executor;
     Integer bufferSize;
+
+    public NpipeChannelOut(AsynchronousFileChannel channel, Integer bufferSize) {
+        if (bufferSize <= 0) {
+            throw new IllegalArgumentException("Buffer size must be greater than 0");
+        }
+        this.channel = channel;
+        this.bufferSize = bufferSize;
+    }
 
     @SneakyThrows
     CompletableFuture<BufferLines> read() {
@@ -438,9 +443,27 @@ final class NpipeChannelOut {
                             var buffer = readToBuffer();
                             return Arrays.copyOf(buffer.array(), buffer.limit());
                         }
-                ),
-                executor
+                )
         );
+    }
+
+    CompletableFuture<ByteBuffer> readToBufferAsync() {
+        var buffer = ByteBuffer.allocate(bufferSize);
+        var completion = new CompletableFuture<ByteBuffer>();
+        channel.read(buffer, 0, null, new CompletionHandler<>() {
+
+            @Override
+            public void completed(Integer result, Object attachment) {
+                buffer.flip();
+                completion.complete(buffer);
+            }
+
+            @Override
+            public void failed(Throwable exc, Object attachment) {
+                completion.completeExceptionally(exc);
+            }
+        });
+        return completion;
     }
 
     @SneakyThrows
