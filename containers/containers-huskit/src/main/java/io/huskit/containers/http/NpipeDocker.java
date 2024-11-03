@@ -324,12 +324,14 @@ final class HeadFromLines implements Http.Head {
 
 interface FutureResponse<T> {
 
+    boolean isReady();
+
     T value();
 
     Optional<T> apply(ByteBuffer byteBuffer);
 }
 
-final class FutureHead {
+final class FutureHead implements FutureResponse<Http.Head> {
 
     Mutable<Http.Head> head = Mutable.of();
     List<String> lines = new ArrayList<>();
@@ -338,11 +340,18 @@ final class FutureHead {
     @NonFinal
     char previousChar;
 
-    Http.Head head() {
+    @Override
+    public boolean isReady() {
+        return head.isPresent();
+    }
+
+    @Override
+    public Http.Head value() {
         return head.require();
     }
 
-    synchronized Optional<Http.Head> push(ByteBuffer byteBuffer) {
+    @Override
+    public synchronized Optional<Http.Head> apply(ByteBuffer byteBuffer) {
         if (head.isPresent()) {
             return head.maybe();
         }
@@ -409,19 +418,71 @@ final class FutureHead {
     }
 }
 
+@Getter
 @RequiredArgsConstructor
-final class HttpFutureResponse implements FutureResponse<Http.Head> {
+final class MyHttpResponse<T> {
 
-    FutureHead futureHead;
+    Http.Head head;
+    Body<T> body;
+}
+
+final class Body<T> implements FutureResponse<T> {
 
     @Override
-    public Http.Head value() {
-        return futureHead.head();
+    public boolean isReady() {
+        return false;
     }
 
     @Override
-    public Optional<Http.Head> apply(ByteBuffer byteBuffer) {
-        return futureHead.push(byteBuffer);
+    public T value() {
+        return null;
+    }
+
+    @Override
+    public Optional<T> apply(ByteBuffer byteBuffer) {
+        return Optional.empty();
+    }
+}
+
+@RequiredArgsConstructor
+final class HttpFutureResponse<T> implements FutureResponse<MyHttpResponse<T>> {
+
+    FutureResponse<Http.Head> futureHead;
+    FutureResponse<Body<T>> futureBody;
+    Mutable<MyHttpResponse<T>> response = Mutable.of();
+
+    @Override
+    public boolean isReady() {
+        return response.isPresent();
+    }
+
+    @Override
+    public MyHttpResponse<T> value() {
+        return response.require();
+    }
+
+    @Override
+    public Optional<MyHttpResponse<T>> apply(ByteBuffer byteBuffer) {
+        if (futureHead.isReady()) {
+            return getMyHttpResponse(byteBuffer, futureHead.value());
+        } else {
+            var maybeHead = futureHead.apply(byteBuffer);
+            if (maybeHead.isEmpty()) {
+                return Optional.empty();
+            } else {
+                return getMyHttpResponse(byteBuffer, maybeHead.get());
+            }
+        }
+    }
+
+    private Optional<MyHttpResponse<T>> getMyHttpResponse(ByteBuffer byteBuffer, Http.Head maybeHead) {
+        var maybeBody = futureBody.apply(byteBuffer);
+        if (maybeBody.isEmpty()) {
+            return Optional.empty();
+        } else {
+            response.set(new MyHttpResponse<>(maybeHead, maybeBody.get()));
+            return Optional.of(response.require());
+        }
     }
 }
 

@@ -15,7 +15,7 @@ class FutureHeadTest implements UnitTest {
         var subject = new FutureHead();
         var byteBuffer = ByteBuffer.wrap(headers().getBytes(StandardCharsets.UTF_8));
 
-        var actual = subject.push(byteBuffer);
+        var actual = subject.apply(byteBuffer);
 
         assertThat(actual).isPresent();
         verifyHead(actual.get(), byteBuffer, headers().length());
