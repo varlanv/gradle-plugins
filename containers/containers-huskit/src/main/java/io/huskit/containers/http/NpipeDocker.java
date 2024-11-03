@@ -321,7 +321,7 @@ final class HeadFromLines implements Http.Head {
     }
 }
 
-final class NpipeChannel {
+final class NpipeChannel implements AutoCloseable {
 
     @NonFinal
     @Getter
@@ -363,6 +363,19 @@ final class NpipeChannel {
         );
     }
 
+    CompletableFuture<Supplier<CompletableFuture<ByteBuffer>>> writeAndReadAsync(byte[] bytes, Boolean dirtiesConnection) {
+        var in = new NpipeChannelIn(
+                channel,
+                isDirtyConnection,
+                lock
+        );
+        var out = new NpipeChannelOut(
+                channel,
+                bufferSize
+        );
+        return in.write(bytes, dirtiesConnection).thenApply(ignore -> out::readToBufferAsync);
+    }
+
     Boolean isDirtyConnection() {
         return isDirtyConnection.get();
     }
@@ -386,6 +399,14 @@ final class NpipeChannel {
                 executor
         );
     }
+
+    @Override
+    public void close() throws Exception {
+        var ch = channel;
+        if (ch != null) {
+            ch.close();
+        }
+    }
 }
 
 @RequiredArgsConstructor
@@ -396,7 +417,10 @@ final class NpipeChannelIn {
     NpipeChannelLock lock;
 
     CompletableFuture<Integer> write(Request request) {
-        var body = request.http().body();
+        return write(request.http().body(), request.repeatReadPredicatePresent());
+    }
+
+    CompletableFuture<Integer> write(byte[] body, Boolean dirtiesConnection) {
         var completion = new CompletableFuture<Integer>();
         if (body.length == 0) {
             completion.completeExceptionally(new IllegalArgumentException("Cannot write empty body"));
@@ -414,7 +438,7 @@ final class NpipeChannelIn {
                     completion.completeExceptionally(exc);
                 }
             });
-            if (request.repeatReadPredicate().isPresent()) {
+            if (dirtiesConnection) {
                 isDirtyConnection.set(true);
             }
         }
