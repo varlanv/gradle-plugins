@@ -220,7 +220,7 @@ public class NpipeDockerIntegrationTest implements DockerIntegrationTest {
     @Timeout(3)
     void containers_json() throws Exception {
         var httpRequests = new HttpRequests();
-        try (var subject = new NpipeDocker(dockerNpipe, Executors.newSingleThreadExecutor()).closeable()) {
+        try (var subject = new NpipeDocker(dockerNpipe, Executors.newScheduledThreadPool(1)).closeable()) {
             ThrowingRunnable r = () -> {
                 var before = System.currentTimeMillis();
                 subject.sendAsync(

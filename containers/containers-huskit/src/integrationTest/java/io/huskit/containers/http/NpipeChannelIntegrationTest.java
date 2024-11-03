@@ -7,7 +7,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.condition.EnabledOnOs;
 import org.junit.jupiter.api.condition.OS;
 
-import java.util.concurrent.ForkJoinPool;
+import java.util.concurrent.Executors;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -22,7 +22,7 @@ public class NpipeChannelIntegrationTest implements DockerIntegrationTest {
         var url = "/containers/json?all=true";
         var log = new FakeTestLog();
         useSubject(
-                new NpipeChannel(log, ForkJoinPool.commonPool(), bufferSize),
+                new NpipeChannel(log, Executors.newScheduledThreadPool(1), bufferSize),
                 subject -> {
                     var stream = subject.writeAndRead(
                             new Request(

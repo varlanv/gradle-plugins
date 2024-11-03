@@ -30,21 +30,21 @@ import java.util.function.Supplier;
 final class NpipeDocker implements DockerSocket {
 
     Log log;
-    Executor executor;
+    ScheduledExecutorService executor;
     MemoizedSupplier<NpipeChannel> stateSupplier;
 
-    public NpipeDocker(String socketFile, Executor executor, Log log) {
+    public NpipeDocker(String socketFile, ScheduledExecutorService executor, Log log) {
         this.log = log;
         this.executor = executor;
         this.stateSupplier = MemoizedSupplier.of(() -> new NpipeChannel(socketFile, executor, log, 4096));
 
     }
 
-    NpipeDocker(String socketFile, Executor executor) {
+    NpipeDocker(String socketFile, ScheduledExecutorService executor) {
         this(socketFile, executor, new NoopLog());
     }
 
-    public NpipeDocker(Executor executor) {
+    public NpipeDocker(ScheduledExecutorService executor) {
         this(HtConstants.NPIPE_SOCKET, executor);
     }
 
@@ -327,12 +327,12 @@ final class NpipeChannel {
     @Getter
     volatile AsynchronousFileChannel channel;
     String socketFile;
-    Executor executor;
+    ScheduledExecutorService executor;
     AtomicBoolean isDirtyConnection;
     NpipeChannelLock lock;
     Integer bufferSize;
 
-    NpipeChannel(String socketFile, Executor executor, Log log, Integer bufferSize) {
+    NpipeChannel(String socketFile, ScheduledExecutorService executor, Log log, Integer bufferSize) {
         this.socketFile = socketFile;
         this.executor = executor;
         this.channel = openChannel();
@@ -341,7 +341,7 @@ final class NpipeChannel {
         this.bufferSize = bufferSize;
     }
 
-    NpipeChannel(Log log, Executor executor, Integer bufferSize) {
+    NpipeChannel(Log log, ScheduledExecutorService executor, Integer bufferSize) {
         this(
                 HtConstants.NPIPE_SOCKET,
                 executor,
@@ -380,8 +380,11 @@ final class NpipeChannel {
     private AsynchronousFileChannel openChannel() {
         return AsynchronousFileChannel.open(
                 Paths.get(socketFile),
-                StandardOpenOption.READ,
-                StandardOpenOption.WRITE
+                EnumSet.of(
+                        StandardOpenOption.READ,
+                        StandardOpenOption.WRITE
+                ),
+                executor
         );
     }
 }

@@ -4,13 +4,13 @@ import io.huskit.common.HtConstants;
 import io.huskit.common.Os;
 import io.huskit.common.Volatile;
 
-import java.util.concurrent.Executor;
+import java.util.concurrent.ScheduledExecutorService;
 
 final class DockerSockets {
 
     private static final Volatile<DockerSocket> DEFAULT_SOCKET = Volatile.of();
 
-    public DockerSocket pickDefault(Executor executor) {
+    public DockerSocket pickDefault(ScheduledExecutorService executor) {
         return DEFAULT_SOCKET.syncSetOrGet(() -> {
             if (Os.WINDOWS.isCurrent()) {
                 return new NpipeDocker(HtConstants.NPIPE_SOCKET, executor);
