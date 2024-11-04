@@ -26,6 +26,7 @@ import java.util.*;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.function.Predicate;
 import java.util.function.Supplier;
 
 final class NpipeDocker implements DockerSocket {
@@ -142,7 +143,6 @@ final class DockerHttpMultiplexedStream {
             if (currentChunkSize == 0) {
                 break;
             }
-            var framesCounter = 0;
             while (currentChunkSize >= 0) {
                 var currentByte = byteFlow.nextByte();
                 if (currentByte == '\r' && isStreamHeader) {
@@ -177,7 +177,6 @@ final class DockerHttpMultiplexedStream {
                                     )
                             );
                         }
-                        framesCounter++;
                         isStreamHeader = true;
                     }
                 }
@@ -252,9 +251,11 @@ final class HeadFromLines implements Http.Head {
 
     @NonFinal
     Integer indexOfHeadEnd;
+    Lines lines;
     Supplier<Http.Head> headSupplier;
 
     HeadFromLines(Lines lines) {
+        this.lines = lines;
         this.headSupplier = MemoizedSupplier.of(() -> parse(lines));
     }
 
@@ -270,7 +271,7 @@ final class HeadFromLines implements Http.Head {
 
     public Integer indexOfHeadEnd() {
         if (indexOfHeadEnd == null) {
-            headSupplier.get();
+            parse(lines);
             if (indexOfHeadEnd == null) {
                 throw new RuntimeException("Failed to build head with given stream");
             }
@@ -331,6 +332,144 @@ interface FutureResponse<T> {
     Optional<T> apply(ByteBuffer byteBuffer);
 }
 
+@Getter
+@RequiredArgsConstructor
+final class MultiplexedFrames {
+
+    List<MultiplexedFrame> frames;
+}
+
+
+final class FutureMultiplexedStream implements FutureResponse<MultiplexedFrames> {
+
+    StreamType streamType;
+    List<MultiplexedFrame> frameList = new ArrayList<>();
+    Mutable<MultiplexedFrames> response = Mutable.of();
+    Mutable<Predicate<MultiplexedFrame>> follow = Mutable.of();
+    @NonFinal
+    boolean isChunkSizePart = true;
+    @NonFinal
+    int currentFrameHeadIndex = 0;
+    @NonFinal
+    int currentFrameSize = 0;
+    @NonFinal
+    boolean isStreamFrameHeaderPart = true;
+    @NonFinal
+    byte[] currentFrameBuffer;
+    @NonFinal
+    FrameType currentFrameType;
+    @NonFinal
+    Hexadecimal currentChunkSizeHex = Hexadecimal.fromHexChars();
+    @NonFinal
+    int skipNext = 0;
+
+    FutureMultiplexedStream(StreamType streamType, Predicate<MultiplexedFrame> follow) {
+        this.streamType = Objects.requireNonNull(streamType);
+        this.follow.set(follow);
+    }
+
+    FutureMultiplexedStream(StreamType streamType) {
+        this.streamType = Objects.requireNonNull(streamType);
+    }
+
+    @Override
+    public boolean isReady() {
+        return response.isPresent();
+    }
+
+    @Override
+    public MultiplexedFrames value() {
+        return response.require();
+    }
+
+    @Override
+    public synchronized Optional<MultiplexedFrames> apply(ByteBuffer byteBuffer) {
+        if (response.isPresent()) {
+            return response.maybe();
+        }
+        while (byteBuffer.hasRemaining()) {
+            var currentByte = byteBuffer.get();
+            if (skipNext > 0) {
+                skipNext--;
+                continue;
+            }
+            if (isChunkSizePart) {
+                if (currentByte != '\r') {
+                    if (currentByte == '\n') {
+                        isChunkSizePart = false;
+                        isStreamFrameHeaderPart = true;
+                        if (currentChunkSizeHex.intValue() == 0) {
+                            response.set(new MultiplexedFrames(frameList));
+                            return Optional.of(response.require());
+                        }
+                    } else {
+                        currentChunkSizeHex = currentChunkSizeHex.withHexChar((char) currentByte);
+                    }
+                }
+            } else {
+                if (isStreamFrameHeaderPart) {
+                    if (currentFrameHeadIndex == 0) {
+                        if (currentByte == 1) {
+                            currentFrameType = FrameType.STDOUT;
+                        } else if (currentByte == 0) {
+                            currentFrameType = FrameType.STDERR;
+                        } else {
+                            throw new IllegalStateException("Invalid frame type: " + currentByte);
+                        }
+                        currentFrameHeadIndex++;
+                    } else if (currentFrameHeadIndex >= 1 && currentFrameHeadIndex <= 3) {
+                        currentFrameHeadIndex++;
+                    } else {
+                        if (currentFrameHeadIndex == 4) {
+                            currentFrameSize |= Math.toIntExact((currentByte & 0xFFL) << 24);
+                            currentFrameHeadIndex++;
+                        } else if (currentFrameHeadIndex == 5) {
+                            currentFrameSize |= Math.toIntExact((currentByte & 0xFFL) << 16);
+                            currentFrameHeadIndex++;
+                        } else if (currentFrameHeadIndex == 6) {
+                            currentFrameSize |= Math.toIntExact((currentByte & 0xFFL) << 8);
+                            currentFrameHeadIndex++;
+                        } else if (currentFrameHeadIndex == 7) {
+                            currentFrameSize |= Math.toIntExact(currentByte & 0xFFL);
+                            currentFrameBuffer = new byte[currentFrameSize];
+                            currentFrameHeadIndex = 0;
+                            isStreamFrameHeaderPart = false;
+                        }
+                    }
+                } else {
+                    if (--currentFrameSize != 0) {
+                        currentFrameBuffer[currentFrameBuffer.length - currentFrameSize - 1] = currentByte;
+                    } else {
+                        currentFrameBuffer[currentFrameBuffer.length - currentFrameSize - 1] = currentByte;
+                        var frame = new MultiplexedFrame(currentFrameBuffer, currentFrameType);
+                        if (streamType == StreamType.ALL || (currentFrameType == FrameType.STDERR && streamType == StreamType.STDERR) ||
+                                (currentFrameType == FrameType.STDOUT && streamType == StreamType.STDOUT)) {
+                            if (follow.isPresent()) {
+                                if (follow.require().test(frame)) {
+                                    frameList.add(frame);
+                                    response.set(new MultiplexedFrames(frameList));
+                                    return Optional.of(response.require());
+                                }
+                            } else {
+                                frameList.add(frame);
+                                response.set(new MultiplexedFrames(frameList));
+                                isStreamFrameHeaderPart = true;
+                            }
+                        }
+                    }
+                }
+                currentChunkSizeHex.decrement();
+                if (currentChunkSizeHex.intValue() == 0) {
+                    isChunkSizePart = true;
+                    isStreamFrameHeaderPart = true;
+                    skipNext = 2;
+                }
+            }
+        }
+        return Optional.empty();
+    }
+}
+
 final class FutureHead implements FutureResponse<Http.Head> {
 
     Mutable<Http.Head> head = Mutable.of();
@@ -359,7 +498,7 @@ final class FutureHead implements FutureResponse<Http.Head> {
             var currentChar = (char) (byteBuffer.get() & 0xFF);
             if (currentChar == '\n' && previousChar == '\r') {
                 if (lineBuilder.length() == 1) {
-                    var head = parse(Lines.fromIterable(lines));
+                    var head = new HeadFromLines(Lines.fromIterable(lines));
                     this.head.set(head);
                     return Optional.of(head);
                 } else {
@@ -374,48 +513,6 @@ final class FutureHead implements FutureResponse<Http.Head> {
         }
         return Optional.empty();
     }
-
-    @SneakyThrows
-    private Http.Head parse(Lines lines) {
-        var statusLine = lines.next();
-        if (statusLine.isBlank()) {
-            throw new RuntimeException("Failed to build head with given stream");
-        }
-        var statusParts = statusLine.value().split(" ");
-        if (statusParts.length < 2) {
-            throw new RuntimeException("Invalid status line: " + statusLine);
-        }
-        var status = Integer.parseInt(statusParts[1]);
-        var headers = new HashMap<String, String>();
-        var contentTypeHeaderFound = false;
-        var transferEncodingHeaderFound = false;
-        var isChunked = false;
-        var isDockerMultiplex = false;
-        while (true) {
-            var line = lines.next();
-            if (line.isEmpty()) {
-                break;
-            }
-            var lineVal = line.value();
-            var colonIndex = lineVal.indexOf(':');
-            if (colonIndex == -1) {
-                throw new RuntimeException("Invalid header line: " + line);
-            }
-            var key = lineVal.substring(0, colonIndex).trim();
-            var value = lineVal.substring(colonIndex + 1).trim();
-            if (!contentTypeHeaderFound && "Content-Type".equalsIgnoreCase(key)) {
-                contentTypeHeaderFound = true;
-                isChunked = "chunked".equalsIgnoreCase(value);
-            }
-            if (!transferEncodingHeaderFound && "Transfer-Encoding".equalsIgnoreCase(key)) {
-                transferEncodingHeaderFound = true;
-                isDockerMultiplex = "application/vnd.docker.multiplexed-stream".equalsIgnoreCase(value);
-            }
-            headers.put(key, value);
-        }
-
-        return new DfHead(status, headers, isChunked, isDockerMultiplex);
-    }
 }
 
 @Getter
@@ -423,10 +520,13 @@ final class FutureHead implements FutureResponse<Http.Head> {
 final class MyHttpResponse<T> {
 
     Http.Head head;
-    Body<T> body;
+    T body;
 }
 
-final class Body<T> implements FutureResponse<T> {
+@RequiredArgsConstructor
+final class FutureMultiplex implements FutureResponse<DockerHttpMultiplexedStream> {
+
+    DockerHttpMultiplexedStream stream;
 
     @Override
     public boolean isReady() {
@@ -434,12 +534,12 @@ final class Body<T> implements FutureResponse<T> {
     }
 
     @Override
-    public T value() {
+    public DockerHttpMultiplexedStream value() {
         return null;
     }
 
     @Override
-    public Optional<T> apply(ByteBuffer byteBuffer) {
+    public Optional<DockerHttpMultiplexedStream> apply(ByteBuffer byteBuffer) {
         return Optional.empty();
     }
 }
@@ -448,7 +548,7 @@ final class Body<T> implements FutureResponse<T> {
 final class HttpFutureResponse<T> implements FutureResponse<MyHttpResponse<T>> {
 
     FutureResponse<Http.Head> futureHead;
-    FutureResponse<Body<T>> futureBody;
+    FutureResponse<T> futureBody;
     Mutable<MyHttpResponse<T>> response = Mutable.of();
 
     @Override
@@ -490,7 +590,8 @@ final class HttpFutureResponse<T> implements FutureResponse<MyHttpResponse<T>> {
 final class NpipeRead {
 
     Supplier<CompletableFuture<ByteBuffer>> bytesSupplier;
-    ExecutorService executorService;
+    ScheduledExecutorService executorService;
+    Duration backoff;
 
     <T> CompletableFuture<T> read(FutureResponse<T> action) {
         var completion = new CompletableFuture<T>();

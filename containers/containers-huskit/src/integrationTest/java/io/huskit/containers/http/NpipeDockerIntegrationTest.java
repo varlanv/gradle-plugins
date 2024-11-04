@@ -13,14 +13,19 @@ import org.junit.jupiter.api.condition.OS;
 
 import java.nio.ByteBuffer;
 import java.nio.channels.AsynchronousFileChannel;
+import java.nio.channels.CompletionHandler;
 import java.nio.channels.FileChannel;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
 import java.time.Duration;
 import java.util.Arrays;
+import java.util.EnumSet;
 import java.util.HashMap;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 
 @EnabledOnOs(OS.WINDOWS)
 public class NpipeDockerIntegrationTest implements DockerIntegrationTest {
@@ -62,6 +67,57 @@ public class NpipeDockerIntegrationTest implements DockerIntegrationTest {
 
             System.out.println();
 //            Files.write(Paths.get("logs.txt"), sb.toString().getBytes(StandardCharsets.UTF_8));
+        }
+    }
+
+    @Test
+    @Disabled
+    void test_async_blocking_with_logs_follow() throws Exception {
+        var containerId = "41bca39fe688f235f3ac9cc9ce446b8f620cffc3f576b23be04b31e91cdd9d79";
+        var request = "GET /containers/" + containerId + "/logs?stdout=true&stderr=true&follow=true " +
+                "HTTP/1.1\r\n" +
+                "Host: localhost\r\n" +
+                "Connection: keep-alive\r\n" +
+                "\r\n";
+        var executor = Executors.newScheduledThreadPool(1);
+        try (var channel = AsynchronousFileChannel.open(
+                Paths.get(dockerNpipe),
+                EnumSet.of(
+                        StandardOpenOption.READ,
+                        StandardOpenOption.WRITE
+                ),
+                executor)) {
+            channel.write(ByteBuffer.wrap(request.getBytes(StandardCharsets.UTF_8)), 0).get();
+            var buffer = ByteBuffer.allocate(8192);
+            var counter = new AtomicInteger();
+            executor.scheduleWithFixedDelay(
+                    () -> System.out.println("Counting -> " + counter.incrementAndGet()),
+                    0,
+                    1,
+                    TimeUnit.SECONDS
+            );
+            readAsync(
+                    channel,
+                    buffer
+            ).thenCompose(
+                    bytes -> {
+                        System.out.println(new String(bytes, StandardCharsets.UTF_8));
+                        return readAsync(channel, buffer);
+                    }
+            ).thenCompose(
+                    bytes -> {
+                        System.out.println(new String(bytes, StandardCharsets.UTF_8));
+                        return readAsync(channel, buffer);
+                    }
+            ).thenCompose(
+                    bytes -> {
+                        System.out.println(new String(bytes, StandardCharsets.UTF_8));
+                        return readAsync(channel, buffer);
+                    }
+            );
+            Thread.sleep(10_000);
+        } finally {
+            executor.shutdownNow();
         }
     }
 
@@ -245,5 +301,25 @@ public class NpipeDockerIntegrationTest implements DockerIntegrationTest {
             r.run();
             r.run();
         }
+    }
+
+    private CompletableFuture<byte[]> readAsync(AsynchronousFileChannel channel, ByteBuffer byteBuffer) {
+        var completion = new CompletableFuture<byte[]>();
+        channel.read(byteBuffer, 0, null, new CompletionHandler<>() {
+
+            @Override
+            public void completed(Integer result, Object attachment) {
+                byteBuffer.flip();
+                var bytes = new byte[byteBuffer.remaining()];
+                System.arraycopy(byteBuffer.array(), byteBuffer.position(), bytes, 0, byteBuffer.remaining());
+                completion.complete(bytes);
+            }
+
+            @Override
+            public void failed(Throwable exc, Object attachment) {
+                completion.completeExceptionally(exc);
+            }
+        });
+        return completion;
     }
 }

@@ -10,6 +10,8 @@ public interface Hexadecimal {
 
     Hexadecimal withHexChar(char hexChar);
 
+    Hexadecimal decrement();
+
     int intValue();
 }
 
@@ -31,6 +33,12 @@ class HexFromChars implements Hexadecimal {
             throw new IllegalArgumentException("Invalid hex character: " + hexChar);
         }
         this.value = (this.value << 4) | value;
+        return this;
+    }
+
+    @Override
+    public Hexadecimal decrement() {
+        value--;
         return this;
     }
 

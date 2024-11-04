@@ -7,10 +7,11 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
 import java.nio.ByteBuffer;
+import java.time.Duration;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Supplier;
 
@@ -19,11 +20,11 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 class NpipeReadIntegrationTest implements IntegrationTest {
 
     @NonFinal
-    ExecutorService executorService;
+    ScheduledExecutorService executorService;
 
     @BeforeAll
     void setupAll() {
-        executorService = Executors.newSingleThreadExecutor();
+        executorService = Executors.newScheduledThreadPool(1);
     }
 
     @AfterAll
@@ -40,7 +41,8 @@ class NpipeReadIntegrationTest implements IntegrationTest {
         assertThatThrownBy(
                 () -> new NpipeRead(
                         bytesSupplier,
-                        executorService
+                        executorService,
+                        Duration.ZERO
                 ).read(futureResponse).join()
         ).cause().hasMessage(exceptionMessage);
     }
@@ -52,6 +54,11 @@ class NpipeReadIntegrationTest implements IntegrationTest {
     private FutureResponse<String> errorFutureResponse(String exceptionMessage) {
         var counter = new AtomicInteger();
         return new FutureResponse<>() {
+
+            @Override
+            public boolean isReady() {
+                return false;
+            }
 
             @Override
             public String value() {
