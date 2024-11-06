@@ -498,8 +498,6 @@ final class PushChunked<T> implements PushResponse<Http.Body<T>> {
     @NonFinal
     StringBuilder fullBody = new StringBuilder(64);
     @NonFinal
-    int currentChunkSize = -1;
-    @NonFinal
     int skipNext = 0;
     @NonFinal
     boolean isChunkSizePart = true;
@@ -525,7 +523,7 @@ final class PushChunked<T> implements PushResponse<Http.Body<T>> {
                 continue;
             }
             if (isChunkSizePart) {
-                if (ch == '\n'){
+                if (ch == '\n') {
                     continue;
                 }
                 if (ch == '\r') {

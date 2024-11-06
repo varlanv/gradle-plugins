@@ -99,27 +99,6 @@ class NpipeChannelTest implements UnitTest {
         then(actual).containsExactly(data, data, data);
     }
 
-    @Test
-    void asd() {
-        var data = "data";
-        var request = new PushRequest<>(
-            data.getBytes(StandardCharsets.UTF_8),
-            PushResponse.http(
-                PushResponse.fake(
-                    byteBuffer ->
-                        Optional.of(
-                            new String(
-                                byteBuffer.array(),
-                                StandardCharsets.UTF_8
-                            )
-                        )
-                )
-            )
-        );
-
-        var stringMyHttpResponse = writeToSubject(request);
-    }
-
     @SneakyThrows
     private <T> T writeToSubject(PushRequest<T> pushRequest) {
         return useTempFile(

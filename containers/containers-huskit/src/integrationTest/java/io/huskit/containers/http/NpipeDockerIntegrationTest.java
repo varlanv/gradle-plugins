@@ -122,7 +122,7 @@ public class NpipeDockerIntegrationTest implements DockerIntegrationTest {
     }
 
     @Test
-//    @Disabled
+    @Disabled
     void async_file_channel_raw() throws Exception {
         var request = "GET /containers/json?all=true HTTP/1.1\r\nHost: localhost\r\n\r\n";
         try (var channel = AsynchronousFileChannel.open(
