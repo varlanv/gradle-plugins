@@ -3,10 +3,12 @@ package io.huskit.containers.http;
 import io.huskit.common.HtConstants;
 import io.huskit.common.Log;
 import io.huskit.common.Mutable;
+import io.huskit.common.Sneaky;
 import io.huskit.common.function.MemoizedSupplier;
 import io.huskit.common.io.BufferLines;
 import io.huskit.common.io.Lines;
 import io.huskit.common.number.Hexadecimal;
+import io.huskit.containers.internal.HtJson;
 import lombok.*;
 import lombok.experimental.NonFinal;
 import org.jetbrains.annotations.VisibleForTesting;
@@ -14,6 +16,7 @@ import org.jetbrains.annotations.VisibleForTesting;
 import java.nio.ByteBuffer;
 import java.nio.channels.AsynchronousFileChannel;
 import java.nio.channels.CompletionHandler;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
 import java.time.Duration;
@@ -34,7 +37,7 @@ final class NpipeDocker implements DockerSocket {
     public NpipeDocker(String socketFile, ScheduledExecutorService executor, Log log) {
         this.log = log;
         this.executor = executor;
-        this.stateSupplier = MemoizedSupplier.of(() -> new NpipeChannel(socketFile, executor, log, 4096));
+        this.stateSupplier = MemoizedSupplier.of(() -> new NpipeChannel(socketFile, executor, log, 16384));
 
     }
 
@@ -54,6 +57,20 @@ final class NpipeDocker implements DockerSocket {
     @Override
     public CompletableFuture<Http.RawResponse> sendAsync(Request request) {
         return sendAsyncInternal(request);
+    }
+
+    public <T> CompletableFuture<Http.Response<T>> sendPushAsync(PushRequest<T> request) {
+        return stateSupplier
+            .get()
+            .writeAndReadAsync(
+                new PushRequest<>(
+                    request.request().http().body(),
+                    new HttpPushResponse<>(
+                        new PushHead(),
+                        request.pushResponse()
+                    )
+                )
+            );
     }
 
     private CompletableFuture<Http.RawResponse> sendAsyncInternal(Request request) {
@@ -198,6 +215,15 @@ final class MultiplexedFrame {
 
     byte[] data;
     FrameType type;
+
+    @Override
+    public String toString() {
+        var frame = new String(data, StandardCharsets.UTF_8).trim();
+        return "MultiplexedFrame{"
+            + "type=" + type
+            + ", data='" + frame + '\''
+            + '}';
+    }
 }
 
 interface MultiplexedResponseFollow extends AutoCloseable {
@@ -325,7 +351,7 @@ interface PushResponse<T> {
 
     Optional<T> apply(ByteBuffer byteBuffer);
 
-    static <T> PushResponse<MyHttpResponse<T>> http(PushResponse<T> body) {
+    static <T> PushResponse<Http.Response<T>> http(PushResponse<T> body) {
         return new HttpPushResponse<>(
             new PushHead(),
             body
@@ -358,6 +384,13 @@ interface PushResponse<T> {
 final class MultiplexedFrames {
 
     List<MultiplexedFrame> frames;
+
+    @Override
+    public String toString() {
+        return "MultiplexedFrames{" +
+            "frames=" + frames +
+            '}';
+    }
 }
 
 final class PushMultiplexedStream implements PushResponse<MultiplexedFrames> {
@@ -392,6 +425,10 @@ final class PushMultiplexedStream implements PushResponse<MultiplexedFrames> {
         this.streamType = Objects.requireNonNull(streamType);
     }
 
+    PushMultiplexedStream() {
+        this(StreamType.ALL);
+    }
+
     @Override
     public boolean isReady() {
         return response.isPresent();
@@ -409,6 +446,7 @@ final class PushMultiplexedStream implements PushResponse<MultiplexedFrames> {
         }
         while (byteBuffer.hasRemaining()) {
             var currentByte = byteBuffer.get();
+            var currentChar = (char) (currentByte & 0xFF);
             if (skipNext > 0) {
                 skipNext--;
                 continue;
@@ -423,7 +461,11 @@ final class PushMultiplexedStream implements PushResponse<MultiplexedFrames> {
                             return Optional.of(response.require());
                         }
                     } else {
-                        currentChunkSizeHex = currentChunkSizeHex.withHexChar((char) currentByte);
+                        try {
+                            currentChunkSizeHex = currentChunkSizeHex.withHexChar((char) currentByte);
+                        } catch (Exception e) {
+                            Sneaky.rethrow(e);
+                        }
                     }
                 }
             } else {
@@ -431,7 +473,7 @@ final class PushMultiplexedStream implements PushResponse<MultiplexedFrames> {
                     if (currentFrameHeadIndex == 0) {
                         if (currentByte == 1) {
                             currentFrameType = FrameType.STDOUT;
-                        } else if (currentByte == 0) {
+                        } else if (currentByte == 2) {
                             currentFrameType = FrameType.STDERR;
                         } else {
                             throw new IllegalStateException("Invalid frame type: " + currentByte);
@@ -490,11 +532,39 @@ final class PushMultiplexedStream implements PushResponse<MultiplexedFrames> {
     }
 }
 
+final class PushJsonArray implements PushResponse<List<Map<String, Object>>> {
+
+    PushResponse<List<Map<String, Object>>> delegate;
+
+    PushJsonArray(PushResponse<List<Map<String, Object>>> delegate) {
+        this.delegate = delegate;
+    }
+
+    PushJsonArray() {
+        this.delegate = new PushChunked<>(HtJson::toMapList);
+    }
+
+    @Override
+    public boolean isReady() {
+        return delegate.isReady();
+    }
+
+    @Override
+    public List<Map<String, Object>> value() {
+        return delegate.value();
+    }
+
+    @Override
+    public Optional<List<Map<String, Object>>> apply(ByteBuffer byteBuffer) {
+        return delegate.apply(byteBuffer);
+    }
+}
+
 @RequiredArgsConstructor
-final class PushChunked<T> implements PushResponse<Http.Body<T>> {
+final class PushChunked<T> implements PushResponse<T> {
 
     Function<String, T> delegate;
-    Mutable<Http.Body<T>> body = Mutable.of();
+    Mutable<T> body = Mutable.of();
     @NonFinal
     StringBuilder fullBody = new StringBuilder(64);
     @NonFinal
@@ -509,12 +579,12 @@ final class PushChunked<T> implements PushResponse<Http.Body<T>> {
     }
 
     @Override
-    public Http.Body<T> value() {
+    public T value() {
         return body.require();
     }
 
     @Override
-    public Optional<Http.Body<T>> apply(ByteBuffer byteBuffer) {
+    public Optional<T> apply(ByteBuffer byteBuffer) {
         while (byteBuffer.hasRemaining()) {
             var b = byteBuffer.get();
             var ch = (char) (b & 0xFF);
@@ -529,7 +599,7 @@ final class PushChunked<T> implements PushResponse<Http.Body<T>> {
                 if (ch == '\r') {
                     isChunkSizePart = false;
                     if (currentChunkSizeHex.intValue() == 0) {
-                        var value = Http.Body.of(delegate.apply(fullBody.toString()));
+                        var value = delegate.apply(fullBody.toString());
                         body.set(value);
                         return Optional.of(value);
                     } else {
@@ -627,14 +697,14 @@ final class PushHead implements PushResponse<Http.Head> {
 
 @Getter
 @RequiredArgsConstructor
-final class MyHttpResponse<T> {
+final class MyHttpResponse<T> implements Http.Response<T> {
 
     Http.Head head;
-    T body;
+    Http.Body<T> body;
 }
 
 @RequiredArgsConstructor
-final class HttpPushResponse<T> implements PushResponse<MyHttpResponse<T>> {
+final class HttpPushResponse<T> implements PushResponse<Http.Response<T>> {
 
     PushResponse<Http.Head> futureHead;
     PushResponse<T> futureBody;
@@ -651,25 +721,25 @@ final class HttpPushResponse<T> implements PushResponse<MyHttpResponse<T>> {
     }
 
     @Override
-    public Optional<MyHttpResponse<T>> apply(ByteBuffer byteBuffer) {
+    public Optional<Http.Response<T>> apply(ByteBuffer byteBuffer) {
         if (futureHead.isReady()) {
-            return getMyHttpResponse(byteBuffer, futureHead.value());
+            return getHttpResponse(byteBuffer, futureHead.value());
         } else {
             var maybeHead = futureHead.apply(byteBuffer);
             if (maybeHead.isEmpty()) {
                 return Optional.empty();
             } else {
-                return getMyHttpResponse(byteBuffer, maybeHead.get());
+                return getHttpResponse(byteBuffer, maybeHead.get());
             }
         }
     }
 
-    private Optional<MyHttpResponse<T>> getMyHttpResponse(ByteBuffer byteBuffer, Http.Head maybeHead) {
+    private Optional<Http.Response<T>> getHttpResponse(ByteBuffer byteBuffer, Http.Head maybeHead) {
         var maybeBody = futureBody.apply(byteBuffer);
         if (maybeBody.isEmpty()) {
             return Optional.empty();
         } else {
-            response.set(new MyHttpResponse<>(maybeHead, maybeBody.get()));
+            response.set(new MyHttpResponse<>(maybeHead, Http.Body.of(maybeBody.get())));
             return Optional.of(response.require());
         }
     }
@@ -993,14 +1063,17 @@ final class SyncCallback {
                         action
                     )
                 );
-                return actions.size();
+                var size = actions.size();
+                if (size == 1) {
+                    log.debug(() -> "Starting action immediately as it is the only one in the queue");
+                } else {
+                    log.debug(() -> "Placed action in queue, will wait for " + (size) + " previous actions to finish");
+                }
+                return size;
             }
         );
         if (actionsSize == 1) {
-            log.debug(() -> "Starting action immediately as it is the only one in the queue");
             action.run();
-        } else {
-            log.debug(() -> "Placed action in queue, will wait for " + (actionsSize - 1) + " previous actions to finish");
         }
     }
 
@@ -1030,13 +1103,13 @@ final class SyncCallback {
         }
         if (actions.size() == 1) {
             actions.clear();
-            return () -> log.debug(() -> "No more actions in queue");
+            log.debug(() -> "No more actions in queue");
+            return () -> {
+            };
         } else {
             actions.remove(indexOfAction);
-            return () -> {
-                log.debug(() -> "Starting next action in queue, " + actions.size() + " actions remaining");
-                actions.get(0).action().run();
-            };
+            log.debug(() -> "Starting next action in queue, " + actions.size() + " actions remaining");
+            return () -> actions.get(0).action().run();
         }
     }
 

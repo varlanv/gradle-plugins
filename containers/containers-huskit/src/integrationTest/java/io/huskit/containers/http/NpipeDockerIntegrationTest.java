@@ -1,13 +1,14 @@
 package io.huskit.containers.http;
 
+import io.huskit.common.HtConstants;
+import io.huskit.common.Log;
 import io.huskit.common.function.ThrowingSupplier;
+import io.huskit.containers.internal.HtJson;
 import io.huskit.gradle.commontest.DockerIntegrationTest;
 import org.json.JSONArray;
 import org.json.JSONObject;
-import org.json.JSONTokener;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.Timeout;
 import org.junit.jupiter.api.condition.EnabledOnOs;
 import org.junit.jupiter.api.condition.OS;
 
@@ -22,9 +23,7 @@ import java.time.Duration;
 import java.util.Arrays;
 import java.util.EnumSet;
 import java.util.HashMap;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicInteger;
 
 @EnabledOnOs(OS.WINDOWS)
@@ -262,44 +261,107 @@ public class NpipeDockerIntegrationTest implements DockerIntegrationTest {
             Paths.get(dockerNpipe),
             StandardOpenOption.READ,
             StandardOpenOption.WRITE)) {
-            channel.write(ByteBuffer.wrap(request.getBytes(StandardCharsets.UTF_8)), 0);
-            var buffer = ByteBuffer.allocate(4096);
-            channel.read(buffer, 0);
-            buffer.flip();
-            var decode = StandardCharsets.UTF_8.decode(buffer).toString();
-            System.out.println(decode);
+            microBenchmark(
+                5000,
+                () -> {
+                    channel.write(ByteBuffer.wrap(request.getBytes(StandardCharsets.UTF_8)), 0);
+                    var buffer = ByteBuffer.allocate(4096);
+                    channel.read(buffer, 0);
+                    buffer.flip();
+                    var decode = StandardCharsets.UTF_8.decode(buffer).toString();
+                    var json = decode.substring(decode.indexOf("[{"));
+                    var mapList = HtJson.toMapList(json);
+                }
+            );
         }
     }
 
     @Test
-    @Disabled
-    @Timeout(3)
     void containers_json() throws Exception {
         var httpRequests = new HttpRequests();
-        try (var subject = new NpipeDocker(dockerNpipe, Executors.newScheduledThreadPool(1)).closeable()) {
-            ThrowingRunnable r = () -> {
-                var before = System.currentTimeMillis();
-                subject.sendAsync(
+        var subject = new NpipeDocker(
+            HtConstants.NPIPE_SOCKET,
+            Executors.newScheduledThreadPool(1)
+        );
+        try {
+            var actual = subject.sendPushAsync(
+                    new PushRequest<>(
                         new Request(
                             httpRequests.get(
                                 HtUrl.of("/containers/json?all=true")
                             )
+                        ),
+                        new PushJsonArray()
+                    )
+                )
+                .join();
+        } finally {
+            subject.release();
+        }
+    }
+
+    @Test
+    void containers_json_many() throws Exception {
+        var httpRequests = new HttpRequests();
+        var subject = new NpipeDocker(
+            HtConstants.NPIPE_SOCKET,
+            Executors.newScheduledThreadPool(1),
+            Log.fakeVerbose()
+        );
+        try {
+            var count = 10;
+            var latch = new CountDownLatch(count);
+            for (var i = 0; i < count; i++) {
+                ForkJoinPool.commonPool().submit(() -> {
+                    var actual = subject.sendPushAsync(
+                            new PushRequest<>(
+                                new Request(
+                                    httpRequests.get(
+                                        HtUrl.of("/containers/json?all=true")
+                                    )
+                                ),
+                                new PushJsonArray()
+                            )
                         )
-                    )
-                    .thenApply(
-                        rawResponse ->
-                            new JSONArray(
-                                new JSONTokener(
-                                    rawResponse.bodyReader()
-                                )
-                            ).toList()
-                    )
-                    .thenAccept(System.out::println)
-                    .whenComplete((it, e) -> System.out.println("Time: " + (System.currentTimeMillis() - before) + "ms"))
-                    .join();
-            };
-            r.run();
-            r.run();
+                        .join();
+                    latch.countDown();
+                });
+            }
+            latch.await();
+        } finally {
+            subject.release();
+        }
+    }
+
+    @Test
+    void containers_logs() throws Exception {
+        var containerId = "82d6ca1f9bef9cbd84db417ccdec0045ec95121e13b994ee47f85dbc97b359ad";
+        var httpRequests = new HttpRequests();
+        var subject = new NpipeDocker(
+            HtConstants.NPIPE_SOCKET,
+            Executors.newScheduledThreadPool(1),
+            Log.fakeVerbose()
+        );
+        try {
+            microBenchmark(
+                2000,
+                () -> {
+                    var actual = subject.sendPushAsync(
+                            new PushRequest<>(
+                                new Request(
+                                    httpRequests.get(
+                                        HtUrl.of(String.format("/containers/%s/logs?stdout=true&stderr=true", containerId))
+                                    )
+                                ),
+                                new PushMultiplexedStream()
+                            )
+                        )
+                        .join();
+                    System.out.println(actual.body().value());
+                });
+//            System.out.println(actual.body().value());
+        } finally {
+            subject.release();
         }
     }
 
