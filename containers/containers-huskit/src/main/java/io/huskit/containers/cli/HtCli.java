@@ -50,9 +50,7 @@ public class HtCli {
     }
 
     public void close() {
-        if (process.isInitialized()) {
-            process.get().stop();
-        }
+        process.ifInitialized(DockerShell::stop);
         isClosed.set(true);
     }
 
@@ -74,10 +72,10 @@ public class HtCli {
             this.cleanupOnClose = dockerSpec.isCleanOnClose();
             this.containerIdsForCleanup = new ConcurrentLinkedQueue<>();
             this.shell = shells.take(new ShellPickArg(
-                            dockerSpec.shell(),
-                            dockerSpec.forwardStdout(),
-                            dockerSpec.forwardStderr()
-                    )
+                    dockerSpec.shell(),
+                    dockerSpec.forwardStdout(),
+                    dockerSpec.forwardStderr()
+                )
             );
             this.dockerSpec = dockerSpec;
             Runtime.getRuntime().addShutdownHook(new Thread(this::stop));
@@ -86,12 +84,12 @@ public class HtCli {
         public <T> T sendCommand(HtCommand command, Function<CommandResult, T> resultFunction) {
             if (command.type() == CommandType.CONTAINERS_LOGS_FOLLOW) {
                 return new LogFollow(
-                        dockerSpec,
-                        recorder,
-                        containerIdsForCleanup
+                    dockerSpec,
+                    recorder,
+                    containerIdsForCleanup
                 ).send(
-                        command,
-                        resultFunction
+                    command,
+                    resultFunction
                 );
             }
             doSendCommand(command);

@@ -1,5 +1,6 @@
 package io.huskit.containers.integration.mongo;
 
+import io.huskit.common.HtConstants;
 import io.huskit.common.Mutable;
 import io.huskit.common.port.DynamicContainerPort;
 import io.huskit.containers.api.container.HtContainer;
@@ -8,7 +9,6 @@ import io.huskit.containers.api.docker.HtDocker;
 import io.huskit.containers.api.image.HtImgName;
 import io.huskit.containers.integration.*;
 import io.huskit.containers.model.ContainerType;
-import io.huskit.common.HtConstants;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
@@ -36,10 +36,10 @@ public final class HtMongo implements HtServiceContainer {
     private HtMongo(HtImgName imageName) {
         this.imageName = imageName;
         this.containerSpec = Mutable.of(
-                new DefContainerSpec(imageName, containerType())
-                        .addProperty(HtConstants.Mongo.DEFAULT_CONNECTION_STRING_ENV, HtConstants.Mongo.DEFAULT_CONNECTION_STRING_ENV)
-                        .addProperty(HtConstants.Mongo.DEFAULT_DB_NAME_ENV, HtConstants.Mongo.DEFAULT_DB_NAME_ENV)
-                        .addProperty(HtConstants.Mongo.DEFAULT_PORT_ENV, HtConstants.Mongo.DEFAULT_PORT_ENV)
+            new DefContainerSpec(imageName, containerType())
+                .addProperty(HtConstants.Mongo.DEFAULT_CONNECTION_STRING_ENV, HtConstants.Mongo.DEFAULT_CONNECTION_STRING_ENV)
+                .addProperty(HtConstants.Mongo.DEFAULT_DB_NAME_ENV, HtConstants.Mongo.DEFAULT_DB_NAME_ENV)
+                .addProperty(HtConstants.Mongo.DEFAULT_PORT_ENV, HtConstants.Mongo.DEFAULT_PORT_ENV)
         );
         this.dockerClientSpec = new DefDockerClientSpec(this);
         this.containerSpec.require().await().forLogMessageContaining("Waiting for connections");
@@ -88,19 +88,19 @@ public final class HtMongo implements HtServiceContainer {
             containerSpec.require().labels().pair(HtConstants.CONTAINER_STARTED_AT_LABEL, System.currentTimeMillis());
             var containers = htDocker.containers();
             var port = containerSpec.require().ports().port().mapOr(p -> Map.entry(p.hostValue(), p.containerValue().orElseThrow()),
-                    () -> Map.entry(new DynamicContainerPort().hostValue(), HtConstants.Mongo.DEFAULT_PORT));
+                () -> Map.entry(new DynamicContainerPort().hostValue(), HtConstants.Mongo.DEFAULT_PORT));
             return containers
-                    .run(imageName.reference(), runSpec -> {
-                                var envSpec = containerSpec.require().envSpec();
-                                envSpec.envMap().ifPresent(runSpec::withEnv);
-                                var labelSpec = containerSpec.require().labelSpec();
-                                labelSpec.labelMap().ifPresent(runSpec::withLabels);
-                                var waitSpec = containerSpec.require().waitSpec();
-                                waitSpec.textWait().ifPresent(waiter -> runSpec.withLookFor(waiter.text(), waiter.duration()));
-                                runSpec.withPortBinding(port.getKey(), port.getValue());
-                            }
-                    )
-                    .exec();
+                .run(imageName.reference(), runSpec -> {
+                        var envSpec = containerSpec.require().envSpec();
+                        envSpec.envMap().ifPresent(runSpec::withEnv);
+                        var labelSpec = containerSpec.require().labelSpec();
+                        labelSpec.labelMap().ifPresent(runSpec::withLabels);
+                        var waitSpec = containerSpec.require().waitSpec();
+                        waitSpec.textWait().ifPresent(waiter -> runSpec.withLookFor(waiter.text(), waiter.duration()));
+                        runSpec.withPortBinding(port.getKey(), port.getValue());
+                    }
+                )
+                .exec();
         });
         var port = container.firstMappedPort();
         var dbName = Mutable.<String>of();
@@ -110,29 +110,29 @@ public final class HtMongo implements HtServiceContainer {
                 var counter = databaseNameCounter.incrementAndGet();
                 var db = databaseName.require() + "_" + counter;
                 var conn = String.format(HtConstants.Mongo.CONNECTION_STRING_PATTERN,
-                        "localhost", container.firstMappedPort()) + "/" + db;
+                    "localhost", container.firstMappedPort()) + "/" + db;
                 dbName.set(db);
                 connectionString.set(conn);
             } else {
                 var conn = String.format(HtConstants.Mongo.CONNECTION_STRING_PATTERN,
-                        "localhost", container.firstMappedPort());
+                    "localhost", container.firstMappedPort());
                 dbName.set(databaseName.require());
                 connectionString.set(conn);
             }
             return Map.of(
-                    containerSpec.require().properties().get(HtConstants.Mongo.DEFAULT_CONNECTION_STRING_ENV), connectionString.require(),
-                    containerSpec.require().properties().get(HtConstants.Mongo.DEFAULT_DB_NAME_ENV), dbName.require(),
-                    containerSpec.require().properties().get(HtConstants.Mongo.DEFAULT_PORT_ENV), String.valueOf(port)
+                containerSpec.require().properties().get(HtConstants.Mongo.DEFAULT_CONNECTION_STRING_ENV), connectionString.require(),
+                containerSpec.require().properties().get(HtConstants.Mongo.DEFAULT_DB_NAME_ENV), dbName.require(),
+                containerSpec.require().properties().get(HtConstants.Mongo.DEFAULT_PORT_ENV), String.valueOf(port)
             );
         };
         return new DfMongoStartedContainer(
-                container.id(),
-                reuseEnabled,
-                newDatabaseForEachRequest.require(),
-                () -> mapSupplier.get().get(containerSpec.require().properties().get(HtConstants.Mongo.DEFAULT_CONNECTION_STRING_ENV)),
-                () -> containerSpec.require().hash(),
-                mapSupplier,
-                htDocker
+            container.id(),
+            reuseEnabled,
+            newDatabaseForEachRequest.require(),
+            () -> mapSupplier.get().get(containerSpec.require().properties().get(HtConstants.Mongo.DEFAULT_CONNECTION_STRING_ENV)),
+            () -> containerSpec.require().hash(),
+            mapSupplier,
+            htDocker
         );
     }
 
@@ -148,10 +148,10 @@ public final class HtMongo implements HtServiceContainer {
             var hash = containerSpec.require().hash();
             System.out.println("Looking for container with hash: " + hash);
             var containers = htContainers.list(listSpec -> listSpec.withLabelFilter(HtConstants.CONTAINER_HASH_LABEL, hash))
-                    .asList();
+                .asList();
             if (containers.size() == 1) {
                 System.out.printf("Found container with hash: '%s', lookup took %s%n",
-                        hash, Duration.ofMillis(System.currentTimeMillis() - before));
+                    hash, Duration.ofMillis(System.currentTimeMillis() - before));
                 var container = containers.get(0);
                 var now = Instant.now();
                 var cleanupAfterTime = container.createdAt().plus(reuseWithTimeout.cleanupAfter());
@@ -164,18 +164,18 @@ public final class HtMongo implements HtServiceContainer {
             } else if (containers.size() > 1) {
                 System.out.println("Find more than one container with hash: " + hash);
                 htContainers.remove(
-                        containers.stream().map(HtContainer::id).collect(Collectors.toList()),
-                        spec -> spec.withForce().withVolumes()
+                    containers.stream().map(HtContainer::id).collect(Collectors.toList()),
+                    spec -> spec.withForce().withVolumes()
                 );
             } else {
                 containerSpec.require().labels()
-                        .map(Map.of(
-                                HtConstants.CONTAINER_HASH_LABEL, hash,
-                                HtConstants.CONTAINER_CLEANUP_AFTER_LABEL, reuseWithTimeout.cleanupAfter().toSeconds()
-                        ));
+                    .map(Map.of(
+                        HtConstants.CONTAINER_HASH_LABEL, hash,
+                        HtConstants.CONTAINER_CLEANUP_AFTER_LABEL, reuseWithTimeout.cleanupAfter().toSeconds()
+                    ));
             }
             System.out.printf("Didn't find container with hash: '%s', lookup took %s%n",
-                    hash, Duration.ofMillis(System.currentTimeMillis() - before));
+                hash, Duration.ofMillis(System.currentTimeMillis() - before));
         }
         return Optional.empty();
     }
@@ -250,11 +250,11 @@ public final class HtMongo implements HtServiceContainer {
         public static void main(String[] args) {
             var fullTime = System.currentTimeMillis();
             var mongo = HtMongo.fromImage(HtConstants.Mongo.DEFAULT_IMAGE)
-                    .withContainerSpec(containerSpec -> containerSpec
-                            .reuse().enabledWithCleanupAfter(Duration.ofSeconds(60))
-                            .env().pair("KEaA", "vaka")
-                    )
-                    .start();
+                .withContainerSpec(containerSpec -> containerSpec
+                    .reuse().enabledWithCleanupAfter(Duration.ofSeconds(60))
+                    .env().pair("KEaA", "vaka")
+                )
+                .start();
             var connectionString = mongo.connectionString();
 //        MongoDBContainer mongoDBContainer = new MongoDBContainer("mongo:4.4.8").withReuse(true);
 //        mongoDBContainer.start();

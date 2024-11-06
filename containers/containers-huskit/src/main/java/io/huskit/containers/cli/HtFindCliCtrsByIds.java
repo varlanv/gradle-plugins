@@ -24,15 +24,15 @@ class HtFindCliCtrsByIds {
     public Stream<HtContainer> stream() {
         try {
             return cli.sendCommand(
-                    new CliCommand(
-                            CommandType.CONTAINERS_INSPECT,
-                            buildListContainersCommand(ids)
-                    ).withLinePredicate(Predicate.not(String::isBlank)),
-                    result -> {
-                        return result.lines().stream()
-                                .map(HtJson::toMap)
-                                .map(HtJsonContainer::new);
-                    }
+                new CliCommand(
+                    CommandType.CONTAINERS_INSPECT,
+                    buildListContainersCommand(ids)
+                ).withLinePredicate(Predicate.not(String::isBlank)),
+                result -> {
+                    return result.lines().stream()
+                        .map(HtJson::toMap)
+                        .map(HtJsonContainer::new);
+                }
             );
         } catch (Exception e) {
             throw new IllegalStateException(String.format("Failed to find containers by ids - %s", ids), e);

@@ -18,7 +18,7 @@ public interface HtListImages {
             throw new IllegalStateException("No images found");
         } else if (images.size() > 1) {
             throw new IllegalStateException(String.format("Found [%s] images while expecting only one. Image ids: [%s]",
-                    images.size(), images.stream().map(HtImageView::shortId).collect(Collectors.joining(", "))));
+                images.size(), images.stream().map(HtImageView::shortId).collect(Collectors.joining(", "))));
         } else {
             return images.get(0);
         }

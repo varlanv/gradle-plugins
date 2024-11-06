@@ -37,14 +37,14 @@ public class NpipeDockerIntegrationTest implements DockerIntegrationTest {
     void async_file_channel_raw_logs_follow() throws Exception {
         var containerId = "550993efd418";
         var request = "GET /containers/" + containerId + "/logs?stdout=true&stderr=true&follow=true " +
-                "HTTP/1.1\r\n" +
-                "Host: localhost\r\n" +
-                "Connection: keep-alive\r\n" +
-                "\r\n";
+            "HTTP/1.1\r\n" +
+            "Host: localhost\r\n" +
+            "Connection: keep-alive\r\n" +
+            "\r\n";
         try (var channel = AsynchronousFileChannel.open(
-                Paths.get(dockerNpipe),
-                StandardOpenOption.READ,
-                StandardOpenOption.WRITE)) {
+            Paths.get(dockerNpipe),
+            StandardOpenOption.READ,
+            StandardOpenOption.WRITE)) {
             channel.write(ByteBuffer.wrap(request.getBytes(StandardCharsets.UTF_8)), 0).get();
             var buffer = ByteBuffer.allocate(8192);
             channel.read(buffer, 0).get();
@@ -75,45 +75,45 @@ public class NpipeDockerIntegrationTest implements DockerIntegrationTest {
     void test_async_blocking_with_logs_follow() throws Exception {
         var containerId = "41bca39fe688f235f3ac9cc9ce446b8f620cffc3f576b23be04b31e91cdd9d79";
         var request = "GET /containers/" + containerId + "/logs?stdout=true&stderr=true&follow=true " +
-                "HTTP/1.1\r\n" +
-                "Host: localhost\r\n" +
-                "Connection: keep-alive\r\n" +
-                "\r\n";
+            "HTTP/1.1\r\n" +
+            "Host: localhost\r\n" +
+            "Connection: keep-alive\r\n" +
+            "\r\n";
         var executor = Executors.newScheduledThreadPool(1);
         try (var channel = AsynchronousFileChannel.open(
-                Paths.get(dockerNpipe),
-                EnumSet.of(
-                        StandardOpenOption.READ,
-                        StandardOpenOption.WRITE
-                ),
-                executor)) {
+            Paths.get(dockerNpipe),
+            EnumSet.of(
+                StandardOpenOption.READ,
+                StandardOpenOption.WRITE
+            ),
+            executor)) {
             channel.write(ByteBuffer.wrap(request.getBytes(StandardCharsets.UTF_8)), 0).get();
             var buffer = ByteBuffer.allocate(8192);
             var counter = new AtomicInteger();
             executor.scheduleWithFixedDelay(
-                    () -> System.out.println("Counting -> " + counter.incrementAndGet()),
-                    0,
-                    1,
-                    TimeUnit.SECONDS
+                () -> System.out.println("Counting -> " + counter.incrementAndGet()),
+                0,
+                1,
+                TimeUnit.SECONDS
             );
             readAsync(
-                    channel,
-                    buffer
+                channel,
+                buffer
             ).thenCompose(
-                    bytes -> {
-                        System.out.println(new String(bytes, StandardCharsets.UTF_8));
-                        return readAsync(channel, buffer);
-                    }
+                bytes -> {
+                    System.out.println(new String(bytes, StandardCharsets.UTF_8));
+                    return readAsync(channel, buffer);
+                }
             ).thenCompose(
-                    bytes -> {
-                        System.out.println(new String(bytes, StandardCharsets.UTF_8));
-                        return readAsync(channel, buffer);
-                    }
+                bytes -> {
+                    System.out.println(new String(bytes, StandardCharsets.UTF_8));
+                    return readAsync(channel, buffer);
+                }
             ).thenCompose(
-                    bytes -> {
-                        System.out.println(new String(bytes, StandardCharsets.UTF_8));
-                        return readAsync(channel, buffer);
-                    }
+                bytes -> {
+                    System.out.println(new String(bytes, StandardCharsets.UTF_8));
+                    return readAsync(channel, buffer);
+                }
             );
             Thread.sleep(10_000);
         } finally {
@@ -122,13 +122,13 @@ public class NpipeDockerIntegrationTest implements DockerIntegrationTest {
     }
 
     @Test
-    @Disabled
+//    @Disabled
     void async_file_channel_raw() throws Exception {
         var request = "GET /containers/json?all=true HTTP/1.1\r\nHost: localhost\r\n\r\n";
         try (var channel = AsynchronousFileChannel.open(
-                Paths.get(dockerNpipe),
-                StandardOpenOption.READ,
-                StandardOpenOption.WRITE)) {
+            Paths.get(dockerNpipe),
+            StandardOpenOption.READ,
+            StandardOpenOption.WRITE)) {
             ThrowingRunnable r = () -> {
                 var time = System.currentTimeMillis();
                 channel.write(ByteBuffer.wrap(request.getBytes(StandardCharsets.UTF_8)), 0).get();
@@ -166,9 +166,9 @@ public class NpipeDockerIntegrationTest implements DockerIntegrationTest {
         var containerId = "c22b114e40ebd3de59593a11181bdddd490c886a60b20efe9be174d9b8f3d49b";
         var request = "GET " + "/containers/" + containerId + "/logs?stdout=true&stderr=true&follow=true HTTP/1.1\r\nHost: localhost\r\nConnection: keep-alive\r\n\r\n";
         try (var channel = AsynchronousFileChannel.open(
-                Paths.get(dockerNpipe),
-                StandardOpenOption.READ,
-                StandardOpenOption.WRITE)) {
+            Paths.get(dockerNpipe),
+            StandardOpenOption.READ,
+            StandardOpenOption.WRITE)) {
             ThrowingSupplier<String> readOnce = () -> {
                 var buffer = ByteBuffer.allocate(16512);
                 channel.read(buffer, 0).get();
@@ -198,25 +198,25 @@ public class NpipeDockerIntegrationTest implements DockerIntegrationTest {
     @Disabled
     void async_file_channel_raw1() throws Exception {
         var createRequest = "POST /containers/create HTTP/1.1\r\n" +
-                "Host: localhost\r\n" +
-                "Connection: keep-alive\r\n" +
-                "Content-Type: application/json\r\n" +
-                "Content-Length: 141\r\n" +
-                "\r\n" +
-                "{\"Image\":\"public.ecr.aws/docker/library/alpine:3.20.3\",\"Cmd\":[\"sh\",\"-c\",\"echo 'Hello World 1' && echo 'Hello World 2' && tail -f /dev/null\"]}";
+            "Host: localhost\r\n" +
+            "Connection: keep-alive\r\n" +
+            "Content-Type: application/json\r\n" +
+            "Content-Length: 141\r\n" +
+            "\r\n" +
+            "{\"Image\":\"public.ecr.aws/docker/library/alpine:3.20.3\",\"Cmd\":[\"sh\",\"-c\",\"echo 'Hello World 1' && echo 'Hello World 2' && tail -f /dev/null\"]}";
         var startRequest = "POST /containers/%s/start HTTP/1.1\r\n" +
-                "Host: localhost\r\n" +
-                "Connection: keep-alive\r\n" +
-                "Content-Type: application/json\r\n" +
-                "\r\n";
+            "Host: localhost\r\n" +
+            "Connection: keep-alive\r\n" +
+            "Content-Type: application/json\r\n" +
+            "\r\n";
         var logsRequest = "GET /containers/%s/logs?stdout=true&stderr=true HTTP/1.1\r\n" +
-                "Host: localhost\r\n" +
-                "Connection: keep-alive\r\n" +
-                "\r\n";
+            "Host: localhost\r\n" +
+            "Connection: keep-alive\r\n" +
+            "\r\n";
         try (var channel = AsynchronousFileChannel.open(
-                Paths.get(dockerNpipe),
-                StandardOpenOption.READ,
-                StandardOpenOption.WRITE)) {
+            Paths.get(dockerNpipe),
+            StandardOpenOption.READ,
+            StandardOpenOption.WRITE)) {
             ThrowingRunnable r = () -> {
                 var time = System.currentTimeMillis();
                 channel.write(ByteBuffer.wrap(createRequest.getBytes(StandardCharsets.UTF_8)), 0).get();
@@ -259,9 +259,9 @@ public class NpipeDockerIntegrationTest implements DockerIntegrationTest {
     void file_channel_raw() throws Exception {
         var request = "GET /containers/json?all=true HTTP/1.1\r\nHost: localhost\r\n\r\n";
         try (var channel = FileChannel.open(
-                Paths.get(dockerNpipe),
-                StandardOpenOption.READ,
-                StandardOpenOption.WRITE)) {
+            Paths.get(dockerNpipe),
+            StandardOpenOption.READ,
+            StandardOpenOption.WRITE)) {
             channel.write(ByteBuffer.wrap(request.getBytes(StandardCharsets.UTF_8)), 0);
             var buffer = ByteBuffer.allocate(4096);
             channel.read(buffer, 0);
@@ -280,23 +280,23 @@ public class NpipeDockerIntegrationTest implements DockerIntegrationTest {
             ThrowingRunnable r = () -> {
                 var before = System.currentTimeMillis();
                 subject.sendAsync(
-                                new Request(
-                                        httpRequests.get(
-                                                HtUrl.of("/containers/json?all=true")
-                                        )
+                        new Request(
+                            httpRequests.get(
+                                HtUrl.of("/containers/json?all=true")
+                            )
+                        )
+                    )
+                    .thenApply(
+                        rawResponse ->
+                            new JSONArray(
+                                new JSONTokener(
+                                    rawResponse.bodyReader()
                                 )
-                        )
-                        .thenApply(
-                                rawResponse ->
-                                        new JSONArray(
-                                                new JSONTokener(
-                                                        rawResponse.bodyReader()
-                                                )
-                                        ).toList()
-                        )
-                        .thenAccept(System.out::println)
-                        .whenComplete((it, e) -> System.out.println("Time: " + (System.currentTimeMillis() - before) + "ms"))
-                        .join();
+                            ).toList()
+                    )
+                    .thenAccept(System.out::println)
+                    .whenComplete((it, e) -> System.out.println("Time: " + (System.currentTimeMillis() - before) + "ms"))
+                    .join();
             };
             r.run();
             r.run();

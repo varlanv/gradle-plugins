@@ -24,7 +24,7 @@ class HtCliCreateVolumeSpecTest implements UnitTest {
     @Test
     void toCommand__with_driver__returns_command_with_driver() {
         var subject = new HtCliCreateVolumeSpec(volumeId)
-                .withDriver("driver");
+            .withDriver("driver");
 
         var actual = subject.toCommand();
 
@@ -34,7 +34,7 @@ class HtCliCreateVolumeSpecTest implements UnitTest {
     @Test
     void toCommand__with_driver_opts__returns_command_with_driver_opts() {
         var subject = new HtCliCreateVolumeSpec(volumeId)
-                .withDriverOpts("key", "value");
+            .withDriverOpts("key", "value");
 
         var actual = subject.toCommand();
 
@@ -44,7 +44,7 @@ class HtCliCreateVolumeSpecTest implements UnitTest {
     @Test
     void toCommand__with_label_key__returns_command_with_label() {
         var subject = new HtCliCreateVolumeSpec(volumeId)
-                .withLabel("label");
+            .withLabel("label");
 
         var actual = subject.toCommand();
 
@@ -54,7 +54,7 @@ class HtCliCreateVolumeSpecTest implements UnitTest {
     @Test
     void toCommand__with_label_pair__returns_command_with_label() {
         var subject = new HtCliCreateVolumeSpec(volumeId)
-                .withLabel("labelKey", "labelValue");
+            .withLabel("labelKey", "labelValue");
 
         var actual = subject.toCommand();
 
@@ -71,10 +71,10 @@ class HtCliCreateVolumeSpecTest implements UnitTest {
         var actual = subject.toCommand();
 
         assertThat(actual).containsExactly(
-                "docker", "volume", "create",
-                "--label", HtStrings.doubleQuote("labelKey1=labelValue1"),
-                "--label", HtStrings.doubleQuote("labelKey2=labelValue2"),
-                volumeId
+            "docker", "volume", "create",
+            "--label", HtStrings.doubleQuote("labelKey1=labelValue1"),
+            "--label", HtStrings.doubleQuote("labelKey2=labelValue2"),
+            volumeId
         );
     }
 
@@ -84,23 +84,23 @@ class HtCliCreateVolumeSpecTest implements UnitTest {
         labels.put("labelKey1", "labelValue1");
         labels.put("labelKey2", "labelValue2");
         var subject = new HtCliCreateVolumeSpec(volumeId)
-                .withDriver("driver")
-                .withDriverOpts("key", "value")
-                .withLabel("label")
-                .withLabel("labelKey", "labelValue")
-                .withLabels(labels);
+            .withDriver("driver")
+            .withDriverOpts("key", "value")
+            .withLabel("label")
+            .withLabel("labelKey", "labelValue")
+            .withLabels(labels);
 
         var actual = subject.toCommand();
 
         assertThat(actual).containsExactly(
-                "docker", "volume", "create",
-                "--driver", "driver",
-                "--opt", HtStrings.doubleQuote("key=value"),
-                "--label", "label",
-                "--label", HtStrings.doubleQuote("labelKey=labelValue"),
-                "--label", HtStrings.doubleQuote("labelKey1=labelValue1"),
-                "--label", HtStrings.doubleQuote("labelKey2=labelValue2"),
-                volumeId
+            "docker", "volume", "create",
+            "--driver", "driver",
+            "--opt", HtStrings.doubleQuote("key=value"),
+            "--label", "label",
+            "--label", HtStrings.doubleQuote("labelKey=labelValue"),
+            "--label", HtStrings.doubleQuote("labelKey1=labelValue1"),
+            "--label", HtStrings.doubleQuote("labelKey2=labelValue2"),
+            volumeId
         );
     }
 }

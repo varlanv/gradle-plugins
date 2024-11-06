@@ -34,8 +34,8 @@ class JsonContainerKey implements ContainerKey {
 
     private String buildJson() {
         return properties.entrySet().stream()
-                .map(entry -> String.format("\"%s\": \"%s\"", entry.getKey(), entry.getValue()))
-                .collect(Collectors.joining(", ", "{", "}"));
+            .map(entry -> String.format("\"%s\": \"%s\"", entry.getKey(), entry.getValue()))
+            .collect(Collectors.joining(", ", "{", "}"));
     }
 
     @Override

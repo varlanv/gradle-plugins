@@ -11,36 +11,36 @@ import java.util.Objects;
 public enum ShellType {
 
     SH(
-            new EnumMap<>(
-                    Map.of(Os.LINUX, "sh")
-            )
+        new EnumMap<>(
+            Map.of(Os.LINUX, "sh")
+        )
     ),
     POWERSHELL(
-            new EnumMap<>(
-                    Map.of(Os.WINDOWS, "powershell")
-            )
+        new EnumMap<>(
+            Map.of(Os.WINDOWS, "powershell")
+        )
     ),
     CMD(
-            new EnumMap<>(
-                    Map.of(Os.WINDOWS, "cmd")
-            )
+        new EnumMap<>(
+            Map.of(Os.WINDOWS, "cmd")
+        )
     ),
     BASH(
-            new EnumMap<>(
-                    Map.of(
-                            Os.WINDOWS, "C:\\Program Files\\Git\\bin\\bash.exe",
-                            Os.LINUX, "bash"
-                    )
+        new EnumMap<>(
+            Map.of(
+                Os.WINDOWS, "C:\\Program Files\\Git\\bin\\bash.exe",
+                Os.LINUX, "bash"
             )
+        )
     ),
     DEFAULT(
-            new EnumMap<>(
-                    Map.of(
-                            Os.WINDOWS, "cmd",
-                            Os.LINUX, "sh",
-                            Os.MAC, "sh"
-                    )
+        new EnumMap<>(
+            Map.of(
+                Os.WINDOWS, "cmd",
+                Os.LINUX, "sh",
+                Os.MAC, "sh"
             )
+        )
     );
 
     private Map<Os, String> pathForOsMap;

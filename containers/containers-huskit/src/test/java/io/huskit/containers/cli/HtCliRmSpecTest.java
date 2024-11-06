@@ -13,8 +13,8 @@ class HtCliRmSpecTest implements UnitTest {
     @Test
     void toCommand__no_args__should_throw_exception() {
         assertThatThrownBy(HtCliRmSpec::new)
-                .isInstanceOf(IllegalArgumentException.class)
-                .hasMessageContaining("Container IDs must not be empty");
+            .isInstanceOf(IllegalArgumentException.class)
+            .hasMessageContaining("Container IDs must not be empty");
     }
 
     @Test
@@ -29,8 +29,8 @@ class HtCliRmSpecTest implements UnitTest {
     @Test
     void toCommand__empty_ids_list__should_throw_exception() {
         assertThatThrownBy(() -> new HtCliRmSpec(List.of()))
-                .isInstanceOf(IllegalArgumentException.class)
-                .hasMessageContaining("Container IDs must not be empty");
+            .isInstanceOf(IllegalArgumentException.class)
+            .hasMessageContaining("Container IDs must not be empty");
     }
 
     @Test

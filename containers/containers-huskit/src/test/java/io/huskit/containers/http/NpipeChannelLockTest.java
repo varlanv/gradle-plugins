@@ -1,6 +1,6 @@
 package io.huskit.containers.http;
 
-import io.huskit.common.FakeTestLog;
+import io.huskit.common.Log;
 import io.huskit.gradle.commontest.UnitTest;
 import org.junit.jupiter.api.Test;
 
@@ -13,17 +13,17 @@ class NpipeChannelLockTest implements UnitTest {
 
     @Test
     void when_release_lock_without_take_lock_then_throw_exception() {
-        var log = new FakeTestLog();
+        var log = Log.fake();
         var subject = new NpipeChannelLock(log);
 
         assertThatThrownBy(subject::releaseLock)
-                .hasMessageContaining("not acquired");
+            .hasMessageContaining("not acquired");
         assertThat(log.debugMessages()).isEmpty();
     }
 
     @Test
     void when_acquire_lock__then_take_lock() {
-        var log = new FakeTestLog();
+        var log = Log.fake();
         var subject = new NpipeChannelLock(log);
 
         subject.acquire(() -> "request");
@@ -34,7 +34,7 @@ class NpipeChannelLockTest implements UnitTest {
 
     @Test
     void when_locked_and_new_thread_tries_to_acquire__then_wait_for_lock() throws InterruptedException {
-        var log = new FakeTestLog();
+        var log = Log.fake();
         var subject = new NpipeChannelLock(log);
         subject.acquire(() -> "request");
 
@@ -56,7 +56,7 @@ class NpipeChannelLockTest implements UnitTest {
 
     @Test
     void when_locked_and_new_thread_tries_to_acquire_and_release__then_get_lock_by_new_thread() throws InterruptedException {
-        var log = new FakeTestLog();
+        var log = Log.fake();
         var subject = new NpipeChannelLock(log);
         subject.acquire(() -> "request");
 

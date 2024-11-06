@@ -15,9 +15,9 @@ final class HttpRm implements HtRm {
         var ran = false;
         for (var containerId : containerIds) {
             dockerSpec.socket().send(
-                    new Request(
-                            spec.toRequest(containerId)
-                    )
+                new Request(
+                    spec.toRequest(containerId)
+                )
             );
             ran = true;
         }

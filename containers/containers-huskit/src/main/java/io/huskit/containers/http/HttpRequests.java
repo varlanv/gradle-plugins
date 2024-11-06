@@ -11,18 +11,18 @@ final class HttpRequests {
 
     public HttpRequests() {
         this.afterUrlPartGet = (" "
-                + "HTTP/1.1\r\n"
-                + "Host: localhost\r\n"
-                + "Connection: keep-alive\r\n"
-                + "Content-Type: application/json\r\n"
-                + "\r\n"
+            + "HTTP/1.1\r\n"
+            + "Host: localhost\r\n"
+            + "Connection: keep-alive\r\n"
+            + "Content-Type: application/json\r\n"
+            + "\r\n"
         ).getBytes(StandardCharsets.UTF_8);
         this.afterUrlPartPost = (" "
-                + "HTTP/1.1\r\n"
-                + "Host: localhost\r\n"
-                + "Connection: keep-alive\r\n"
-                + "Content-Type: application/json\r\n"
-                + "Content-Length: "
+            + "HTTP/1.1\r\n"
+            + "Host: localhost\r\n"
+            + "Connection: keep-alive\r\n"
+            + "Content-Type: application/json\r\n"
+            + "Content-Length: "
 //                + "Content-Length: %d\r\n"
 //                + "\r\n"
         ).getBytes(StandardCharsets.UTF_8);
@@ -44,9 +44,9 @@ final class HttpRequests {
     private Http.Request generate(HttpMethod method, HtUrl url) {
         var urlBytes = url.url().getBytes(StandardCharsets.UTF_8);
         return new DfHttpRequest(
-                method.bytes(),
-                urlBytes,
-                afterUrlPartGet
+            method.bytes(),
+            urlBytes,
+            afterUrlPartGet
         );
     }
 
@@ -54,10 +54,10 @@ final class HttpRequests {
         var urlBytes = url.url().getBytes(StandardCharsets.UTF_8);
         String sb = length + "\r\n\r\n" + body;
         return new DfHttpRequest(
-                method.bytes(),
-                urlBytes,
-                afterUrlPartPost,
-                sb.getBytes(StandardCharsets.UTF_8)
+            method.bytes(),
+            urlBytes,
+            afterUrlPartPost,
+            sb.getBytes(StandardCharsets.UTF_8)
         );
     }
 }

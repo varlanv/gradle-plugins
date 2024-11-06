@@ -13,14 +13,14 @@ class HtCliInspectVolumesSpecTest implements UnitTest {
     @Test
     void toCommand__null_volume_id__throws_exception() {
         assertThatThrownBy(() -> new HtCliInspectVolumesSpec((CharSequence) null))
-                .isInstanceOf(NullPointerException.class);
+            .isInstanceOf(NullPointerException.class);
     }
 
     @Test
     void toCommand__blank_volume_id__throws_exception() {
         assertThatThrownBy(() -> new HtCliInspectVolumesSpec(""))
-                .isInstanceOf(IllegalArgumentException.class)
-                .hasMessage("Volume ID cannot be blank");
+            .isInstanceOf(IllegalArgumentException.class)
+            .hasMessage("Volume ID cannot be blank");
     }
 
     @Test

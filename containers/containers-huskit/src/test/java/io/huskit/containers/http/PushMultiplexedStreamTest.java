@@ -11,11 +11,11 @@ import java.util.Arrays;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-class FutureMultiplexedStreamTest implements UnitTest {
+class PushMultiplexedStreamTest implements UnitTest {
 
     @Test
     void asd() throws Exception {
-        var subject = new FutureMultiplexedStream(StreamType.ALL);
+        var subject = new PushMultiplexedStream(StreamType.ALL);
         var bytes = bodyBytesFromResource("/docker_http_responses/logs/all_stdout.txt");
 
         var maybeActual = subject.apply(ByteBuffer.wrap(bytes));

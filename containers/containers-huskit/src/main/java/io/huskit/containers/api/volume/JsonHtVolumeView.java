@@ -30,8 +30,8 @@ public class JsonHtVolumeView implements HtVolumeView {
     @SuppressWarnings("unchecked")
     public Map<String, String> labels() {
         return Optional.ofNullable(jsonMap.get("Labels"))
-                .map(labels -> Collections.unmodifiableMap((Map<String, String>) labels))
-                .orElseThrow(() -> new IllegalStateException("Labels info is not present"));
+            .map(labels -> Collections.unmodifiableMap((Map<String, String>) labels))
+            .orElseThrow(() -> new IllegalStateException("Labels info is not present"));
     }
 
     @Override
@@ -43,8 +43,8 @@ public class JsonHtVolumeView implements HtVolumeView {
     @SuppressWarnings("unchecked")
     public Map<String, String> options() {
         return Optional.ofNullable(jsonMap.get("Options"))
-                .map(options -> Collections.unmodifiableMap((Map<String, String>) options))
-                .orElseThrow(() -> new IllegalStateException("Options info is not present"));
+            .map(options -> Collections.unmodifiableMap((Map<String, String>) options))
+            .orElseThrow(() -> new IllegalStateException("Options info is not present"));
     }
 
     @Override

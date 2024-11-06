@@ -17,11 +17,11 @@ class HtCliListVolumes implements HtListVolumes {
     @Override
     public Stream<HtVolumeView> stream() {
         var ids = cli.sendCommand(
-                new CliCommand(
-                        CommandType.VOLUMES_LIST,
-                        listVolumesSpec.toCommand()
-                ),
-                CommandResult::lines
+            new CliCommand(
+                CommandType.VOLUMES_LIST,
+                listVolumesSpec.toCommand()
+            ),
+            CommandResult::lines
         );
         if (ids.isEmpty()) {
             return Stream.empty();

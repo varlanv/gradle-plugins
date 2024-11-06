@@ -1,6 +1,5 @@
-package io.huskit.common.internal;
+package io.huskit.common;
 
-import io.huskit.common.Mutable;
 import io.huskit.common.function.ThrowingSupplier;
 import io.huskit.gradle.commontest.UnitTest;
 import lombok.SneakyThrows;
@@ -11,6 +10,7 @@ import org.junit.jupiter.params.provider.MethodSource;
 
 import java.io.IOException;
 import java.util.NoSuchElementException;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -192,8 +192,8 @@ class DfVolatileTest implements UnitTest {
             subject.syncSetOrGet(valueSupplier);
             threadsFinishedLatch.countDown();
         };
-        new Thread(runnable).start();
-        new Thread(runnable).start();
+        CompletableFuture.runAsync(runnable);
+        CompletableFuture.runAsync(runnable);
         threadsReadyLatch.await();
         caseReadyLatch.countDown();
         threadsFinishedLatch.await();

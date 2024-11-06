@@ -15,8 +15,8 @@ class HtCliRm implements HtRm {
     @Override
     public void exec() {
         cli.sendCommand(
-                new CliCommand(CommandType.CONTAINERS_REMOVE, spec.toCommand()),
-                Function.identity()
+            new CliCommand(CommandType.CONTAINERS_REMOVE, spec.toCommand()),
+            Function.identity()
         );
     }
 }

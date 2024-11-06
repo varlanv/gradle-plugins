@@ -35,7 +35,7 @@ final class HttpLogs implements HtLogs {
     @Override
     public CompletableFuture<Stream<String>> asyncStdOut() {
         return asyncStreamOpen()
-                .thenApply(Logs::stdOut);
+            .thenApply(Logs::stdOut);
     }
 
     @Override
@@ -46,31 +46,31 @@ final class HttpLogs implements HtLogs {
     @Override
     public CompletableFuture<Stream<String>> asyncStdErr() {
         return asyncStreamOpen()
-                .thenApply(Logs::stdErr);
+            .thenApply(Logs::stdErr);
     }
 
     @Override
     public HtFollowedLogs follow() {
         return new HttpFollowedLogs(
-                dockerSpec,
-                new HttpLogsSpec(containerId).withFollow(true)
+            dockerSpec,
+            new HttpLogsSpec(containerId).withFollow(true)
         );
     }
 
     private CompletableFuture<Logs> asyncStreamOpen() {
         return dockerSpec.socket().sendAsync(
-                        new Request(
-                                dockerSpec.requests().get(
-                                        new HttpLogsSpec(containerId)
-                                )
-                        ).withExpectedStatus(200)
-                )
-                .thenApply(response ->
-                        new Logs.DfLogs(
-                                response.stdOut(),
-                                response.stdErr()
+                new Request(
+                    dockerSpec.requests().get(
+                        new HttpLogsSpec(containerId)
+                    )
+                ).withExpectedStatus(200)
+            )
+            .thenApply(response ->
+                new Logs.DfLogs(
+                    response.stdOut(),
+                    response.stdErr()
 
-                        )
-                );
+                )
+            );
     }
 }

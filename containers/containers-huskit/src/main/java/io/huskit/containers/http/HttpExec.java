@@ -19,9 +19,9 @@ final class HttpExec implements HtExec {
     @Override
     public CompletableFuture<Void> execAsync() {
         return dockerSpec.socket().sendAsync(
-                new Request(
-                        dockerSpec.requests().post(httpExecSpec)
-                )
+            new Request(
+                dockerSpec.requests().post(httpExecSpec)
+            )
         ).thenApply(v -> null);
     }
 }

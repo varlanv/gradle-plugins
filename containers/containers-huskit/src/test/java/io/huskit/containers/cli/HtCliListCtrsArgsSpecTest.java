@@ -81,7 +81,7 @@ class HtCliListCtrsArgsSpecTest implements UnitTest {
         var value2 = "some-value-2";
 
         var actual = subject.withLabelFilter(label1, value1).withLabelFilter(label2, value2)
-                .build();
+            .build();
 
         assertThat(actual).isNotNull();
         assertThat(actual.isEmpty()).isFalse();
@@ -120,8 +120,8 @@ class HtCliListCtrsArgsSpecTest implements UnitTest {
         var value2 = "some-value-2";
 
         var actual = subject.withAll().withNameFilter(name).withIdFilter(id)
-                .withLabelFilter(label1, value1).withLabelFilter(label2, value2)
-                .build();
+            .withLabelFilter(label1, value1).withLabelFilter(label2, value2)
+            .build();
 
         assertThat(actual).isNotNull();
         assertThat(actual.isEmpty()).isFalse();

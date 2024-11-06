@@ -18,8 +18,8 @@ class HtCliRemoveVolumesSpecTest implements UnitTest {
         var subject = new HtCliRemoveVolumesSpec(force, List.of());
 
         assertThatThrownBy(subject::toCommand)
-                .isInstanceOf(IllegalArgumentException.class)
-                .hasMessageContaining("Received empty volume ID list");
+            .isInstanceOf(IllegalArgumentException.class)
+            .hasMessageContaining("Received empty volume ID list");
     }
 
     @ParameterizedTest
@@ -28,8 +28,8 @@ class HtCliRemoveVolumesSpecTest implements UnitTest {
         var subject = new HtCliRemoveVolumesSpec(force, List.of("some_id", "  "));
 
         assertThatThrownBy(subject::toCommand)
-                .isInstanceOf(IllegalArgumentException.class)
-                .hasMessageContaining("Volume ID cannot be blank");
+            .isInstanceOf(IllegalArgumentException.class)
+            .hasMessageContaining("Volume ID cannot be blank");
     }
 
     @Test
@@ -39,7 +39,7 @@ class HtCliRemoveVolumesSpecTest implements UnitTest {
         var result = subject.toCommand();
 
         assertThat(result)
-                .containsExactly("docker", "volume", "rm", "--force", "some_id");
+            .containsExactly("docker", "volume", "rm", "--force", "some_id");
     }
 
     @Test
@@ -49,7 +49,7 @@ class HtCliRemoveVolumesSpecTest implements UnitTest {
         var result = subject.toCommand();
 
         assertThat(result)
-                .containsExactly("docker", "volume", "rm", "some_id");
+            .containsExactly("docker", "volume", "rm", "some_id");
     }
 
     @Test
@@ -59,7 +59,7 @@ class HtCliRemoveVolumesSpecTest implements UnitTest {
         var result = subject.toCommand();
 
         assertThat(result)
-                .containsExactly("docker", "volume", "rm", "id1", "id2", "id3");
+            .containsExactly("docker", "volume", "rm", "id1", "id2", "id3");
     }
 
     @Test
@@ -69,6 +69,6 @@ class HtCliRemoveVolumesSpecTest implements UnitTest {
         var result = subject.toCommand();
 
         assertThat(result)
-                .containsExactly("docker", "volume", "rm", "--force", "id1", "id2", "id3");
+            .containsExactly("docker", "volume", "rm", "--force", "id1", "id2", "id3");
     }
 }

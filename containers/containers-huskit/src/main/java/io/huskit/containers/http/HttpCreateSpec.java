@@ -36,10 +36,10 @@ final class HttpCreateSpec implements HtCreateSpec, HtUrl {
     public HttpCreateSpec withEnv(Map<String, ?> env) {
         if (!env.isEmpty()) {
             body.put(
-                    "Env",
-                    env.entrySet().stream()
-                            .map(entry -> entry.getKey() + "=" + entry.getValue())
-                            .collect(Collectors.toList())
+                "Env",
+                env.entrySet().stream()
+                    .map(entry -> entry.getKey() + "=" + entry.getValue())
+                    .collect(Collectors.toList())
             );
         }
         return this;
@@ -69,7 +69,7 @@ final class HttpCreateSpec implements HtCreateSpec, HtUrl {
     public HttpCreateSpec withPortBindings(Map<? extends Number, ? extends Number> portBindings) {
         var pb = new HashMap<String, Object>();
         portBindings.forEach((hostPort, containerPort) ->
-                pb.put(containerPort.toString() + "/tcp", List.of(Map.of("HostPort", hostPort.toString()))));
+            pb.put(containerPort.toString() + "/tcp", List.of(Map.of("HostPort", hostPort.toString()))));
         var hostConfig = new HashMap<String, Object>();
         hostConfig.put("PortBindings", pb);
         body.put("HostConfig", hostConfig);

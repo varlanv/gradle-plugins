@@ -15,23 +15,23 @@ public class HtCliDckrSpec implements HtCliDockerSpec {
 
     public HtCliDckrSpec() {
         this(
-                Volatile.of(CliRecorder.noop()),
-                Volatile.of(false),
-                Volatile.of(ShellType.DEFAULT),
-                Volatile.of(false),
-                Volatile.of(false),
-                Volatile.of("")
+            Volatile.of(CliRecorder.noop()),
+            Volatile.of(false),
+            Volatile.of(ShellType.DEFAULT),
+            Volatile.of(false),
+            Volatile.of(false),
+            Volatile.of("")
         );
     }
 
     public HtCliDckrSpec(HtCliDckrSpec another) {
         this(
-                Volatile.of(another.recorder()),
-                Volatile.of(another.isCleanOnClose()),
-                Volatile.of(another.shell()),
-                Volatile.of(another.forwardStderr()),
-                Volatile.of(another.forwardStdout()),
-                Volatile.of(another.imagePrefix())
+            Volatile.of(another.recorder()),
+            Volatile.of(another.isCleanOnClose()),
+            Volatile.of(another.shell()),
+            Volatile.of(another.forwardStderr()),
+            Volatile.of(another.forwardStdout()),
+            Volatile.of(another.imagePrefix())
         );
     }
 

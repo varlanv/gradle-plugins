@@ -21,14 +21,14 @@ public final class PipeStream {
                 var reader = simplePipe.source();
                 var br = new BufferedReader(reader);
                 return Stream.generate(() -> {
-                            try {
-                                return br.readLine();
-                            } catch (Exception e) {
-                                throw Sneaky.rethrow(e);
-                            }
-                        })
-                        .takeWhile(Objects::nonNull)
-                        .onClose(Sneaky.quiet(reader::close));
+                        try {
+                            return br.readLine();
+                        } catch (Exception e) {
+                            throw Sneaky.rethrow(e);
+                        }
+                    })
+                    .takeWhile(Objects::nonNull)
+                    .onClose(Sneaky.quiet(reader::close));
             }
         };
     }

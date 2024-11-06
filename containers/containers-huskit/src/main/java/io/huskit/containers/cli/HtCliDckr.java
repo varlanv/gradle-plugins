@@ -16,8 +16,8 @@ public class HtCliDckr implements HtCliDocker {
         configureAction.accept(spec);
         var newSpec = new HtCliDckrSpec(spec);
         return new HtCliDckr(
-                cli.withDockerSpec(newSpec),
-                newSpec
+            cli.withDockerSpec(newSpec),
+            newSpec
         );
     }
 
@@ -29,8 +29,8 @@ public class HtCliDckr implements HtCliDocker {
     @Override
     public HtCliDckr withCleanOnClose(Boolean cleanOnClose) {
         return new HtCliDckr(
-                cli,
-                spec.withCleanOnClose(cleanOnClose)
+            cli,
+            spec.withCleanOnClose(cleanOnClose)
         );
     }
 

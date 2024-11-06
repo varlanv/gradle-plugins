@@ -11,10 +11,10 @@ import java.util.ArrayList;
 final class HttpRmSpec implements HtRmSpec {
 
     private static final String requestFormat = "%s %s HTTP/1.1%n"
-            + "Host: %s%n"
-            + "Connection: keep-alive%n"
-            + "Content-Type: application/json%n"
-            + "%n";
+        + "Host: %s%n"
+        + "Connection: keep-alive%n"
+        + "Content-Type: application/json%n"
+        + "%n";
     Mutable<Boolean> force;
     Mutable<Boolean> volumes;
 
@@ -38,7 +38,7 @@ final class HttpRmSpec implements HtRmSpec {
     public Http.Request toRequest(CharSequence containerId) {
         var url = getUrl(containerId.toString());
         return new DfHttpRequest(
-                String.format(requestFormat, "DELETE", url, "localhost").getBytes(StandardCharsets.UTF_8)
+            String.format(requestFormat, "DELETE", url, "localhost").getBytes(StandardCharsets.UTF_8)
         );
     }
 

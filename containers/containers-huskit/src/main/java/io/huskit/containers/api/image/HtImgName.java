@@ -27,7 +27,7 @@ public interface HtImgName {
         var split = ref.split(":");
         if (split.length != 2) {
             throw new IllegalArgumentException(
-                    String.format("Could not parse image reference. Expecting reference in format 'repository:tag', got '%s'", ref));
+                String.format("Could not parse image reference. Expecting reference in format 'repository:tag', got '%s'", ref));
         }
         return new HtDefImgName(ref, split[0], split[1]);
     }

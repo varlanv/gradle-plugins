@@ -30,18 +30,18 @@ public class LogFollow {
         try {
             if (command.timeout().isZero()) {
                 return resultFunction.apply(
-                        new CommandResult(
-                                task.get()
-                        )
+                    new CommandResult(
+                        task.get()
+                    )
                 );
             } else {
                 return resultFunction.apply(
-                        new CommandResult(
-                                task.get(
-                                        command.timeout().toMillis(),
-                                        TimeUnit.MILLISECONDS
-                                )
+                    new CommandResult(
+                        task.get(
+                            command.timeout().toMillis(),
+                            TimeUnit.MILLISECONDS
                         )
+                    )
                 );
             }
         } catch (Exception e) {
@@ -64,18 +64,18 @@ public class LogFollow {
                 var process = pb.start();
                 if (dockerSpec.forwardStderr()) {
                     errReadTask.set(
-                            CompletableFuture.runAsync(
-                                    Sneaky.quiet(
-                                            () -> {
-                                                try (var reader = new BufferedReader(new InputStreamReader(process.getErrorStream()))) {
-                                                    String line;
-                                                    while ((line = reader.readLine()) != null) {
-                                                        System.err.println(line);
-                                                    }
-                                                }
-                                            }
-                                    )
+                        CompletableFuture.runAsync(
+                            Sneaky.quiet(
+                                () -> {
+                                    try (var reader = new BufferedReader(new InputStreamReader(process.getErrorStream()))) {
+                                        String line;
+                                        while ((line = reader.readLine()) != null) {
+                                            System.err.println(line);
+                                        }
+                                    }
+                                }
                             )
+                        )
                     );
                 }
                 processHolder.set(process);

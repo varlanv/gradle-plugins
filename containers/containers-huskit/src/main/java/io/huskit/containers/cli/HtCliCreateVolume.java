@@ -13,11 +13,11 @@ class HtCliCreateVolume implements HtCreateVolume {
     @Override
     public String exec() {
         return cli.sendCommand(
-                new CliCommand(
-                        CommandType.VOLUMES_CREATE,
-                        spec.toCommand()
-                ),
-                CommandResult::singleLine
+            new CliCommand(
+                CommandType.VOLUMES_CREATE,
+                spec.toCommand()
+            ),
+            CommandResult::singleLine
         );
     }
 }

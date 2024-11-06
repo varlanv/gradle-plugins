@@ -1,8 +1,8 @@
 package io.huskit.containers.integration;
 
+import io.huskit.common.HtConstants;
 import io.huskit.containers.integration.mongo.HtMongo;
 import io.huskit.containers.model.ContainerType;
-import io.huskit.common.HtConstants;
 import io.huskit.containers.model.StartedContainersRegistry;
 
 import java.util.LinkedHashMap;
@@ -20,14 +20,14 @@ public class DfIntegratedDocker implements HtIntegratedDocker {
             var defContainerSpec = (DefContainerSpec) containerSpec;
             if (defContainerSpec.containerType() == ContainerType.MONGO) {
                 result.put(
-                        defContainerSpec.hash(),
-                        startedContainersRegistry.getOrStart(
-                                defContainerSpec,
-                                spec -> HtMongo.fromImage(defContainerSpec.image().reference())
-                                        .withContainerSpec(defContainerSpec)
-                                        .withNewDatabaseForEachRequest(defContainerSpec.booleanProp(HtConstants.Mongo.NEW_DB_EACH_REQUEST))
-                                        .start()
-                        )
+                    defContainerSpec.hash(),
+                    startedContainersRegistry.getOrStart(
+                        defContainerSpec,
+                        spec -> HtMongo.fromImage(defContainerSpec.image().reference())
+                            .withContainerSpec(defContainerSpec)
+                            .withNewDatabaseForEachRequest(defContainerSpec.booleanProp(HtConstants.Mongo.NEW_DB_EACH_REQUEST))
+                            .start()
+                    )
                 );
             }
         }

@@ -31,15 +31,15 @@ class CmdRunSpec implements HtRunSpec {
     @Override
     public CmdRunSpec withLabels(Map<String, ?> labels) {
         this.labels.set(
-                Collections.unmodifiableMap(
-                        labels.entrySet().stream()
-                                .collect(
-                                        Collectors.toMap(
-                                                Map.Entry::getKey,
-                                                e -> e.getValue().toString()
-                                        )
-                                )
-                )
+            Collections.unmodifiableMap(
+                labels.entrySet().stream()
+                    .collect(
+                        Collectors.toMap(
+                            Map.Entry::getKey,
+                            e -> e.getValue().toString()
+                        )
+                    )
+            )
         );
         return this;
     }
@@ -47,15 +47,15 @@ class CmdRunSpec implements HtRunSpec {
     @Override
     public CmdRunSpec withEnv(Map<String, ?> labels) {
         this.env.set(
-                Collections.unmodifiableMap(
-                        labels.entrySet().stream()
-                                .collect(
-                                        Collectors.toMap(
-                                                Map.Entry::getKey,
-                                                e -> e.getValue().toString()
-                                        )
-                                )
-                )
+            Collections.unmodifiableMap(
+                labels.entrySet().stream()
+                    .collect(
+                        Collectors.toMap(
+                            Map.Entry::getKey,
+                            e -> e.getValue().toString()
+                        )
+                    )
+            )
         );
         return this;
     }
@@ -74,15 +74,15 @@ class CmdRunSpec implements HtRunSpec {
     @Override
     public HtRunSpec withPortBindings(Map<? extends Number, ? extends Number> portBindings) {
         this.ports.set(
-                Collections.unmodifiableMap(
-                        portBindings.entrySet().stream()
-                                .collect(
-                                        Collectors.toMap(
-                                                entry -> entry.getKey().intValue(),
-                                                entry -> entry.getValue().intValue()
-                                        )
-                                )
-                )
+            Collections.unmodifiableMap(
+                portBindings.entrySet().stream()
+                    .collect(
+                        Collectors.toMap(
+                            entry -> entry.getKey().intValue(),
+                            entry -> entry.getValue().intValue()
+                        )
+                    )
+            )
         );
         return this;
     }
@@ -99,10 +99,10 @@ class CmdRunSpec implements HtRunSpec {
             argsList.add(arg.toString());
         }
         this.command.set(
-                new RunCommand(
-                        command.toString(),
-                        argsList
-                )
+            new RunCommand(
+                command.toString(),
+                argsList
+            )
         );
         return this;
     }

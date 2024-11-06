@@ -12,12 +12,14 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.time.Duration;
 import java.time.Instant;
 import java.util.Objects;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.Function;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.setMaxStackTraceElementsDisplayed;
@@ -102,9 +104,17 @@ public interface BaseTest {
         try {
             action.accept(file);
         } finally {
-            if (Files.exists(file)) {
-                Files.delete(file);
-            }
+            Files.deleteIfExists(file);
+        }
+    }
+
+    @SneakyThrows
+    default <T> T useTempFile(ThrowingFunction<Path, T> action) {
+        var file = newTempFile();
+        try {
+            return action.accept(file);
+        } finally {
+            Files.deleteIfExists(file);
         }
     }
 
@@ -152,9 +162,29 @@ public interface BaseTest {
         void accept(T t) throws Exception;
     }
 
+    interface ThrowingFunction<T, R> {
+        R accept(T t) throws Exception;
+    }
+
+    @SneakyThrows
+    default void microBenchmark(ThrowingRunnable action) {
+        microBenchmark(() -> {
+            action.run();
+            return "";
+        });
+    }
+
     @SneakyThrows
     default void microBenchmark(ThrowingSupplier<?> action) {
         microBenchmark(100, "", action);
+    }
+
+    @SneakyThrows
+    default void microBenchmark(String message, ThrowingRunnable action) {
+        microBenchmark(message, () -> {
+            action.run();
+            return "";
+        });
     }
 
     @SneakyThrows
@@ -168,28 +198,84 @@ public interface BaseTest {
     }
 
     @SneakyThrows
-    default void microBenchmark(Integer iterations, String message, ThrowingSupplier<?> action) {
-        assertThat(action.get()).matches(it -> true);
-        System.gc();
+    default void microBenchmark(Integer iterations, ThrowingRunnable action) {
+        microBenchmark(iterations, () -> {
+            action.run();
+            return "";
+        });
+    }
 
-        var nanosBefore = 0L;
-        var average = 0L;
-        for (var i = 0; i < iterations; i++) {
-            nanosBefore = System.nanoTime();
-            assertThat(action.get()).matches(it -> true);
-            average += System.nanoTime() - nanosBefore;
-            System.gc();
-        }
-        average /= iterations;
-        var msg = message.isEmpty() ? message : message + " ";
-        var avgMicros = average / 1_000;
-        if (avgMicros > 0 && avgMicros < 10000) {
-            System.out.printf("%nTime micros %s-> %d%n%n", msg, (average / 1_000));
-        } else if (avgMicros == 0) {
-            System.out.printf("%nTime nanos %s-> %d%n%n", msg, average);
-        } else {
-            System.out.printf("%nTime millis %s-> %d%n%n", msg, (average / 1_000_000));
+    @SneakyThrows
+    default void microBenchmark(Integer iterations, String message, ThrowingRunnable action) {
+        microBenchmark(iterations, message, () -> {
+            action.run();
+            return "";
+        });
+    }
+
+    @SneakyThrows
+    default void microBenchmark(Integer iterations, String message, ThrowingSupplier<?> action) {
+        var warmupCycles = 50;
+        var result = new Object[1];
+        for (int i = 0; i < warmupCycles; i++) {
+            var r = action.get();
+            if (r != null) {
+                result[0] = r;
+            }
         }
         System.gc();
+        var totalTime = 0L;
+        var totalGcTime = 0L;
+        var minTime = 0L;
+        var maxTime = 0L;
+        var minGcTime = 0L;
+        var maxGcTime = 0L;
+        for (var i = 0; i < iterations; i++) {
+            {
+                var nanoGcBefore = System.nanoTime();
+//                System.gc();
+                var gcTimeTaken = System.nanoTime() - nanoGcBefore;
+                totalGcTime = Math.addExact(totalGcTime, gcTimeTaken);
+                minGcTime = Math.min(minGcTime, gcTimeTaken);
+                maxGcTime = Math.max(maxGcTime, gcTimeTaken);
+            }
+            {
+                var nanosBefore = System.nanoTime();
+                var res = action.get();
+                var timeTaken = System.nanoTime() - nanosBefore;
+                if (res == null) {
+                    result[0] = res;
+                }
+                totalTime = Math.addExact(totalTime, timeTaken);
+                minTime = Math.min(minTime, timeTaken);
+                maxTime = Math.max(maxTime, timeTaken);
+            }
+        }
+        assertThat(result[0]).matches(it -> true);
+        var averageTime = totalTime / iterations;
+        var averageGcTime = totalGcTime / iterations;
+        Function<Long, String> timeFormat = time -> {
+            if (time > 1_000_000_000) {
+                return Duration.ofNanos(time).toString();
+            } else if (time > 1_000_000) {
+                return (time / 1_000_000) + " millis";
+            } else if (time > 1_000) {
+                return (time / 1_000) + " micros";
+            } else {
+                return time + " nanos";
+            }
+        };
+        System.out.printf("%s%nExecution time: average - %s, total - %s, min - %s, max - %s%n"
+                + "GC time: average - %s, total - %s, min - %s, max - %s%n%n",
+            message.isEmpty() ? "" : System.lineSeparator() + message,
+            timeFormat.apply(averageTime),
+            timeFormat.apply(totalTime),
+            timeFormat.apply(minTime),
+            timeFormat.apply(maxTime),
+            timeFormat.apply(averageGcTime),
+            timeFormat.apply(totalGcTime),
+            timeFormat.apply(minGcTime),
+            timeFormat.apply(maxGcTime)
+        );
     }
 }

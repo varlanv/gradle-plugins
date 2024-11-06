@@ -43,11 +43,11 @@ class HtCliPruneVolumesSpec implements HtPruneVolumesSpec {
     @Override
     public HtCliPruneVolumesSpec withFilterByLabels(Map<String, String> labels) {
         labels.forEach((key, value) -> {
-                    args.add("--filter", HtStrings.doubleQuotedParam("label",
-                            key,
-                            Objects.requireNonNull(value, "Null label values are not allowed"))
-                    );
-                }
+                args.add("--filter", HtStrings.doubleQuotedParam("label",
+                    key,
+                    Objects.requireNonNull(value, "Null label values are not allowed"))
+                );
+            }
         );
         return this;
     }

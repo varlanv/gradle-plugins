@@ -1,11 +1,11 @@
 package io.huskit.containers.cli;
 
+import io.huskit.common.HtConstants;
 import io.huskit.common.function.MemoizedSupplier;
 import io.huskit.containers.api.container.HtContainer;
 import io.huskit.containers.api.container.HtLazyContainer;
 import io.huskit.containers.api.container.logs.LookFor;
 import io.huskit.containers.api.container.run.HtRun;
-import io.huskit.common.HtConstants;
 import lombok.RequiredArgsConstructor;
 import lombok.With;
 
@@ -24,24 +24,24 @@ class HtCliRun implements HtRun {
     @Override
     public HtContainer exec() {
         var id = cli.sendCommand(
-                new CliCommand(
-                        runSpec.commandType(),
-                        runSpec.toCommand(),
-                        HtConstants.Predicates.alwaysFalse(),
-                        Predicate.not(String::isBlank),
-                        runSpec.timeout()
-                ),
-                CommandResult::singleLine
+            new CliCommand(
+                runSpec.commandType(),
+                runSpec.toCommand(),
+                HtConstants.Predicates.alwaysFalse(),
+                Predicate.not(String::isBlank),
+                runSpec.timeout()
+            ),
+            CommandResult::singleLine
         );
         runSpec.lookFor().ifPresent(lookFor -> parent.logs(id)
-                .follow()
-                .lookFor(LookFor.word(lookFor).withTimeout(runSpec.timeout()))
+            .follow()
+            .lookFor(LookFor.word(lookFor).withTimeout(runSpec.timeout()))
         );
         return new HtLazyContainer(
-                id,
-                MemoizedSupplier.of(() -> new HtFindCliCtrsByIds(cli, Set.of(id)).stream()
-                        .findFirst()
-                        .orElseThrow())
+            id,
+            MemoizedSupplier.of(() -> new HtFindCliCtrsByIds(cli, Set.of(id)).stream()
+                .findFirst()
+                .orElseThrow())
         );
     }
 

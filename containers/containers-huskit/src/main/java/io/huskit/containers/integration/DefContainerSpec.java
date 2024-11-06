@@ -1,9 +1,9 @@
 package io.huskit.containers.integration;
 
+import io.huskit.common.HtConstants;
 import io.huskit.containers.api.image.HtImgName;
 import io.huskit.containers.integration.mongo.ContainerHash;
 import io.huskit.containers.model.ContainerType;
-import io.huskit.common.HtConstants;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
@@ -53,20 +53,20 @@ public class DefContainerSpec implements ContainerSpec {
     @Override
     public String hash() {
         return new ContainerHash()
-                .add(image.reference())
-                .add(envSpec().envMap())
-                .add(labelSpec().labelMap().require().entrySet().stream()
-                        .filter(it ->
-                                !HtConstants.CONTAINER_CLEANUP_AFTER_LABEL.equals(it.getKey())
-                                        && !HtConstants.CONTAINER_STARTED_AT_LABEL.equals(it.getKey())
-                                        && !HtConstants.CONTAINER_HASH_LABEL.equals(it.getKey())
-                        )
-                        .collect(Collectors.toList()))
-                .add(waitSpec().textWait())
-                .add(reuseSpec().value().check(ReuseWithTimeout::enabled))
+            .add(image.reference())
+            .add(envSpec().envMap())
+            .add(labelSpec().labelMap().require().entrySet().stream()
+                .filter(it ->
+                    !HtConstants.CONTAINER_CLEANUP_AFTER_LABEL.equals(it.getKey())
+                        && !HtConstants.CONTAINER_STARTED_AT_LABEL.equals(it.getKey())
+                        && !HtConstants.CONTAINER_HASH_LABEL.equals(it.getKey())
+                )
+                .collect(Collectors.toList()))
+            .add(waitSpec().textWait())
+            .add(reuseSpec().value().check(ReuseWithTimeout::enabled))
 //                .add(properties)
 //                .add(portSpec.port())
-                .compute();
+            .compute();
     }
 
     public DefContainerSpec addProperty(String key, String value) {

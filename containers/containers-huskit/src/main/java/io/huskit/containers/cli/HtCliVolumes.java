@@ -19,9 +19,9 @@ class HtCliVolumes implements HtVolumes {
     @Override
     public HtListVolumes list() {
         return new HtCliListVolumes(
-                cli,
-                new HtCliListVolumesSpec(),
-                this
+            cli,
+            new HtCliListVolumesSpec(),
+            this
         );
     }
 
@@ -30,25 +30,25 @@ class HtCliVolumes implements HtVolumes {
         var listVolumesSpec = new HtCliListVolumesSpec();
         action.accept(listVolumesSpec);
         return new HtCliListVolumes(
-                cli,
-                listVolumesSpec,
-                this
+            cli,
+            listVolumesSpec,
+            this
         );
     }
 
     @Override
     public HtCreateVolume create() {
         return new HtCliCreateVolume(
-                cli,
-                new HtCliCreateVolumeSpec()
+            cli,
+            new HtCliCreateVolumeSpec()
         );
     }
 
     @Override
     public HtCreateVolume create(CharSequence volumeId) {
         return new HtCliCreateVolume(
-                cli,
-                new HtCliCreateVolumeSpec(volumeId)
+            cli,
+            new HtCliCreateVolumeSpec(volumeId)
         );
     }
 
@@ -57,8 +57,8 @@ class HtCliVolumes implements HtVolumes {
         var htCliCreateVolumeSpec = new HtCliCreateVolumeSpec();
         action.accept(htCliCreateVolumeSpec);
         return new HtCliCreateVolume(
-                cli,
-                htCliCreateVolumeSpec
+            cli,
+            htCliCreateVolumeSpec
         );
     }
 
@@ -67,30 +67,30 @@ class HtCliVolumes implements HtVolumes {
         var htCliCreateVolumeSpec = new HtCliCreateVolumeSpec(volumeId);
         action.accept(htCliCreateVolumeSpec);
         return new HtCliCreateVolume(
-                cli,
-                htCliCreateVolumeSpec
+            cli,
+            htCliCreateVolumeSpec
         );
     }
 
     @Override
     public HtRemoveVolumes rm(CharSequence volumeId, Boolean force) {
         return new HtCliRemoveVolumes(
-                cli,
-                new HtCliRemoveVolumesSpec(
-                        force,
-                        Collections.singletonList(volumeId)
-                )
+            cli,
+            new HtCliRemoveVolumesSpec(
+                force,
+                Collections.singletonList(volumeId)
+            )
         );
     }
 
     @Override
     public <T extends CharSequence> HtRemoveVolumes rm(Iterable<T> imageRefs, Boolean force) {
         return new HtCliRemoveVolumes(
-                cli,
-                new HtCliRemoveVolumesSpec(
-                        force,
-                        imageRefs
-                )
+            cli,
+            new HtCliRemoveVolumesSpec(
+                force,
+                imageRefs
+            )
         );
     }
 
@@ -99,47 +99,47 @@ class HtCliVolumes implements HtVolumes {
         var pruneVolumesSpec = new HtCliPruneVolumesSpec();
         action.accept(pruneVolumesSpec);
         return new HtCliPruneVolumes(
-                cli,
-                pruneVolumesSpec
+            cli,
+            pruneVolumesSpec
         );
     }
 
     @Override
     public HtPruneVolumes prune() {
         return new HtCliPruneVolumes(
-                cli,
-                new HtCliPruneVolumesSpec()
+            cli,
+            new HtCliPruneVolumesSpec()
         );
     }
 
     @Override
     public HtVolumeView inspect(CharSequence volumeId) {
         return new JsonHtVolumeView(
-                volumeId.toString(),
-                HtJson.toMap(
-                        cli.sendCommand(
-                                new CliCommand(
-                                        CommandType.VOLUMES_INSPECT,
-                                        new HtCliInspectVolumesSpec(
-                                                Collections.singletonList(
-                                                        volumeId
-                                                )
-                                        ).toCommand()
-                                ),
-                                CommandResult::singleLine
-                        )
+            volumeId.toString(),
+            HtJson.toMap(
+                cli.sendCommand(
+                    new CliCommand(
+                        CommandType.VOLUMES_INSPECT,
+                        new HtCliInspectVolumesSpec(
+                            Collections.singletonList(
+                                volumeId
+                            )
+                        ).toCommand()
+                    ),
+                    CommandResult::singleLine
                 )
+            )
         );
     }
 
     @Override
     public <T extends CharSequence> Stream<HtVolumeView> inspect(Iterable<T> volumeIds) {
         var jsons = cli.sendCommand(
-                new CliCommand(
-                        CommandType.VOLUMES_INSPECT,
-                        new HtCliInspectVolumesSpec(volumeIds).toCommand()
-                ),
-                CommandResult::lines
+            new CliCommand(
+                CommandType.VOLUMES_INSPECT,
+                new HtCliInspectVolumesSpec(volumeIds).toCommand()
+            ),
+            CommandResult::lines
         );
         var ids = new ArrayList<String>();
         for (var volumeId : volumeIds) {
@@ -148,10 +148,10 @@ class HtCliVolumes implements HtVolumes {
         var result = new ArrayList<HtVolumeView>(jsons.size());
         for (var idx = 0; idx < jsons.size(); idx++) {
             result.add(
-                    new JsonHtVolumeView(
-                            ids.get(idx),
-                            HtJson.toMap(jsons.get(idx))
-                    )
+                new JsonHtVolumeView(
+                    ids.get(idx),
+                    HtJson.toMap(jsons.get(idx))
+                )
             );
         }
         return result.stream();

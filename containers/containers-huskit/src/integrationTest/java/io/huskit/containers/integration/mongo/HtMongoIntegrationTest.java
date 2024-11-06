@@ -23,8 +23,8 @@ class HtMongoIntegrationTest implements DockerIntegrationTest {
     void mongo_test() {
         long var = System.currentTimeMillis();
         var subject = HtMongo.fromImage(HtConstants.Mongo.DEFAULT_IMAGE)
-                .withContainerSpec(spec -> spec.reuse().enabledWithCleanupAfter(Duration.ofMinutes(120)))
-                .start();
+            .withContainerSpec(spec -> spec.reuse().enabledWithCleanupAfter(Duration.ofMinutes(120)))
+            .start();
         {
             var connectionString = subject.connectionString();
             verifyMongoConnection(connectionString);
@@ -59,9 +59,9 @@ class HtMongoIntegrationTest implements DockerIntegrationTest {
             var key = "key";
             var value = "value";
             var insertOneResult = testCollection.insertOne(
-                    new Document()
-                            .append("_id", objectId)
-                            .append(key, value)
+                new Document()
+                    .append("_id", objectId)
+                    .append(key, value)
             );
             var doc = testCollection.find(Filters.eq("_id", insertOneResult.getInsertedId())).first();
             assertThat(objectId).isEqualTo(doc.get("_id"));

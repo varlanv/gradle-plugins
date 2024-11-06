@@ -20,19 +20,19 @@ final class HttpInspect {
 
     public Stream<HtContainer> inspect(Iterable<? extends CharSequence> containerIds) {
         return StreamSupport.stream(containerIds.spliterator(), false)
-                .map(this::inspect);
+            .map(this::inspect);
     }
 
     public CompletableFuture<HtContainer> inspectAsync(CharSequence id) {
         return dockerSpec.socket().sendAsync(
-                new Request(
-                        dockerSpec.requests().get(new HttpInspectSpec(id))
-                ).withExpectedStatus(200)
+            new Request(
+                dockerSpec.requests().get(new HttpInspectSpec(id))
+            ).withExpectedStatus(200)
         ).thenApply(response ->
-                new HtJsonContainer(
-                        HtJson.toMap(
-                                response.bodyReader()
-                        )
-                ));
+            new HtJsonContainer(
+                HtJson.toMap(
+                    response.bodyReader()
+                )
+            ));
     }
 }

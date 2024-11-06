@@ -137,6 +137,10 @@ public interface Http {
 
         T value();
 
+        static <T> Body<T> of(T value) {
+            return new DfBody<>(value);
+        }
+
         @SuppressWarnings("rawtypes")
         final class EmptyBody implements Body {
 

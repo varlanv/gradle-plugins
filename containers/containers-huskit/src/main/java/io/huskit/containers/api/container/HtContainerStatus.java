@@ -20,11 +20,11 @@ public enum HtContainerStatus {
 
     String label;
     private static final Map<String, HtContainerStatus> labelToStatus = Arrays.stream(values())
-            .collect(
-                    Collectors.toMap(
-                            HtContainerStatus::label,
-                            Function.identity()
-                    ));
+        .collect(
+            Collectors.toMap(
+                HtContainerStatus::label,
+                Function.identity()
+            ));
 
     HtContainerStatus() {
         this.label = name().toLowerCase();

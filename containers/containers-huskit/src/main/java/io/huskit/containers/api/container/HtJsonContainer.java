@@ -134,8 +134,8 @@ public final class HtJsonContainer implements HtContainer {
     @Override
     public List<MappedPort> ports() {
         return portsFromHostConfig()
-                .or(this::portsFromSource)
-                .orElse(List.of());
+            .or(this::portsFromSource)
+            .orElse(List.of());
     }
 
     @SuppressWarnings("unchecked")

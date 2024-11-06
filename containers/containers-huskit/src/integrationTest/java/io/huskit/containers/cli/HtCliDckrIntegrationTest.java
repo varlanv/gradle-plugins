@@ -37,7 +37,7 @@
 //import static org.assertj.core.api.Assertions.assertThat;
 //import static org.assertj.core.api.Assertions.assertThatThrownBy;
 //
-///**
+/// **
 // * Test suite using a shared {@link HtCliDocker} instance across most of the tests.
 // *
 // * <p>In some cases, this instance may be accessed concurrently by multiple tests.

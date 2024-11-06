@@ -13,10 +13,10 @@ class HtCliRemoveVolumes implements HtRemoveVolumes {
     @Override
     public void exec() {
         cli.sendCommand(
-                new CliCommand(
-                        CommandType.VOLUMES_REMOVE,
-                        spec.toCommand()
-                )
+            new CliCommand(
+                CommandType.VOLUMES_REMOVE,
+                spec.toCommand()
+            )
         );
     }
 }

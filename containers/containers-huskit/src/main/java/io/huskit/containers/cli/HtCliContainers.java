@@ -9,7 +9,10 @@ import io.huskit.containers.api.container.list.HtListContainers;
 import io.huskit.containers.api.container.list.arg.HtListContainersArgsSpec;
 import io.huskit.containers.api.container.logs.HtLogs;
 import io.huskit.containers.api.container.rm.HtRm;
-import io.huskit.containers.api.container.run.*;
+import io.huskit.containers.api.container.run.HtCreateSpec;
+import io.huskit.containers.api.container.run.HtRmSpec;
+import io.huskit.containers.api.container.run.HtRun;
+import io.huskit.containers.api.container.run.HtRunSpec;
 import io.huskit.containers.api.image.HtImgName;
 import lombok.RequiredArgsConstructor;
 
@@ -45,14 +48,14 @@ class HtCliContainers implements HtContainers {
             return Stream.empty();
         }
         return list().asStream()
-                .filter(cnt -> ids.contains(cnt.id()));
+            .filter(cnt -> ids.contains(cnt.id()));
     }
 
     @Override
     public HtContainer inspect(CharSequence containerId) {
         return this.inspect(Collections.singletonList(containerId))
-                .findFirst()
-                .orElseThrow(() -> new NoSuchElementException("No container found with id: " + containerId));
+            .findFirst()
+            .orElseThrow(() -> new NoSuchElementException("No container found with id: " + containerId));
     }
 
     @Override
@@ -63,10 +66,10 @@ class HtCliContainers implements HtContainers {
     @Override
     public HtRun run(CharSequence dockerImageName) {
         return new HtCliRun(
-                this,
-                cli,
-                new CmdRunSpec(HtImgName.ofPrefix(dockerSpec.imagePrefix(), dockerImageName)),
-                dockerSpec
+            this,
+            cli,
+            new CmdRunSpec(HtImgName.ofPrefix(dockerSpec.imagePrefix(), dockerImageName)),
+            dockerSpec
         );
     }
 
@@ -75,10 +78,10 @@ class HtCliContainers implements HtContainers {
         var runSpec = new CmdRunSpec(HtImgName.ofPrefix(dockerSpec.imagePrefix(), dockerImageName));
         spec.accept(runSpec);
         return new HtCliRun(
-                this,
-                cli,
-                runSpec,
-                dockerSpec
+            this,
+            cli,
+            runSpec,
+            dockerSpec
         );
     }
 
@@ -104,24 +107,24 @@ class HtCliContainers implements HtContainers {
             argsList.add(arg.toString());
         }
         return new HtCliExec(
-                cli,
-                new HtCliExecSpec(
-                        containerId.toString(),
-                        command.toString(),
-                        argsList
-                )
+            cli,
+            new HtCliExecSpec(
+                containerId.toString(),
+                command.toString(),
+                argsList
+            )
         );
     }
 
     @Override
     public HtExec execInContainer(CharSequence containerId, CharSequence command) {
         return new HtCliExec(
-                cli,
-                new HtCliExecSpec(
-                        containerId.toString(),
-                        command.toString(),
-                        List.of()
-                )
+            cli,
+            new HtCliExecSpec(
+                containerId.toString(),
+                command.toString(),
+                List.of()
+            )
         );
     }
 

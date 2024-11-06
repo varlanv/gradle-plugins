@@ -23,17 +23,17 @@ final class HttpRun implements HtRun {
     @Override
     public CompletableFuture<HtContainer> execAsync() {
         return httpCreate.execAsync()
-                .thenCompose(container -> {
-                    var completable = httpStartFromContainerId.apply(container.id()).execAsync();
-                    return httpRunSpec.lookFor()
-                            .map(lookFor -> {
-                                var httpLogs = httpLogsFromContainerId.apply(container.id());
-                                return completable.thenCompose(c -> httpLogs.follow()
-                                        .lookForAsync(lookFor)
-                                        .thenApply(ignored -> container)
-                                );
-                            })
-                            .orElse(completable);
-                });
+            .thenCompose(container -> {
+                var completable = httpStartFromContainerId.apply(container.id()).execAsync();
+                return httpRunSpec.lookFor()
+                    .map(lookFor -> {
+                        var httpLogs = httpLogsFromContainerId.apply(container.id());
+                        return completable.thenCompose(c -> httpLogs.follow()
+                            .lookForAsync(lookFor)
+                            .thenApply(ignored -> container)
+                        );
+                    })
+                    .orElse(completable);
+            });
     }
 }

@@ -13,10 +13,10 @@ class HtCliPruneVolumes implements HtPruneVolumes {
     @Override
     public void exec() {
         cli.sendCommand(
-                new CliCommand(
-                        CommandType.VOLUMES_PRUNE,
-                        pruneVolumesSpec.toCommand()
-                )
+            new CliCommand(
+                CommandType.VOLUMES_PRUNE,
+                pruneVolumesSpec.toCommand()
+            )
         );
     }
 }

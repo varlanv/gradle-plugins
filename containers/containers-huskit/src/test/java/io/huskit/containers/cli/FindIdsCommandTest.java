@@ -16,27 +16,27 @@ class FindIdsCommandTest implements UnitTest {
 
         assertThat(actual).isNotEmpty();
         assertThat(actual).isEqualTo(List.of(
-                "docker",
-                "ps",
-                "--format",
-                HtStrings.doubleQuote("{{.ID}}")
+            "docker",
+            "ps",
+            "--format",
+            HtStrings.doubleQuote("{{.ID}}")
         ));
     }
 
     @Test
     void list__one_arg__should_return_command_with_one_arg() {
         var actual = new FindIdsCommand(
-                List.of(HtArg.of("argName", "argValue"))
+            List.of(HtArg.of("argName", "argValue"))
         ).list();
 
         assertThat(actual).isNotEmpty();
         assertThat(actual).isEqualTo(List.of(
-                "docker",
-                "ps",
-                "argName",
-                "argValue",
-                "--format",
-                HtStrings.doubleQuote("{{.ID}}")
+            "docker",
+            "ps",
+            "argName",
+            "argValue",
+            "--format",
+            HtStrings.doubleQuote("{{.ID}}")
         ));
     }
 }

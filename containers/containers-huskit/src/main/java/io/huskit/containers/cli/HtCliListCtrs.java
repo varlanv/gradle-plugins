@@ -27,8 +27,8 @@ class HtCliListCtrs implements HtListContainers {
             return Stream.empty();
         } else {
             return new HtFindCliCtrsByIds(
-                    cli,
-                    requestedIds
+                cli,
+                requestedIds
             ).stream();
         }
     }
@@ -50,15 +50,15 @@ class HtCliListCtrs implements HtListContainers {
 
     private Set<String> findIds() {
         return new LinkedHashSet<>(
-                cli.sendCommand(
-                        new CliCommand(
-                                CommandType.CONTAINERS_LIST,
-                                new FindIdsCommand(
-                                        args.build()
-                                ).list()
-                        ),
-                        CommandResult::lines
-                )
+            cli.sendCommand(
+                new CliCommand(
+                    CommandType.CONTAINERS_LIST,
+                    new FindIdsCommand(
+                        args.build()
+                    ).list()
+                ),
+                CommandResult::lines
+            )
         );
     }
 }

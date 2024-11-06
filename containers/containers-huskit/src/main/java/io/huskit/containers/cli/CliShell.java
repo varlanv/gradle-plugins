@@ -41,14 +41,14 @@ class CliShell implements Shell {
         var err = new BufferedReader(new InputStreamReader(dockerProcess.getErrorStream()));
         if (arg.forwardStderr()) {
             errReadTask.set(
-                    CompletableFuture.runAsync(Sneaky.quiet(
-                            () -> {
-                                String line;
-                                while ((line = err.readLine()) != null) {
-                                    System.err.println(line);
-                                }
-                            }
-                    ))
+                CompletableFuture.runAsync(Sneaky.quiet(
+                    () -> {
+                        String line;
+                        while ((line = err.readLine()) != null) {
+                            System.err.println(line);
+                        }
+                    }
+                ))
             );
         }
         this.isClosed = new AtomicBoolean();

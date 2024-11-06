@@ -22,9 +22,9 @@ public class MapHtImageRichView implements HtImageRichView {
     public Stream<ImageTag> tags() {
         var repoTags = (List<String>) map.get("RepoTags");
         return repoTags.stream()
-                .map(tag -> {
-                    var parts = tag.split(":");
-                    return new DefImageTag(parts[0], parts[1]);
-                });
+            .map(tag -> {
+                var parts = tag.split(":");
+                return new DefImageTag(parts[0], parts[1]);
+            });
     }
 }

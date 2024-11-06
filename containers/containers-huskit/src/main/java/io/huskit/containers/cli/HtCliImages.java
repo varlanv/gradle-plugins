@@ -1,6 +1,5 @@
 package io.huskit.containers.cli;
 
-import io.huskit.containers.api.image.HtImgName;
 import io.huskit.containers.api.image.*;
 import lombok.RequiredArgsConstructor;
 

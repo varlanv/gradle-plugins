@@ -17,8 +17,8 @@ class HtCliPullImagesSpecTest implements UnitTest {
     @ValueSource(strings = {"", " ", "  "})
     void toCommand__blank_string__should_throw_exception(String ref) {
         assertThatThrownBy(() -> new HtCliPullImagesSpec(HtImgName.of(ref)))
-                .isInstanceOf(IllegalArgumentException.class)
-                .hasMessageContaining("Image reference cannot be blank");
+            .isInstanceOf(IllegalArgumentException.class)
+            .hasMessageContaining("Image reference cannot be blank");
     }
 
     @Test
@@ -60,27 +60,27 @@ class HtCliPullImagesSpecTest implements UnitTest {
     @Test
     void toCommand__with_all_tags_and_disable_content_trust_and_platform__should_return_spec_with_all_tags_and_disable_content_trust_and_platform() {
         var subject = new HtCliPullImagesSpec(imageName)
-                .withAllTags()
-                .withDisableContentTrust()
-                .withPlatformString("platform");
+            .withAllTags()
+            .withDisableContentTrust()
+            .withPlatformString("platform");
 
         var actual = subject.toCommand();
 
         assertThat(actual).containsExactly(
-                "docker", "pull",
-                "--all-tags",
-                "--disable-content-trust",
-                "--platform",
-                "platform",
-                imageName.reference()
+            "docker", "pull",
+            "--all-tags",
+            "--disable-content-trust",
+            "--platform",
+            "platform",
+            imageName.reference()
         );
     }
 
     @Test
     void toCommand__with_all_tags_and_platform__should_return_spec_with_all_tags_and_platform() {
         var subject = new HtCliPullImagesSpec(imageName)
-                .withAllTags()
-                .withPlatformString("platform");
+            .withAllTags()
+            .withPlatformString("platform");
 
         var actual = subject.toCommand();
 

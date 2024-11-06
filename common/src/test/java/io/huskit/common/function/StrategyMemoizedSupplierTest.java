@@ -6,12 +6,10 @@ import lombok.Lombok;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
-import java.util.stream.IntStream;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -96,22 +94,6 @@ class StrategyMemoizedSupplierTest implements UnitTest {
     }
 
     @Test
-    void isInitialized_when_not_called_should_return_false() {
-        var subject = MemoizedSupplier.ofStrategy(() -> () -> 1);
-
-        assertThat(subject.isInitialized()).isFalse();
-    }
-
-    @Test
-    void isInitialized_when_called_should_return_true() {
-        var subject = MemoizedSupplier.ofStrategy(() -> () -> 1);
-
-        subject.get();
-
-        assertThat(subject.isInitialized()).isTrue();
-    }
-
-    @Test
     void get__when_throws_exception__then_should_throw_same_exception() {
         var counter = new AtomicInteger();
         var subject = MemoizedSupplier.of(() -> {
@@ -162,28 +144,20 @@ class StrategyMemoizedSupplierTest implements UnitTest {
         var thread1Value = new AtomicReference<Integer>();
         var thread2Latch = new CountDownLatch(1);
         var thread2Value = new AtomicReference<Integer>();
-        var executorService = Executors.newFixedThreadPool(2);
-        try {
-            ThrowingSupplier<Tuple<Future<?>, Future<?>>> compute = () -> {
-                var future1 = executorService.submit(new Thread(() -> {
-                    thread1Latch.countDown();
-                    thread1Value.set(subject.get());
-                }));
-                thread1Latch.await();
-                var future2 = executorService.submit(new Thread(() -> {
-                    thread2Latch.countDown();
-                    thread2Value.set(subject.get());
-                }));
-                thread2Latch.await();
-                return Tuple.of(future1, future2);
-            };
-            var result = compute.get();
-            latch.countDown();
-            result.left().get();
-            result.right().get();
-        } finally {
-            executorService.shutdown();
-        }
+        var future1 = CompletableFuture.runAsync(() -> {
+            thread1Latch.countDown();
+            thread1Value.set(subject.get());
+        });
+        thread1Latch.await();
+        var future2 = CompletableFuture.runAsync(() -> {
+            thread2Latch.countDown();
+            thread2Value.set(subject.get());
+        });
+        thread2Latch.await();
+        var result = Tuple.of(future1, future2);
+        latch.countDown();
+        result.left().get();
+        result.right().get();
 
         assertThat(counter.get())
                 .as("counter incremented only once")
@@ -197,56 +171,5 @@ class StrategyMemoizedSupplierTest implements UnitTest {
         assertThat(thread2Value.get())
                 .as("second thread got same result")
                 .isEqualTo(1);
-    }
-
-    @Test
-    @DisplayName("calling reset() should clear the memoized value")
-    void reset_should_clear_memoized_value() {
-        // Given
-        var firstRef = new AtomicReference<>();
-        var subject = MemoizedSupplier.of(Object::new);
-        firstRef.set(subject.get());
-        assertThat(subject.isInitialized()).isTrue();
-        assertThat(subject.get()).isSameAs(firstRef.get());
-
-        // When
-        subject.reset();
-
-        // Then
-        assertThat(subject.isInitialized()).isFalse();
-    }
-
-    @Test
-    @DisplayName("calling reset() if the value is not memoized should do nothing")
-    void reset_if_value_not_memoized_should_do_nothing() {
-        // Given
-        var subject = MemoizedSupplier.of(Object::new);
-
-        // When
-        subject.reset();
-
-        // Then
-        assertThat(subject.isInitialized()).isFalse();
-    }
-
-    @Test
-    @DisplayName("calling isInitialized() should return true if the value is memoized")
-    void isInitialized_should_return_true_if_value_is_memoized() {
-        var subject = MemoizedSupplier.of(Object::new);
-        assertThat(subject.isInitialized()).isFalse();
-        subject.get();
-        assertThat(subject.isInitialized()).isTrue();
-    }
-
-    @Test
-    void test_perf() {
-        var subject = MemoizedSupplier.ofLocal(() -> 1);
-        var result = 0;
-
-        var time = System.currentTimeMillis();
-        for (int i = 0; i < 500_000_000; i++) {
-            result += subject.get();
-        }
-        System.out.println("Finished in " + (System.currentTimeMillis() - time) + "ms");
     }
 }

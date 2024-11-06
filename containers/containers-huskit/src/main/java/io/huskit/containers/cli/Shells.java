@@ -13,13 +13,13 @@ import java.util.stream.Collectors;
 public class Shells {
 
     private static final Map<ShellType, Function<ShellPickArg, Shell>> SHELLS = new EnumMap<>(
-            Arrays.stream(ShellType.values())
-                    .collect(
-                            Collectors.toMap(
-                                    Function.identity(),
-                                    shellType -> CliShell::new
-                            )
-                    )
+        Arrays.stream(ShellType.values())
+            .collect(
+                Collectors.toMap(
+                    Function.identity(),
+                    shellType -> CliShell::new
+                )
+            )
     );
     private static final Volatile<Shell> DEFAULT_SHELL = Volatile.of();
 
@@ -37,7 +37,7 @@ public class Shells {
 
     public Shell take(ShellPickArg arg) {
         return Optional.ofNullable(SHELLS.get(arg.shellType()))
-                .map(fn -> fn.apply(arg))
-                .orElseGet(() -> pickDefault(arg));
+            .map(fn -> fn.apply(arg))
+            .orElseGet(() -> pickDefault(arg));
     }
 }

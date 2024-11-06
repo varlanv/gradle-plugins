@@ -25,6 +25,10 @@ public interface MemoizedSupplier<T> extends Supplier<T>, ThrowingSupplier<T> {
 
     boolean isInitialized();
 
+    void ifInitialized(ThrowingConsumer<T> consumer);
+
+    void ifNotInitialized(ThrowingRunnable runnable);
+
     void reset();
 
     static <T> MemoizedSupplier<T> of(ThrowingSupplier<T> supplier) {
@@ -42,42 +46,6 @@ public interface MemoizedSupplier<T> extends Supplier<T>, ThrowingSupplier<T> {
 
     static <T> MemoizedSupplier<T> ofStrategy(ThrowingSupplier<ThrowingSupplier<T>> supplier) {
         return new StrategyMemoizedSupplier<>(supplier);
-    }
-
-    static <T> MemoizedSupplier<T> ofLocal(ThrowingSupplier<T> supplier) {
-        return new LocalMemoizedSupplier<>(supplier);
-    }
-}
-
-@RequiredArgsConstructor
-final class LocalMemoizedSupplier<T> implements MemoizedSupplier<T> {
-
-    @NonNull
-    ThrowingSupplier<T> delegate;
-    @NonFinal
-    @Nullable
-    T value;
-
-    @Override
-    @SneakyThrows
-    public T get() {
-        var value = this.value;
-        if (value == null) {
-            value = Objects.requireNonNull(this.delegate.get(), "Supplier returned null value");
-            this.value = value;
-        }
-        return value;
-    }
-
-    @Override
-    public boolean isInitialized() {
-        return value != null;
-    }
-
-    @Override
-    @SuppressWarnings("PMD.NullAssignment")
-    public void reset() {
-        value = null;
     }
 }
 
@@ -109,6 +77,23 @@ final class StrategyMemoizedSupplier<T> implements MemoizedSupplier<T> {
     @Override
     public boolean isInitialized() {
         return memoizedStrategy != null;
+    }
+
+    @Override
+    @SneakyThrows
+    public void ifInitialized(ThrowingConsumer<T> consumer) {
+        var strategy = memoizedStrategy;
+        if (strategy != null) {
+            consumer.accept(strategy.get());
+        }
+    }
+
+    @Override
+    @SneakyThrows
+    public void ifNotInitialized(ThrowingRunnable runnable) {
+        if (memoizedStrategy == null) {
+            runnable.run();
+        }
     }
 
     @Override

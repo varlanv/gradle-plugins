@@ -24,21 +24,21 @@ class HtCliListImages implements HtListImages {
     @Override
     public Stream<HtImageView> stream() {
         var commandResult = cli.sendCommand(
-                new CliCommand(CommandType.IMAGES_LIST, spec.toCommand()),
-                Function.identity()
+            new CliCommand(CommandType.IMAGES_LIST, spec.toCommand()),
+            Function.identity()
         );
         return commandResult.lines().stream()
-                .map(id -> new DefHtImageView(
-                        id,
-                        () -> new MapHtImageRichView(
-                                cli.sendCommand(
-                                        new CliCommand(
-                                                CommandType.IMAGES_INSPECT,
-                                                List.of("docker", "image", "inspect", "--format=\"{{json .}}\"", id)
-                                        ),
-                                        (CommandResult inspectCommandResult) -> HtJson.toMap(inspectCommandResult.singleLine())
-                                )
-                        ))
-                );
+            .map(id -> new DefHtImageView(
+                id,
+                () -> new MapHtImageRichView(
+                    cli.sendCommand(
+                        new CliCommand(
+                            CommandType.IMAGES_INSPECT,
+                            List.of("docker", "image", "inspect", "--format=\"{{json .}}\"", id)
+                        ),
+                        (CommandResult inspectCommandResult) -> HtJson.toMap(inspectCommandResult.singleLine())
+                    )
+                ))
+            );
     }
 }

@@ -27,8 +27,8 @@ public interface Logs {
 
         public void close() {
             Sneaky.doTry(
-                    stdOutPipe::close,
-                    stdErrPipe::close
+                stdOutPipe::close,
+                stdErrPipe::close
             );
         }
 

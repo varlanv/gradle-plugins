@@ -69,6 +69,12 @@ final class Request {
         this.expectedStatus = Mutable.of();
     }
 
+    public Request(byte[] body) {
+        this.http = new DfHttpRequest(body);
+        this.repeatReadPredicate = Mutable.of();
+        this.expectedStatus = Mutable.of();
+    }
+
     public Request withRepeatReadPredicate(LookFor lookFor, Duration backoff) {
         repeatReadPredicate.set(new RepeatRead(lookFor, backoff));
         return this;
@@ -89,6 +95,18 @@ final class Request {
 
     public Optional<ExpectedStatus> expectedStatus() {
         return expectedStatus.maybe();
+    }
+}
+
+@Getter
+@RequiredArgsConstructor
+final class PushRequest<T> {
+
+    Request request;
+    PushResponse<T> pushResponse;
+
+    PushRequest(byte[] body, PushResponse<T> pushResponse) {
+        this(new Request(body), pushResponse);
     }
 }
 

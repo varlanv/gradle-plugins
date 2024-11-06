@@ -101,28 +101,28 @@ class HtCliListImagesSpecTest implements UnitTest {
     @Test
     void toCommand__all_args__returnsCommandWithAllArgs() {
         var subject = new HtCliListImagesSpec()
-                .withAll()
-                .withFilterByBefore("before")
-                .withFilterBySince("since")
-                .withFilterByReference("reference")
-                .withFilterByUntil("until")
-                .withFilterByDangling(true)
-                .withFilterByLabel("key")
-                .withFilterByLabel("key", "value");
+            .withAll()
+            .withFilterByBefore("before")
+            .withFilterBySince("since")
+            .withFilterByReference("reference")
+            .withFilterByUntil("until")
+            .withFilterByDangling(true)
+            .withFilterByLabel("key")
+            .withFilterByLabel("key", "value");
 
         var actual = subject.toCommand();
 
         assertThat(actual).containsExactly(
-                "docker", "images",
-                "-q",
-                "--all",
-                "--filter", HtStrings.doubleQuote("before=before"),
-                "--filter", HtStrings.doubleQuote("since=since"),
-                "--filter", HtStrings.doubleQuote("reference=reference"),
-                "--filter", HtStrings.doubleQuote("until=until"),
-                "--filter", HtStrings.doubleQuote("dangling=true"),
-                "--filter", HtStrings.doubleQuote("label=key"),
-                "--filter", HtStrings.doubleQuote("label=key=value")
+            "docker", "images",
+            "-q",
+            "--all",
+            "--filter", HtStrings.doubleQuote("before=before"),
+            "--filter", HtStrings.doubleQuote("since=since"),
+            "--filter", HtStrings.doubleQuote("reference=reference"),
+            "--filter", HtStrings.doubleQuote("until=until"),
+            "--filter", HtStrings.doubleQuote("dangling=true"),
+            "--filter", HtStrings.doubleQuote("label=key"),
+            "--filter", HtStrings.doubleQuote("label=key=value")
         );
     }
 }

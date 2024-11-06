@@ -54,13 +54,13 @@ final class HtHttpListContainersSpec implements HtListContainersArgsSpec, HtUrl 
         }
         if (!filters.isEmpty()) {
             var jsonObject = HtJson.toJson(
-                    filters.entrySet().stream()
-                            .collect(
-                                    Collectors.toMap(
-                                            entry -> entry.getKey().name().toLowerCase(),
-                                            Map.Entry::getValue
-                                    )
-                            )
+                filters.entrySet().stream()
+                    .collect(
+                        Collectors.toMap(
+                            entry -> entry.getKey().name().toLowerCase(),
+                            Map.Entry::getValue
+                        )
+                    )
             );
             parameters.add("filters=" + jsonObject);
         }

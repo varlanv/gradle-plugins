@@ -23,9 +23,9 @@ public class LazyShell implements Shell {
 
     @Override
     public long pid() {
-        if (!shellDelegate.isInitialized()) {
+        shellDelegate.ifNotInitialized(() -> {
             throw new IllegalStateException("Cannot get PID of uninitialized shell");
-        }
+        });
         return shellDelegate.get().pid();
     }
 
@@ -36,8 +36,6 @@ public class LazyShell implements Shell {
 
     @Override
     public void close() {
-        if (shellDelegate.isInitialized()) {
-            shellDelegate.get().close();
-        }
+        shellDelegate.ifInitialized(Shell::close);
     }
 }

@@ -27,8 +27,8 @@ class HtJsonContainerTest implements UnitTest {
 
         // then
         assertThatThrownBy(container::id)
-                .isInstanceOf(IllegalStateException.class)
-                .hasMessageContainingAll("Id");
+            .isInstanceOf(IllegalStateException.class)
+            .hasMessageContainingAll("Id");
     }
 
     @Test
@@ -47,15 +47,15 @@ class HtJsonContainerTest implements UnitTest {
 
         // then
         assertThatThrownBy(container::name)
-                .isInstanceOf(IllegalStateException.class)
-                .hasMessageContainingAll("Name");
+            .isInstanceOf(IllegalStateException.class)
+            .hasMessageContainingAll("Name");
     }
 
     @Test
     void labels__should__get_labels_from_map() {
         // given
         var container = new HtJsonContainer(Map.of(
-                "Config", Map.of("Labels", Map.of("key", "value"))
+            "Config", Map.of("Labels", Map.of("key", "value"))
         ));
 
         // then
@@ -66,13 +66,13 @@ class HtJsonContainerTest implements UnitTest {
     void labels__if__labels_is_null__should__throw_exception() {
         // given
         var container = new HtJsonContainer(Map.of(
-                "Config", Map.of()
+            "Config", Map.of()
         ));
 
         // then
         assertThatThrownBy(container.config()::labels)
-                .isInstanceOf(IllegalStateException.class)
-                .hasMessageContainingAll("Labels");
+            .isInstanceOf(IllegalStateException.class)
+            .hasMessageContainingAll("Labels");
     }
 
     @Test
@@ -82,7 +82,7 @@ class HtJsonContainerTest implements UnitTest {
 
         // then
         assertThatThrownBy(() -> container.config().labels())
-                .isInstanceOf(IllegalStateException.class)
-                .hasMessageContainingAll("Config");
+            .isInstanceOf(IllegalStateException.class)
+            .hasMessageContainingAll("Config");
     }
 }

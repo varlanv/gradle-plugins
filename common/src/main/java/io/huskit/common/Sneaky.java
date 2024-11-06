@@ -26,6 +26,11 @@ public interface Sneaky {
         };
     }
 
+    @SneakyThrows
+    static <T> T quiet(ThrowingSupplier<T> supplier) {
+        return supplier.get();
+    }
+
     static <T> ThrowingSupplier<T> thrown(ThrowingSupplier<? extends Throwable> e) {
         return () -> hide(e);
     }

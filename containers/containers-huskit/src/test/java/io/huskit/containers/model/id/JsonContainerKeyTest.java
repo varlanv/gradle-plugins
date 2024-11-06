@@ -25,8 +25,8 @@ class JsonContainerKeyTest implements BaseTest {
     @DisplayName("`json` if has properties, should return json")
     void json_if_has_properties_should_return_json() {
         var subject = new JsonContainerKey(
-                Map.of("key1", "value",
-                        "key2", 1)
+            Map.of("key1", "value",
+                "key2", 1)
         );
 
         var actual = subject.json();
@@ -48,11 +48,11 @@ class JsonContainerKeyTest implements BaseTest {
     @DisplayName("`json` when adding map with unsorted keys, should return sorted json")
     void json_when_adding_map_with_unsorted_keys_should_return_sorted_json() {
         var subject = new JsonContainerKey().with(
-                Map.of(
-                        "key2", "value2",
-                        "key1", "value1",
-                        "key3", "value3"
-                )
+            Map.of(
+                "key2", "value2",
+                "key1", "value1",
+                "key3", "value3"
+            )
         );
 
         var actual = subject.json();

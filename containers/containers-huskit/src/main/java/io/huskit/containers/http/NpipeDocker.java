@@ -3,22 +3,17 @@ package io.huskit.containers.http;
 import io.huskit.common.HtConstants;
 import io.huskit.common.Log;
 import io.huskit.common.Mutable;
-import io.huskit.common.NoopLog;
 import io.huskit.common.function.MemoizedSupplier;
 import io.huskit.common.io.BufferLines;
 import io.huskit.common.io.Lines;
 import io.huskit.common.number.Hexadecimal;
-import lombok.Getter;
-import lombok.Locked;
-import lombok.RequiredArgsConstructor;
-import lombok.SneakyThrows;
+import lombok.*;
 import lombok.experimental.NonFinal;
 import org.jetbrains.annotations.VisibleForTesting;
 
 import java.nio.ByteBuffer;
 import java.nio.channels.AsynchronousFileChannel;
 import java.nio.channels.CompletionHandler;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
 import java.time.Duration;
@@ -26,6 +21,7 @@ import java.util.*;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
 
@@ -43,7 +39,7 @@ final class NpipeDocker implements DockerSocket {
     }
 
     NpipeDocker(String socketFile, ScheduledExecutorService executor) {
-        this(socketFile, executor, new NoopLog());
+        this(socketFile, executor, Log.noop());
     }
 
     public NpipeDocker(ScheduledExecutorService executor) {
@@ -64,33 +60,31 @@ final class NpipeDocker implements DockerSocket {
         var state = stateSupplier.get();
         var rawResponse = new CompletableFuture<Http.RawResponse>();
         CompletableFuture.runAsync(
-                () -> {
-                    try {
-                        log.debug(() -> "todo");
-                    } finally {
-                        if (state.isDirtyConnection()) {
-                            state.resetConnection();
-                        }
-                        // state.releaseLock();
+            () -> {
+                try {
+                    log.debug(() -> "todo");
+                } finally {
+                    if (state.isDirtyConnection()) {
+                        state.resetConnection();
                     }
-                },
-                executor
+                    // state.releaseLock();
+                }
+            },
+            executor
         ).handle(
-                (ignore, throwable) -> {
-                    if (throwable != null) {
-                        rawResponse.completeExceptionally(throwable);
-                    }
-                    return null;
-                });
+            (ignore, throwable) -> {
+                if (throwable != null) {
+                    rawResponse.completeExceptionally(throwable);
+                }
+                return null;
+            });
         return CompletableFuture.completedFuture(rawResponse.join());
     }
 
     @Override
     @SneakyThrows
     public void release() {
-        if (stateSupplier.isInitialized()) {
-            stateSupplier.get().channel().close();
-        }
+        stateSupplier.ifInitialized(NpipeChannel::close);
     }
 }
 
@@ -121,11 +115,11 @@ final class DockerHttpMultiplexedStream {
         var queue = new LinkedBlockingQueue<MultiplexedFrame>();
         var latch = new CountDownLatch(1);
         var completion = CompletableFuture.runAsync(
-                () -> {
-                    latch.countDown();
-                    parse(queue);
-                },
-                executor
+            () -> {
+                latch.countDown();
+                parse(queue);
+            },
+            executor
         );
         if (!latch.await(5, TimeUnit.SECONDS)) {
             throw new RuntimeException("Failed to start multiplexed stream task in 5 seconds");
@@ -159,7 +153,7 @@ final class DockerHttpMultiplexedStream {
                     } else {
                         currentChunkSize -= currentStreamFrameSize;
                         if ((type == FrameType.STDERR && streamType == StreamType.STDOUT) ||
-                                (type == FrameType.STDOUT && streamType == StreamType.STDERR)) {
+                            (type == FrameType.STDOUT && streamType == StreamType.STDERR)) {
                             byteFlow.skip(currentStreamFrameSize - 1);
                             currentStreamFrameSize = -1;
                         } else {
@@ -171,10 +165,10 @@ final class DockerHttpMultiplexedStream {
                                 currentByte = byteFlow.nextByte();
                             }
                             queue.add(
-                                    new MultiplexedFrame(
-                                            Objects.requireNonNull(currentFrameBuffer),
-                                            Objects.requireNonNull(type)
-                                    )
+                                new MultiplexedFrame(
+                                    Objects.requireNonNull(currentFrameBuffer),
+                                    Objects.requireNonNull(type)
+                                )
                             );
                         }
                         isStreamHeader = true;
@@ -226,10 +220,10 @@ final class DfMultiplexedResponseFollow implements MultiplexedResponseFollow {
     @SneakyThrows
     public Optional<MultiplexedFrame> nextFrame(Duration timeout) {
         return Optional.ofNullable(
-                frames.poll(
-                        timeout.toMillis(),
-                        TimeUnit.MILLISECONDS
-                )
+            frames.poll(
+                timeout.toMillis(),
+                TimeUnit.MILLISECONDS
+            )
         );
     }
 
@@ -323,13 +317,40 @@ final class HeadFromLines implements Http.Head {
     }
 }
 
-interface FutureResponse<T> {
+interface PushResponse<T> {
 
     boolean isReady();
 
     T value();
 
     Optional<T> apply(ByteBuffer byteBuffer);
+
+    static <T> PushResponse<MyHttpResponse<T>> http(PushResponse<T> body) {
+        return new HttpPushResponse<>(
+            new PushHead(),
+            body
+        );
+    }
+
+    static <T> PushResponse<T> fake(Function<ByteBuffer, Optional<T>> action) {
+        return new PushResponse<>() {
+
+            @Override
+            public boolean isReady() {
+                throw new UnsupportedOperationException();
+            }
+
+            @Override
+            public T value() {
+                throw new UnsupportedOperationException();
+            }
+
+            @Override
+            public Optional<T> apply(ByteBuffer byteBuffer) {
+                return action.apply(byteBuffer);
+            }
+        };
+    }
 }
 
 @Getter
@@ -339,8 +360,7 @@ final class MultiplexedFrames {
     List<MultiplexedFrame> frames;
 }
 
-
-final class FutureMultiplexedStream implements FutureResponse<MultiplexedFrames> {
+final class PushMultiplexedStream implements PushResponse<MultiplexedFrames> {
 
     StreamType streamType;
     List<MultiplexedFrame> frameList = new ArrayList<>();
@@ -363,12 +383,12 @@ final class FutureMultiplexedStream implements FutureResponse<MultiplexedFrames>
     @NonFinal
     int skipNext = 0;
 
-    FutureMultiplexedStream(StreamType streamType, Predicate<MultiplexedFrame> follow) {
+    PushMultiplexedStream(StreamType streamType, Predicate<MultiplexedFrame> follow) {
         this.streamType = Objects.requireNonNull(streamType);
         this.follow.set(follow);
     }
 
-    FutureMultiplexedStream(StreamType streamType) {
+    PushMultiplexedStream(StreamType streamType) {
         this.streamType = Objects.requireNonNull(streamType);
     }
 
@@ -443,7 +463,7 @@ final class FutureMultiplexedStream implements FutureResponse<MultiplexedFrames>
                         currentFrameBuffer[currentFrameBuffer.length - currentFrameSize - 1] = currentByte;
                         var frame = new MultiplexedFrame(currentFrameBuffer, currentFrameType);
                         if (streamType == StreamType.ALL || (currentFrameType == FrameType.STDERR && streamType == StreamType.STDERR) ||
-                                (currentFrameType == FrameType.STDOUT && streamType == StreamType.STDOUT)) {
+                            (currentFrameType == FrameType.STDOUT && streamType == StreamType.STDOUT)) {
                             if (follow.isPresent()) {
                                 if (follow.require().test(frame)) {
                                     frameList.add(frame);
@@ -470,7 +490,99 @@ final class FutureMultiplexedStream implements FutureResponse<MultiplexedFrames>
     }
 }
 
-final class FutureHead implements FutureResponse<Http.Head> {
+@RequiredArgsConstructor
+final class PushChunked<T> implements PushResponse<Http.Body<T>> {
+
+    Function<String, T> delegate;
+    Mutable<Http.Body<T>> body = Mutable.of();
+    @NonFinal
+    StringBuilder fullBody = new StringBuilder(64);
+    @NonFinal
+    int currentChunkSize = -1;
+    @NonFinal
+    int skipNext = 0;
+    @NonFinal
+    boolean isChunkSizePart = true;
+    Hexadecimal currentChunkSizeHex = Hexadecimal.fromHexChars();
+
+    @Override
+    public boolean isReady() {
+        return body.isPresent();
+    }
+
+    @Override
+    public Http.Body<T> value() {
+        return body.require();
+    }
+
+    @Override
+    public Optional<Http.Body<T>> apply(ByteBuffer byteBuffer) {
+        while (byteBuffer.hasRemaining()) {
+            var b = byteBuffer.get();
+            var ch = (char) (b & 0xFF);
+            if (skipNext > 0) {
+                skipNext--;
+                continue;
+            }
+            if (isChunkSizePart) {
+                if (ch == '\n'){
+                    continue;
+                }
+                if (ch == '\r') {
+                    isChunkSizePart = false;
+                    if (currentChunkSizeHex.intValue() == 0) {
+                        var value = Http.Body.of(delegate.apply(fullBody.toString()));
+                        body.set(value);
+                        return Optional.of(value);
+                    } else {
+                        skipNext = 1;
+                    }
+                } else {
+                    currentChunkSizeHex.withHexChar(ch);
+                }
+            } else {
+                var chunkSize = currentChunkSizeHex.decrement().intValue();
+                fullBody.append(ch);
+                if (chunkSize == 0) {
+                    isChunkSizePart = true;
+                    skipNext = 2;
+                }
+            }
+        }
+        return Optional.empty();
+    }
+}
+
+@RequiredArgsConstructor
+final class PushBody<T> implements PushResponse<Http.Body<T>> {
+
+    PushResponse<T> delegate;
+    Mutable<Http.Body<T>> body;
+
+    @Override
+    public boolean isReady() {
+        return body.isPresent();
+    }
+
+    @Override
+    public Http.Body<T> value() {
+        return body.require();
+    }
+
+    @Override
+    public Optional<Http.Body<T>> apply(ByteBuffer byteBuffer) {
+        var maybeBody = delegate.apply(byteBuffer);
+        if (maybeBody.isPresent()) {
+            var value = Http.Body.of(maybeBody.get());
+            body.set(value);
+            return Optional.of(value);
+        } else {
+            return Optional.empty();
+        }
+    }
+}
+
+final class PushHead implements PushResponse<Http.Head> {
 
     Mutable<Http.Head> head = Mutable.of();
     List<String> lines = new ArrayList<>();
@@ -524,31 +636,10 @@ final class MyHttpResponse<T> {
 }
 
 @RequiredArgsConstructor
-final class FutureMultiplex implements FutureResponse<DockerHttpMultiplexedStream> {
+final class HttpPushResponse<T> implements PushResponse<MyHttpResponse<T>> {
 
-    DockerHttpMultiplexedStream stream;
-
-    @Override
-    public boolean isReady() {
-        return false;
-    }
-
-    @Override
-    public DockerHttpMultiplexedStream value() {
-        return null;
-    }
-
-    @Override
-    public Optional<DockerHttpMultiplexedStream> apply(ByteBuffer byteBuffer) {
-        return Optional.empty();
-    }
-}
-
-@RequiredArgsConstructor
-final class HttpFutureResponse<T> implements FutureResponse<MyHttpResponse<T>> {
-
-    FutureResponse<Http.Head> futureHead;
-    FutureResponse<T> futureBody;
+    PushResponse<Http.Head> futureHead;
+    PushResponse<T> futureBody;
     Mutable<MyHttpResponse<T>> response = Mutable.of();
 
     @Override
@@ -587,31 +678,35 @@ final class HttpFutureResponse<T> implements FutureResponse<MyHttpResponse<T>> {
 }
 
 @RequiredArgsConstructor
-final class NpipeRead {
+final class NpipeRead<T> {
 
+    CompletableFuture<T> completion;
     Supplier<CompletableFuture<ByteBuffer>> bytesSupplier;
     ScheduledExecutorService executorService;
-    Duration backoff;
 
-    <T> CompletableFuture<T> read(FutureResponse<T> action) {
-        var completion = new CompletableFuture<T>();
+    void pushTo(PushResponse<T> action) {
         act(action, completion);
-        return completion;
     }
 
-    private <T> void act(FutureResponse<T> action,
-                         CompletableFuture<T> completion) {
-        bytesSupplier.get().thenAccept(buffer -> {
-            try {
-                if (action.apply(buffer).isPresent()) {
-                    completion.complete(action.value());
-                } else {
-                    executorService.submit(() -> act(action, completion));
+    private void act(PushResponse<T> action,
+                     CompletableFuture<T> completion) {
+        bytesSupplier.get().thenAccept(
+            buffer -> {
+                try {
+                    action.apply(buffer).ifPresentOrElse(
+                        completion::complete,
+                        () -> executorService.submit(
+                            () -> act(
+                                action,
+                                completion
+                            )
+                        )
+                    );
+                } catch (Exception e) {
+                    completion.completeExceptionally(e);
                 }
-            } catch (Exception e) {
-                completion.completeExceptionally(e);
             }
-        });
+        );
     }
 }
 
@@ -623,55 +718,55 @@ final class NpipeChannel implements AutoCloseable {
     String socketFile;
     ScheduledExecutorService executor;
     AtomicBoolean isDirtyConnection;
-    NpipeChannelLock lock;
-    Integer bufferSize;
+    NpipeChannelIn in;
+    NpipeChannelOut out;
+    SyncCallback syncCallback;
 
     NpipeChannel(String socketFile, ScheduledExecutorService executor, Log log, Integer bufferSize) {
         this.socketFile = socketFile;
         this.executor = executor;
         this.channel = openChannel();
-        this.lock = new NpipeChannelLock(log);
         this.isDirtyConnection = new AtomicBoolean(false);
-        this.bufferSize = bufferSize;
+        this.syncCallback = new SyncCallback(log);
+        this.in = new NpipeChannelIn(
+            channel,
+            isDirtyConnection,
+            syncCallback,
+            log
+        );
+        this.out = new NpipeChannelOut(
+            channel,
+            bufferSize,
+            log
+        );
     }
 
     NpipeChannel(Log log, ScheduledExecutorService executor, Integer bufferSize) {
         this(
-                HtConstants.NPIPE_SOCKET,
-                executor,
-                log,
-                bufferSize
+            HtConstants.NPIPE_SOCKET,
+            executor,
+            log,
+            bufferSize
         );
     }
 
     CompletableFuture<BufferLines> writeAndRead(Request request) {
-        return new NpipeChannelIn(
-                channel,
-                isDirtyConnection,
-                lock
-        ).write(request).thenCompose(ignore ->
-                new NpipeChannelOut(
-                        channel,
-                        bufferSize
-                ).read()
-        );
+        return in.write(request).thenCompose(ignore -> out.read());
     }
 
-    CompletableFuture<Supplier<CompletableFuture<ByteBuffer>>> writeAndReadAsync(byte[] bytes, Boolean dirtiesConnection) {
-        var in = new NpipeChannelIn(
-                channel,
-                isDirtyConnection,
-                lock
+    <T> CompletableFuture<T> writeAndReadAsync(PushRequest<T> pushRequest) {
+        var completion = new CompletableFuture<T>();
+        in.write(pushRequest.request())
+            .thenRun(
+                () -> new NpipeRead<T>(
+                    completion,
+                    out::readToBufferAsync,
+                    executor
+                ).pushTo(pushRequest.pushResponse())
+            );
+        return completion.whenComplete(
+            (ignore, throwable) -> syncCallback.removeFromQueueAndStartNext(pushRequest.request())
         );
-        var out = new NpipeChannelOut(
-                channel,
-                bufferSize
-        );
-        return in.write(bytes, dirtiesConnection).thenApply(ignore -> out::readToBufferAsync);
-    }
-
-    CompletableFuture<Supplier<CompletableFuture<ByteBuffer>>> writeAndReadAsync(byte[] bytes) {
-        return writeAndReadAsync(bytes, false);
     }
 
     Boolean isDirtyConnection() {
@@ -689,12 +784,12 @@ final class NpipeChannel implements AutoCloseable {
     @SneakyThrows
     private AsynchronousFileChannel openChannel() {
         return AsynchronousFileChannel.open(
-                Paths.get(socketFile),
-                EnumSet.of(
-                        StandardOpenOption.READ,
-                        StandardOpenOption.WRITE
-                ),
-                executor
+            Paths.get(socketFile),
+            EnumSet.of(
+                StandardOpenOption.READ,
+                StandardOpenOption.WRITE
+            ),
+            executor
         );
     }
 
@@ -712,33 +807,40 @@ final class NpipeChannelIn {
 
     AsynchronousFileChannel channel;
     AtomicBoolean isDirtyConnection;
-    NpipeChannelLock lock;
+    SyncCallback syncCallback;
+    Log log;
 
     CompletableFuture<Integer> write(Request request) {
-        return write(request.http().body(), request.repeatReadPredicatePresent());
-    }
-
-    CompletableFuture<Integer> write(byte[] body, Boolean dirtiesConnection) {
         var completion = new CompletableFuture<Integer>();
-        if (body.length == 0) {
-            completion.completeExceptionally(new IllegalArgumentException("Cannot write empty body"));
+        if (request.http().body().length == 0) {
+            log.error(() -> "Cannot write empty body");
+            completion.completeExceptionally(
+                new IllegalArgumentException("Cannot write empty body")
+            );
         } else {
-            lock.acquire(() -> new String(body, StandardCharsets.UTF_8));
-            channel.write(ByteBuffer.wrap(body), 0, null, new CompletionHandler<>() {
+            Runnable action = () -> {
+                channel.write(
+                    ByteBuffer.wrap(request.http().body()),
+                    0,
+                    null,
+                    new CompletionHandler<>() {
 
-                @Override
-                public void completed(Integer result, Object attachment) {
-                    completion.complete(result);
-                }
+                        @Override
+                        public void completed(Integer result, Object attachment) {
+                            completion.complete(result);
+                        }
 
-                @Override
-                public void failed(Throwable exc, Object attachment) {
-                    completion.completeExceptionally(exc);
+                        @Override
+                        public void failed(Throwable exc, Object attachment) {
+                            completion.completeExceptionally(exc);
+                        }
+                    }
+                );
+                if (request.repeatReadPredicatePresent()) {
+                    isDirtyConnection.set(true);
                 }
-            });
-            if (dirtiesConnection) {
-                isDirtyConnection.set(true);
-            }
+            };
+            syncCallback.placeInQueueAndTryStart(request, action);
         }
         return completion;
     }
@@ -747,53 +849,60 @@ final class NpipeChannelIn {
 final class NpipeChannelOut {
 
     AsynchronousFileChannel channel;
-    Integer bufferSize;
+    ByteBuffer byteBuffer;
+    Log log;
 
-    public NpipeChannelOut(AsynchronousFileChannel channel, Integer bufferSize) {
+    public NpipeChannelOut(AsynchronousFileChannel channel, Integer bufferSize, Log log) {
         if (bufferSize <= 0) {
             throw new IllegalArgumentException("Buffer size must be greater than 0");
         }
         this.channel = channel;
-        this.bufferSize = bufferSize;
+        this.byteBuffer = ByteBuffer.allocate(bufferSize);
+        this.log = log;
     }
 
     @SneakyThrows
     CompletableFuture<BufferLines> read() {
         return CompletableFuture.supplyAsync(
-                () -> new BufferLines(
-                        () -> {
-                            var buffer = readToBuffer();
-                            return Arrays.copyOf(buffer.array(), buffer.limit());
-                        }
-                )
+            () -> new BufferLines(
+                () -> {
+                    var buffer = readToBuffer();
+                    return Arrays.copyOf(buffer.array(), buffer.limit());
+                }
+            )
         );
     }
 
     CompletableFuture<ByteBuffer> readToBufferAsync() {
-        var buffer = ByteBuffer.allocate(bufferSize);
         var completion = new CompletableFuture<ByteBuffer>();
-        channel.read(buffer, 0, null, new CompletionHandler<>() {
+        log.debug(() -> "Started reading from channel");
+        channel.read(
+            byteBuffer.clear(),
+            0,
+            null,
+            new CompletionHandler<>() {
 
-            @Override
-            public void completed(Integer result, Object attachment) {
-                buffer.flip();
-                completion.complete(buffer);
-            }
+                @Override
+                public void completed(Integer result, Object attachment) {
+                    log.debug(() -> "Completed reading from channel, `result` -> " + result);
+                    byteBuffer.flip();
+                    completion.complete(byteBuffer);
+                }
 
-            @Override
-            public void failed(Throwable exc, Object attachment) {
-                completion.completeExceptionally(exc);
+                @Override
+                public void failed(Throwable exc, Object attachment) {
+                    log.error(() -> "Failed to read from channel");
+                    completion.completeExceptionally(exc);
+                }
             }
-        });
+        );
         return completion;
     }
 
     @SneakyThrows
     private ByteBuffer readToBuffer() {
-        var buffer = ByteBuffer.allocate(bufferSize);
-        channel.read(buffer, 0).get();
-        buffer.flip();
-        return buffer;
+        channel.read(byteBuffer.clear(), 0).get();
+        return byteBuffer.flip();
     }
 }
 
@@ -801,6 +910,7 @@ final class NpipeChannelOut {
 final class NpipeChannelLock {
 
     Semaphore lock = new Semaphore(1);
+
     AtomicLong lockTime = new AtomicLong();
     Log log;
 
@@ -828,6 +938,7 @@ final class NpipeChannelLock {
 final class ByteFlow {
 
     Supplier<ByteBuffer> byteBufferSupplier;
+
     @NonFinal
     ByteBuffer currentBuffer;
     Duration pollBackoff;
@@ -853,14 +964,88 @@ final class ByteFlow {
 
     long nextUnsignedInt() {
         return ((nextByte() & 0xFFL) << 24) |
-                ((nextByte() & 0xFFL) << 16) |
-                ((nextByte() & 0xFFL) << 8) |
-                (nextByte() & 0xFFL);
+            ((nextByte() & 0xFFL) << 16) |
+            ((nextByte() & 0xFFL) << 8) |
+            (nextByte() & 0xFFL);
     }
 
     void skip(int n) {
         for (int i = 0; i < n; i++) {
             nextByte();
         }
+    }
+}
+
+final class SyncCallback {
+
+    Log log;
+    List<Item> actions;
+
+    SyncCallback(Log log) {
+        this.log = log;
+        this.actions = new ArrayList<>();
+    }
+
+    void placeInQueueAndTryStart(Object request, Runnable action) {
+        var actionsSize = sync(
+            () -> {
+                actions.add(
+                    new SyncCallback.Item(
+                        request,
+                        action
+                    )
+                );
+                return actions.size();
+            }
+        );
+        if (actionsSize == 1) {
+            log.debug(() -> "Starting action immediately as it is the only one in the queue");
+            action.run();
+        } else {
+            log.debug(() -> "Placed action in queue, will wait for " + (actionsSize - 1) + " previous actions to finish");
+        }
+    }
+
+    void removeFromQueueAndStartNext(Request request) {
+        sync(
+            () -> removeFromQueueAndTakeNext(
+                request
+            )
+        ).run();
+    }
+
+    private synchronized <T> T sync(Supplier<T> action) {
+        return action.get();
+    }
+
+    private Runnable removeFromQueueAndTakeNext(Request request) {
+        var indexOfAction = -1;
+        for (var idx = 0; idx < actions.size(); idx++) {
+            var item = actions.get(idx);
+            if (item.request() == request) {
+                indexOfAction = idx;
+                break;
+            }
+        }
+        if (indexOfAction == -1) {
+            throw new IllegalStateException("Failed to find action for request");
+        }
+        if (actions.size() == 1) {
+            actions.clear();
+            return () -> log.debug(() -> "No more actions in queue");
+        } else {
+            actions.remove(indexOfAction);
+            return () -> {
+                log.debug(() -> "Starting next action in queue, " + actions.size() + " actions remaining");
+                actions.get(0).action().run();
+            };
+        }
+    }
+
+    @Value
+    static class Item {
+
+        Object request;
+        Runnable action;
     }
 }

@@ -16,8 +16,8 @@ class HtCliRmImagesSpecTest implements UnitTest {
     @Test
     void toCommand__empty_ids_list__should_throw_exception() {
         assertThatThrownBy(() -> new HtCliRmImagesSpec(List.of()))
-                .isInstanceOf(IllegalArgumentException.class)
-                .hasMessageContaining("Image references must not be empty");
+            .isInstanceOf(IllegalArgumentException.class)
+            .hasMessageContaining("Image references must not be empty");
     }
 
     @Test

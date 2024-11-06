@@ -61,7 +61,7 @@ final class HttpFollowedLogs implements HtFollowedLogs {
             streamAsyncInternal(request -> request.withRepeatReadPredicate(lookFor, Duration.ofMillis(10))).join();
         } else {
             streamAsyncInternal(request -> request.withRepeatReadPredicate(lookFor, Duration.ofMillis(10)))
-                    .get(timeout.toMillis(), TimeUnit.MILLISECONDS);
+                .get(timeout.toMillis(), TimeUnit.MILLISECONDS);
         }
         return CompletableFuture.completedFuture(null);
     }
@@ -72,18 +72,18 @@ final class HttpFollowedLogs implements HtFollowedLogs {
 
     private CompletableFuture<Logs> streamAsyncInternal(Function<Request, Request> requestAction) {
         return dockerSpec.socket()
-                .sendAsync(
-                        requestAction.apply(
-                                new Request(
-                                        dockerSpec.requests().get(logsSpec)
-                                ).withExpectedStatus(200)
-                        )
+            .sendAsync(
+                requestAction.apply(
+                    new Request(
+                        dockerSpec.requests().get(logsSpec)
+                    ).withExpectedStatus(200)
                 )
-                .thenApply(response ->
-                        new Logs.DfLogs(
-                                response.stdOut(),
-                                response.stdErr()
-                        )
-                );
+            )
+            .thenApply(response ->
+                new Logs.DfLogs(
+                    response.stdOut(),
+                    response.stdErr()
+                )
+            );
     }
 }

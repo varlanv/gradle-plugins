@@ -40,13 +40,13 @@ class HtHttpDckrIntegrationTest implements DockerIntegrationTest {
     @Execution(ExecutionMode.CONCURRENT)
     void listContainers__withRandomFilters__shouldReturnEmptyList(HtHttpDckr subject) {
         var htContainers = subject.containers().list(spec -> spec
-                        .withIdFilter("asd")
-                        .withLabelFilter("key", "val")
-                        .withLabelFilter("key2")
-                        .withNameFilter("someName")
-                        .withAll()
-                )
-                .asList();
+                .withIdFilter("asd")
+                .withLabelFilter("key", "val")
+                .withLabelFilter("key2")
+                .withNameFilter("someName")
+                .withAll()
+            )
+            .asList();
 
         assertThat(htContainers).isEmpty();
     }
@@ -60,31 +60,31 @@ class HtHttpDckrIntegrationTest implements DockerIntegrationTest {
         var ex = Mutable.<Throwable>of();
         try {
             var containerEnv = Map.of(
-                    "ENV1", "ENVVALUE1",
-                    "ENV2", "ENVVALUE2"
+                "ENV1", "ENVVALUE1",
+                "ENV2", "ENVVALUE2"
             );
             var containerLabels = Map.of(
-                    "LABEL1", "LABELVALUE1",
-                    "LABEL2", "LABELVALUE2"
+                "LABEL1", "LABELVALUE1",
+                "LABEL2", "LABELVALUE2"
             );
             var mappedPort1 = new MappedPort(new DynamicContainerPort().hostValue(), 80);
             var mappedPort2 = new MappedPort(new DynamicContainerPort().hostValue(), 8080);
             {
                 var container = subject.containers().run(
-                                DockerImagesStash.defaultSmall(),
-                                spec -> spec
-                                        .withCommand(
-                                                DockerImagesStash.smallImageBusyCommand().command(),
-                                                DockerImagesStash.smallImageBusyCommand().args()
-                                        )
-                                        .withEnv(containerEnv)
-                                        .withLabels(containerLabels)
-                                        .withPortBindings(Map.of(
-                                                mappedPort1.host(), mappedPort1.container(),
-                                                mappedPort2.host(), mappedPort2.container()
-                                        ))
-                                        .withLookFor("Hello World 123", Duration.ofSeconds(10)))
-                        .exec();
+                        DockerImagesStash.defaultSmall(),
+                        spec -> spec
+                            .withCommand(
+                                DockerImagesStash.smallImageBusyCommand().command(),
+                                DockerImagesStash.smallImageBusyCommand().args()
+                            )
+                            .withEnv(containerEnv)
+                            .withLabels(containerLabels)
+                            .withPortBindings(Map.of(
+                                mappedPort1.host(), mappedPort1.container(),
+                                mappedPort2.host(), mappedPort2.container()
+                            ))
+                            .withLookFor("Hello World 123", Duration.ofSeconds(10)))
+                    .exec();
                 assertThat(container.id()).isNotEmpty();
                 containerRef.set(container);
                 var containerConfig = container.config();
@@ -97,30 +97,30 @@ class HtHttpDckrIntegrationTest implements DockerIntegrationTest {
             {
                 var logs = new CopyOnWriteArrayList<String>();
                 subject.containers().logs(containerRef.require().id())
-                        .follow()
-                        .lookFor(LookFor.lineMatching(line -> {
-                            logs.add(line);
-                            return line.contains("Hello World 123");
-                        }));
+                    .follow()
+                    .lookFor(LookFor.lineMatching(line -> {
+                        logs.add(line);
+                        return line.contains("Hello World 123");
+                    }));
                 assertThat(logs).containsExactly("Hello World 1", "Hello World 123");
             }
             {
                 var logs = new CopyOnWriteArrayList<>();
                 subject.containers().logs(containerRef.require().id())
-                        .follow()
-                        .lookFor(LookFor.lineMatching(line -> {
-                            logs.add(line);
-                            return line.contains("Hello World 1");
-                        }));
+                    .follow()
+                    .lookFor(LookFor.lineMatching(line -> {
+                        logs.add(line);
+                        return line.contains("Hello World 1");
+                    }));
                 assertThat(logs).containsExactly("Hello World 1");
             }
 
             {
                 Runnable readLogs = () -> {
                     var logs = subject.containers()
-                            .logs(containerRef.require().id())
-                            .stream().all()
-                            .collect(Collectors.toList());
+                        .logs(containerRef.require().id())
+                        .stream().all()
+                        .collect(Collectors.toList());
                     assertThat(logs).containsExactly("Hello World 1", "Hello World 123");
                 };
                 readLogs.run();
@@ -128,35 +128,35 @@ class HtHttpDckrIntegrationTest implements DockerIntegrationTest {
             }
             {
                 subject.containers()
-                        .logs(containerRef.require().id())
-                        .asyncStream()
-                        .thenAccept(logs -> assertThat(logs.all()).containsExactly("Hello World 1", "Hello World 123"))
-                        .join();
+                    .logs(containerRef.require().id())
+                    .asyncStream()
+                    .thenAccept(logs -> assertThat(logs.all()).containsExactly("Hello World 1", "Hello World 123"))
+                    .join();
             }
             {
                 subject.containers()
-                        .logs(containerRef.require().id())
-                        .asyncStdOut()
-                        .thenAccept(logs -> assertThat(logs.collect(Collectors.toList())).containsExactly("Hello World 1", "Hello World 123"))
-                        .join();
+                    .logs(containerRef.require().id())
+                    .asyncStdOut()
+                    .thenAccept(logs -> assertThat(logs.collect(Collectors.toList())).containsExactly("Hello World 1", "Hello World 123"))
+                    .join();
             }
             {
                 subject.containers()
-                        .logs(containerRef.require().id())
-                        .asyncStdErr()
-                        .thenAccept(logs -> assertThat(logs.collect(Collectors.toList())).isEmpty())
-                        .join();
+                    .logs(containerRef.require().id())
+                    .asyncStdErr()
+                    .thenAccept(logs -> assertThat(logs.collect(Collectors.toList())).isEmpty())
+                    .join();
             }
             {
                 var logs = subject.containers()
-                        .logs(containerRef.require().id())
-                        .stdErr();
+                    .logs(containerRef.require().id())
+                    .stdErr();
                 assertThat(logs.collect(Collectors.toList())).isEmpty();
             }
             {
                 var logs = subject.containers()
-                        .logs(containerRef.require().id())
-                        .stdErr();
+                    .logs(containerRef.require().id())
+                    .stdErr();
                 assertThat(logs.collect(Collectors.toList())).isEmpty();
             }
             {
@@ -233,9 +233,9 @@ class HtHttpDckrIntegrationTest implements DockerIntegrationTest {
                 }
                 {
                     subject.containers().execInContainer(
-                            containerRef.require().id(),
-                            "sh",
-                            List.of("-c", "echo $((1 + 1)) && echo $((2 + 2))")
+                        containerRef.require().id(),
+                        "sh",
+                        List.of("-c", "echo $((1 + 1)) && echo $((2 + 2))")
                     ).exec();
                 }
             }
@@ -257,16 +257,14 @@ class HtHttpDckrIntegrationTest implements DockerIntegrationTest {
 
         private static final MemoizedSupplier<HtHttpDckr> subjectSupplier = MemoizedSupplier.of(() -> new HtHttpDckr().withCleanOnClose(true));
         private static final ConcurrentMap<String, Supplier<Object>> parameters = new ConcurrentHashMap<>(
-                Map.of(
-                        HtHttpDckr.class.getName(), subjectSupplier::get
-                )
+            Map.of(
+                HtHttpDckr.class.getName(), subjectSupplier::get
+            )
         );
 
         @Override
         public void afterAll(ExtensionContext context) {
-            if (subjectSupplier.isInitialized()) {
-                subjectSupplier.get().close();
-            }
+            subjectSupplier.ifInitialized(HtHttpDckr::close);
         }
 
         @Override
@@ -277,7 +275,7 @@ class HtHttpDckrIntegrationTest implements DockerIntegrationTest {
         @Override
         public Object resolveParameter(ParameterContext parameterContext, ExtensionContext extensionContext) throws ParameterResolutionException {
             return Optional.ofNullable(parameters.get(parameterContext.getParameter().getType().getName()).get())
-                    .orElseThrow(() -> new ParameterResolutionException("No supplier found for " + parameterContext.getParameter().getType().getName()));
+                .orElseThrow(() -> new ParameterResolutionException("No supplier found for " + parameterContext.getParameter().getType().getName()));
         }
     }
 }

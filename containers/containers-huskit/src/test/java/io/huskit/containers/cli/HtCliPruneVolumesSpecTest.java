@@ -43,8 +43,8 @@ class HtCliPruneVolumesSpecTest implements UnitTest {
     @Test
     void toCommand___withAll_and_withFilterByDangling__returnsCommandWithAllAndFilterByDangling() {
         var subject = new HtCliPruneVolumesSpec()
-                .withAll()
-                .withFilterByDangling(true);
+            .withAll()
+            .withFilterByDangling(true);
 
         var actual = subject.toCommand();
 
@@ -63,15 +63,15 @@ class HtCliPruneVolumesSpecTest implements UnitTest {
     @Test
     void toCommand__withFilterByLabelExists__when_called_twice__returnsCommandWithFilterByLabelExists() {
         var subject = new HtCliPruneVolumesSpec()
-                .withFilterByLabelExists("label1")
-                .withFilterByLabelExists("label2");
+            .withFilterByLabelExists("label1")
+            .withFilterByLabelExists("label2");
 
         var actual = subject.toCommand();
 
         assertThat(actual).containsExactly("docker", "volume", "prune",
-                "-f",
-                "--filter", HtStrings.doubleQuote("label=label1"),
-                "--filter", HtStrings.doubleQuote("label=label2")
+            "-f",
+            "--filter", HtStrings.doubleQuote("label=label1"),
+            "--filter", HtStrings.doubleQuote("label=label2")
         );
     }
 
@@ -104,11 +104,11 @@ class HtCliPruneVolumesSpecTest implements UnitTest {
         var actual = subject.toCommand();
 
         assertThat(actual).containsExactly(
-                "docker", "volume", "prune",
-                "-f",
-                "--filter", HtStrings.doubleQuote("label=key1=value1"),
-                "--filter", HtStrings.doubleQuote("label=key2=value2"),
-                "--filter", HtStrings.doubleQuote("label=key3=value3")
+            "docker", "volume", "prune",
+            "-f",
+            "--filter", HtStrings.doubleQuote("label=key1=value1"),
+            "--filter", HtStrings.doubleQuote("label=key2=value2"),
+            "--filter", HtStrings.doubleQuote("label=key3=value3")
         );
     }
 
@@ -120,7 +120,7 @@ class HtCliPruneVolumesSpecTest implements UnitTest {
         var subject = new HtCliPruneVolumesSpec();
 
         assertThatThrownBy(() -> subject.withFilterByLabels(labels))
-                .isInstanceOf(NullPointerException.class)
-                .hasMessage("Null label values are not allowed");
+            .isInstanceOf(NullPointerException.class)
+            .hasMessage("Null label values are not allowed");
     }
 }
