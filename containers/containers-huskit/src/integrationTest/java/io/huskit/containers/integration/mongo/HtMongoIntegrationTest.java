@@ -25,18 +25,14 @@ class HtMongoIntegrationTest implements DockerIntegrationTest {
         var subject = HtMongo.fromImage(HtConstants.Mongo.DEFAULT_IMAGE)
             .withContainerSpec(spec -> spec.reuse().enabledWithCleanupAfter(Duration.ofMinutes(120)))
             .start();
-        {
-            var connectionString = subject.connectionString();
-            verifyMongoConnection(connectionString);
-        }
+        var connectionString = subject.connectionString();
+        verifyMongoConnection(connectionString);
 
-        {
-            assertThat(subject.connectionString()).isEqualTo(subject.connectionString());
-            assertThat(subject.id()).isNotBlank();
-            assertThat(subject.properties()).containsEntry(HtConstants.Mongo.DEFAULT_CONNECTION_STRING_ENV, subject.connectionString());
-            assertThat(subject.properties()).containsEntry(HtConstants.Mongo.DEFAULT_DB_NAME_ENV, HtConstants.Mongo.DEFAULT_DB_NAME);
-            assertThat(subject.properties()).containsKey(HtConstants.Mongo.DEFAULT_PORT_ENV);
-        }
+        assertThat(subject.connectionString()).isEqualTo(subject.connectionString());
+        assertThat(subject.id()).isNotBlank();
+        assertThat(subject.properties()).containsEntry(HtConstants.Mongo.DEFAULT_CONNECTION_STRING_ENV, subject.connectionString());
+        assertThat(subject.properties()).containsEntry(HtConstants.Mongo.DEFAULT_DB_NAME_ENV, HtConstants.Mongo.DEFAULT_DB_NAME);
+        assertThat(subject.properties()).containsKey(HtConstants.Mongo.DEFAULT_PORT_ENV);
         System.out.println("Mongo container create HTTP time - " + Duration.ofMillis(System.currentTimeMillis() - var));
     }
 
