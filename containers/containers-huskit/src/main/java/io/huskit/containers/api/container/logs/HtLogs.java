@@ -1,13 +1,15 @@
 package io.huskit.containers.api.container.logs;
 
+import io.huskit.containers.http.MultiplexedFrames;
+
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Stream;
 
 public interface HtLogs {
 
-    Logs stream();
+    MultiplexedFrames frames();
 
-    CompletableFuture<Logs> asyncStream();
+    CompletableFuture<MultiplexedFrames> asyncFrames();
 
     Stream<String> stdOut();
 

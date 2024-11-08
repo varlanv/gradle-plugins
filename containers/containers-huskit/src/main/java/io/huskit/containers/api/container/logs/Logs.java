@@ -6,6 +6,7 @@ import io.huskit.containers.http.SimplePipe;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
+import java.util.List;
 import java.util.stream.Stream;
 
 public interface Logs {
@@ -20,13 +21,31 @@ public interface Logs {
 
     @Getter
     @RequiredArgsConstructor
-    class DfLogs implements Logs {
+    final class DfLogs implements Logs {
+
+        List<String> stdOut;
+        List<String> stdErr;
+
+        @Override
+        public Stream<String> stdOut() {
+            return stdOut.stream();
+        }
+
+        @Override
+        public Stream<String> stdErr() {
+            return stdErr.stream();
+        }
+    }
+
+    @Getter
+    @RequiredArgsConstructor
+    final class PipeLogs implements Logs {
 
         SimplePipe stdOutPipe;
         SimplePipe stdErrPipe;
 
         public void close() {
-            Sneaky.doTry(
+            Sneaky.tryAll(
                 stdOutPipe::close,
                 stdErrPipe::close
             );

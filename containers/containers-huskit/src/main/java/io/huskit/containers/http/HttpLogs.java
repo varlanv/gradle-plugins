@@ -2,7 +2,6 @@ package io.huskit.containers.http;
 
 import io.huskit.containers.api.container.logs.HtFollowedLogs;
 import io.huskit.containers.api.container.logs.HtLogs;
-import io.huskit.containers.api.container.logs.Logs;
 
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Stream;
@@ -18,12 +17,12 @@ final class HttpLogs implements HtLogs {
     }
 
     @Override
-    public Logs stream() {
-        return asyncStream().join();
+    public MultiplexedFrames frames() {
+        return asyncFrames().join();
     }
 
     @Override
-    public CompletableFuture<Logs> asyncStream() {
+    public CompletableFuture<MultiplexedFrames> asyncFrames() {
         return asyncStreamOpen();
     }
 
@@ -35,7 +34,11 @@ final class HttpLogs implements HtLogs {
     @Override
     public CompletableFuture<Stream<String>> asyncStdOut() {
         return asyncStreamOpen()
-            .thenApply(Logs::stdOut);
+            .thenApply(
+                logs -> logs.list().stream()
+                    .filter(frame -> frame.type() == FrameType.STDOUT)
+                    .map(MultiplexedFrame::stringData)
+            );
     }
 
     @Override
@@ -46,7 +49,11 @@ final class HttpLogs implements HtLogs {
     @Override
     public CompletableFuture<Stream<String>> asyncStdErr() {
         return asyncStreamOpen()
-            .thenApply(Logs::stdErr);
+            .thenApply(
+                logs -> logs.list().stream()
+                    .filter(frame -> frame.type() == FrameType.STDERR)
+                    .map(MultiplexedFrame::stringData)
+            );
     }
 
     @Override
@@ -57,20 +64,21 @@ final class HttpLogs implements HtLogs {
         );
     }
 
-    private CompletableFuture<Logs> asyncStreamOpen() {
-        return dockerSpec.socket().sendAsync(
-                new Request(
-                    dockerSpec.requests().get(
-                        new HttpLogsSpec(containerId)
+    private CompletableFuture<MultiplexedFrames> asyncStreamOpen() {
+        return dockerSpec.socket()
+            .sendPushAsync(
+                new PushRequest<>(
+                    new Request(
+                        dockerSpec.requests().get(
+                            new HttpLogsSpec(containerId)
+                        )
+                    ).withExpectedStatus(200),
+                    new PushMultiplexedStream(
+                        StreamType.ALL
                     )
-                ).withExpectedStatus(200)
-            )
-            .thenApply(response ->
-                new Logs.DfLogs(
-                    response.stdOut(),
-                    response.stdErr()
-
                 )
+            ).thenApply(
+                response -> response.body().value()
             );
     }
 }

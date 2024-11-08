@@ -1,5 +1,6 @@
 package io.huskit.containers.http;
 
+import io.huskit.common.Log;
 import io.huskit.containers.api.container.HtContainers;
 import io.huskit.containers.api.image.HtImages;
 import io.huskit.containers.api.volume.HtVolumes;
@@ -23,6 +24,13 @@ public final class HtHttpDckr implements HtHttpDocker {
             return new HtHttpDckr(spec.withIsCleanOnClose(cleanOnClose));
         }
         return this;
+    }
+
+    @Override
+    public HtHttpDckr withLog(Log log) {
+        return new HtHttpDckr(
+            spec.withLog(log)
+        );
     }
 
     @Override

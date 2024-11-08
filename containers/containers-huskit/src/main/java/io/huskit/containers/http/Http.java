@@ -37,6 +37,21 @@ public interface Http {
         Head head();
 
         Body<T> body();
+
+        static <T> Response<T> of(Head head, Body<T> body) {
+            return new Response<>() {
+
+                @Override
+                public Head head() {
+                    return head;
+                }
+
+                @Override
+                public Body<T> body() {
+                    return body;
+                }
+            };
+        }
     }
 
     interface RawResponse {

@@ -14,11 +14,14 @@ final class HttpRm implements HtRm {
     public void exec() {
         var ran = false;
         for (var containerId : containerIds) {
-            dockerSpec.socket().send(
-                new Request(
-                    spec.toRequest(containerId)
+            dockerSpec.socket().sendPushAsync(
+                new PushRequest<>(
+                    new Request(
+                        spec.toRequest(containerId)
+                    ).withExpectedStatus(204),
+                    PushResponse.ready()
                 )
-            );
+            ).join();
             ran = true;
         }
         if (!ran) {

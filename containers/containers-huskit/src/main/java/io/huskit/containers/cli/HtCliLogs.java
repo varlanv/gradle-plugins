@@ -3,6 +3,7 @@ package io.huskit.containers.cli;
 import io.huskit.containers.api.container.logs.HtFollowedLogs;
 import io.huskit.containers.api.container.logs.HtLogs;
 import io.huskit.containers.api.container.logs.Logs;
+import io.huskit.containers.http.MultiplexedFrames;
 import lombok.RequiredArgsConstructor;
 import lombok.With;
 
@@ -17,12 +18,12 @@ public class HtCliLogs implements HtLogs {
     String id;
 
     @Override
-    public Logs stream() {
+    public MultiplexedFrames frames() {
         return null;
     }
 
     @Override
-    public CompletableFuture<Logs> asyncStream() {
+    public CompletableFuture<MultiplexedFrames> asyncFrames() {
         return null;
     }
 

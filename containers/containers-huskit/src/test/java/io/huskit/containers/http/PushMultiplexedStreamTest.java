@@ -23,9 +23,9 @@ class PushMultiplexedStreamTest implements UnitTest {
         assertThat(maybeActual).isPresent();
         var actual = maybeActual.get();
         var expectedLinesCount = 76;
-        assertThat(actual.frames()).hasSize(expectedLinesCount);
-        for (var idx = 0; idx < actual.frames().size(); idx++) {
-            var frame = actual.frames().get(idx);
+        assertThat(actual.list()).hasSize(expectedLinesCount);
+        for (var idx = 0; idx < actual.list().size(); idx++) {
+            var frame = actual.list().get(idx);
             assertThat(frame.type()).isEqualTo(FrameType.STDOUT);
             var frameText = new String(frame.data(), StandardCharsets.UTF_8);
             assertThat(frameText).isEqualTo("Hello world %s\n", idx);

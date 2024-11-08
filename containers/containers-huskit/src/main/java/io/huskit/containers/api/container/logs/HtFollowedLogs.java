@@ -1,13 +1,15 @@
 package io.huskit.containers.api.container.logs;
 
+import io.huskit.containers.http.MultiplexedFrames;
+
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Stream;
 
 public interface HtFollowedLogs {
 
-    Logs stream();
+    MultiplexedFrames stream();
 
-    CompletableFuture<Logs> streamAsync();
+    CompletableFuture<MultiplexedFrames> streamAsync();
 
     Stream<String> streamStdOut();
 
@@ -17,7 +19,7 @@ public interface HtFollowedLogs {
 
     CompletableFuture<Stream<String>> streamStdErrAsync();
 
-    void lookFor(LookFor lookFor);
+    MultiplexedFrames lookFor(LookFor lookFor);
 
-    CompletableFuture<Void> lookForAsync(LookFor lookFor);
+    CompletableFuture<MultiplexedFrames> lookForAsync(LookFor lookFor);
 }

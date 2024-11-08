@@ -71,8 +71,9 @@ final class HtHttpContainers implements HtContainers {
                 new HttpInspect(dockerSpec)
             ),
             spec,
+            this::start,
             this::logs,
-            this::start
+            dockerSpec
         );
     }
 

@@ -1,5 +1,6 @@
 package io.huskit.containers.api.docker;
 
+import io.huskit.common.Log;
 import io.huskit.containers.api.container.HtContainers;
 import io.huskit.containers.api.image.HtImages;
 import io.huskit.containers.api.volume.HtVolumes;
@@ -10,6 +11,8 @@ import io.huskit.containers.http.HtHttpDocker;
 public interface HtDocker {
 
     HtDocker withCleanOnClose(Boolean cleanOnClose);
+
+    HtDocker withLog(Log log);
 
     HtContainers containers();
 

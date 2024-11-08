@@ -1,5 +1,6 @@
 package io.huskit.containers.http;
 
+import io.huskit.common.Log;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.With;
@@ -17,13 +18,26 @@ final class DfHtHttpDockerSpec implements HtHttpDockerSpec {
     @Getter
     HttpRequests requests;
     ScheduledExecutorService executor;
+    @With
+    Log log;
 
     public DfHtHttpDockerSpec() {
-        this(new DockerSockets(), false, new HttpRequests(), Executors.newScheduledThreadPool(1));
+        this(
+            new DockerSockets(),
+            false,
+            new HttpRequests(),
+            Executors.newScheduledThreadPool(2),
+            Log.noop()
+        );
     }
 
     @Override
     public DockerSocket socket() {
-        return sockets.pickDefault(executor);
+        return sockets.pickDefault(executor, log);
+    }
+
+    @Override
+    public Log log() {
+        return log;
     }
 }

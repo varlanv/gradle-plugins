@@ -1,15 +1,12 @@
 package io.huskit.containers.http;
 
 import io.huskit.containers.api.container.logs.HtFollowedLogs;
-import io.huskit.containers.api.container.logs.Logs;
 import io.huskit.containers.api.container.logs.LookFor;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 
-import java.time.Duration;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.TimeUnit;
-import java.util.function.Function;
+import java.util.function.Supplier;
 import java.util.stream.Stream;
 
 @RequiredArgsConstructor
@@ -19,12 +16,12 @@ final class HttpFollowedLogs implements HtFollowedLogs {
     HttpLogsSpec logsSpec;
 
     @Override
-    public Logs stream() {
+    public MultiplexedFrames stream() {
         return streamAsyncInternal().join();
     }
 
     @Override
-    public CompletableFuture<Logs> streamAsync() {
+    public CompletableFuture<MultiplexedFrames> streamAsync() {
         return streamAsyncInternal();
     }
 
@@ -35,7 +32,12 @@ final class HttpFollowedLogs implements HtFollowedLogs {
 
     @Override
     public CompletableFuture<Stream<String>> streamStdOutAsync() {
-        return this.streamAsync().thenApply(Logs::stdOut);
+        return this.streamAsync()
+            .thenApply(
+                logs -> logs.list().stream()
+                    .filter(frame -> frame.type() == FrameType.STDOUT)
+                    .map(MultiplexedFrame::stringData)
+            );
     }
 
     @Override
@@ -45,45 +47,46 @@ final class HttpFollowedLogs implements HtFollowedLogs {
 
     @Override
     public CompletableFuture<Stream<String>> streamStdErrAsync() {
-        return this.streamAsync().thenApply(Logs::stdErr);
+        return this.streamAsync()
+            .thenApply(
+                logs -> logs.list().stream()
+                    .filter(frame -> frame.type() == FrameType.STDERR)
+                    .map(MultiplexedFrame::stringData)
+            );
     }
 
     @Override
-    public void lookFor(LookFor lookFor) {
-        lookForAsync(lookFor).join();
+    public MultiplexedFrames lookFor(LookFor lookFor) {
+        return lookForAsync(lookFor).join();
     }
 
     @Override
     @SneakyThrows
-    public CompletableFuture<Void> lookForAsync(LookFor lookFor) {
+    public CompletableFuture<MultiplexedFrames> lookForAsync(LookFor lookFor) {
         var timeout = lookFor.timeout();
         if (timeout.isZero()) {
-            streamAsyncInternal(request -> request.withRepeatReadPredicate(lookFor, Duration.ofMillis(10))).join();
+            return streamAsyncInternal(() -> new PushMultiplexedStream(StreamType.ALL, frame -> lookFor.predicate().test(frame.stringData())));
         } else {
-            streamAsyncInternal(request -> request.withRepeatReadPredicate(lookFor, Duration.ofMillis(10)))
-                .get(timeout.toMillis(), TimeUnit.MILLISECONDS);
+            return streamAsyncInternal(() -> new PushMultiplexedStream(StreamType.ALL, frame -> lookFor.predicate().test(frame.stringData())));
         }
-        return CompletableFuture.completedFuture(null);
     }
 
-    private CompletableFuture<Logs> streamAsyncInternal() {
-        return this.streamAsyncInternal(Function.identity());
+    private CompletableFuture<MultiplexedFrames> streamAsyncInternal() {
+        return this.streamAsyncInternal();
     }
 
-    private CompletableFuture<Logs> streamAsyncInternal(Function<Request, Request> requestAction) {
+    private CompletableFuture<MultiplexedFrames> streamAsyncInternal(Supplier<PushMultiplexedStream> requestAction) {
         return dockerSpec.socket()
-            .sendAsync(
-                requestAction.apply(
+            .sendPushAsync(
+                new PushRequest<>(
                     new Request(
                         dockerSpec.requests().get(logsSpec)
-                    ).withExpectedStatus(200)
+                    ).withExpectedStatus(200).withDirtiesConnection(true),
+                    requestAction.get()
                 )
             )
-            .thenApply(response ->
-                new Logs.DfLogs(
-                    response.stdOut(),
-                    response.stdErr()
-                )
+            .thenApply(
+                response -> response.body().value()
             );
     }
 }

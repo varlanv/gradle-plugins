@@ -22,10 +22,10 @@ class PushChunkedTest implements UnitTest {
         var maybeActual = subject.apply(ByteBuffer.wrap(body));
 
         assertThat(maybeActual)
-                .isPresent()
-                .hasValueSatisfying(actual -> {
-                    var jsonArray = HtJson.toMapList(actual.value());
-                    assertThat(jsonArray).isNotEmpty();
-                });
+            .isPresent()
+            .hasValueSatisfying(actual -> {
+                var jsonArray = HtJson.toMapList(actual);
+                assertThat(jsonArray).isNotEmpty();
+            });
     }
 }

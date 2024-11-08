@@ -1,8 +1,8 @@
 package io.huskit.containers.cli;
 
 import io.huskit.containers.api.container.logs.HtFollowedLogs;
-import io.huskit.containers.api.container.logs.Logs;
 import io.huskit.containers.api.container.logs.LookFor;
+import io.huskit.containers.http.MultiplexedFrames;
 import lombok.RequiredArgsConstructor;
 import lombok.With;
 
@@ -17,13 +17,23 @@ public class HtCliFollowedLogs implements HtFollowedLogs {
     String id;
     LookFor lookFor;
 
+//    @Override
+//    public Logs stream() {
+//        return null;
+//    }
+//
+//    @Override
+//    public CompletableFuture<Logs> streamAsync() {
+//        return null;
+//    }
+
     @Override
-    public Logs stream() {
+    public MultiplexedFrames stream() {
         return null;
     }
 
     @Override
-    public CompletableFuture<Logs> streamAsync() {
+    public CompletableFuture<MultiplexedFrames> streamAsync() {
         return null;
     }
 
@@ -48,12 +58,12 @@ public class HtCliFollowedLogs implements HtFollowedLogs {
     }
 
     @Override
-    public void lookFor(LookFor lookFor) {
-
+    public MultiplexedFrames lookFor(LookFor lookFor) {
+        return null;
     }
 
     @Override
-    public CompletableFuture<Void> lookForAsync(LookFor lookFor) {
+    public CompletableFuture<MultiplexedFrames> lookForAsync(LookFor lookFor) {
         return null;
     }
 

@@ -21,7 +21,7 @@ class PushJsonArrayTest implements UnitTest {
 
         assertThat(maybeActual)
             .hasValueSatisfying(
-                actual -> assertThat(actual.value()).hasSize(4)
+                actual -> assertThat(actual).hasSize(4)
             );
     }
 }

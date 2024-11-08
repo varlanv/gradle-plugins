@@ -21,11 +21,15 @@ final class HttpStart implements HtStart {
 
     @Override
     public CompletableFuture<HtContainer> execAsync() {
-        return dockerSpec.socket().sendAsync(
-            new Request(
-                httpStartSpec.toRequest(containerId)
-            ).withExpectedStatus(204)
-        ).thenApply(r -> new HtLazyContainer(
+        return dockerSpec.socket().sendPushAsync(
+            new PushRequest<>(
+                new Request(
+                    httpStartSpec.toRequest(containerId)
+                ).withExpectedStatus(204),
+                PushResponse.ready()
+            )
+        ).thenApply(
+            r -> new HtLazyContainer(
                 containerId,
                 () -> new HttpInspect(dockerSpec).inspect(containerId)
             )

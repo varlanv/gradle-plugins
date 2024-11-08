@@ -35,7 +35,17 @@ public interface Sneaky {
         return () -> hide(e);
     }
 
-    static void doTry(ThrowingRunnable... runnables) {
+    static void tryQuietly(ThrowingRunnable... runnables) {
+        for (var runnable : runnables) {
+            try {
+                runnable.run();
+            } catch (Exception ignore) {
+                // no-op
+            }
+        }
+    }
+
+    static void tryAll(ThrowingRunnable... runnables) {
         var exceptions = new ArrayList<Exception>(runnables.length);
         for (var runnable : runnables) {
             try {

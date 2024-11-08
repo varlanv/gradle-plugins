@@ -1,5 +1,7 @@
 package io.huskit.containers.http;
 
+import io.huskit.common.Log;
+
 public interface HtHttpDockerSpec {
 
     DockerSocket socket();
@@ -7,4 +9,6 @@ public interface HtHttpDockerSpec {
     Boolean isCleanOnClose();
 
     HttpRequests requests();
+
+    Log log();
 }

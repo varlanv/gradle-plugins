@@ -1,5 +1,7 @@
 package io.huskit.containers.cli;
 
+import io.huskit.common.Log;
+import io.huskit.containers.api.docker.HtDocker;
 import lombok.RequiredArgsConstructor;
 
 import java.util.function.Consumer;
@@ -32,6 +34,11 @@ public class HtCliDckr implements HtCliDocker {
             cli,
             spec.withCleanOnClose(cleanOnClose)
         );
+    }
+
+    @Override
+    public HtDocker withLog(Log log) {
+        return null;
     }
 
     @Override

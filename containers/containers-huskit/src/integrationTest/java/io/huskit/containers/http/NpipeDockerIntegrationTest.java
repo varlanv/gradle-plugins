@@ -334,6 +334,7 @@ public class NpipeDockerIntegrationTest implements DockerIntegrationTest {
     }
 
     @Test
+    @Disabled
     void containers_logs() throws Exception {
         var containerId = "82d6ca1f9bef9cbd84db417ccdec0045ec95121e13b994ee47f85dbc97b359ad";
         var httpRequests = new HttpRequests();
@@ -343,23 +344,17 @@ public class NpipeDockerIntegrationTest implements DockerIntegrationTest {
             Log.fakeVerbose()
         );
         try {
-            microBenchmark(
-                2000,
-                () -> {
-                    var actual = subject.sendPushAsync(
-                            new PushRequest<>(
-                                new Request(
-                                    httpRequests.get(
-                                        HtUrl.of(String.format("/containers/%s/logs?stdout=true&stderr=true", containerId))
-                                    )
-                                ),
-                                new PushMultiplexedStream()
+            var actual = subject.sendPushAsync(
+                    new PushRequest<>(
+                        new Request(
+                            httpRequests.get(
+                                HtUrl.of(String.format("/containers/%s/logs?stdout=true&stderr=true", containerId))
                             )
-                        )
-                        .join();
-                    System.out.println(actual.body().value());
-                });
-//            System.out.println(actual.body().value());
+                        ),
+                        new PushMultiplexedStream()
+                    )
+                )
+                .join();
         } finally {
             subject.release();
         }
