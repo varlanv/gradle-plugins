@@ -74,8 +74,9 @@ final class PushMultiplexedStream implements PushResponse<MultiplexedFrames> {
                         isChunkSizePart = false;
                         isStreamFrameHeaderPart = true;
                         if (currentChunkSizeHex.intValue() == 0) {
-                            response.set(new MultiplexedFrames(frameList));
-                            return Optional.of(response.require());
+                            var value = new MultiplexedFrames(frameList);
+                            response.set(value);
+                            return Optional.of(value);
                         }
                     } else {
                         currentChunkSizeHex = currentChunkSizeHex.withHexChar((char) currentByte);
@@ -122,13 +123,13 @@ final class PushMultiplexedStream implements PushResponse<MultiplexedFrames> {
                             frameList.add(frame);
                             if (follow.isPresent()) {
                                 if (follow.require().test(frame)) {
-                                    response.set(new MultiplexedFrames(frameList));
-                                    return Optional.of(response.require());
+                                    var value = new MultiplexedFrames(frameList);
+                                    response.set(value);
+                                    return Optional.of(value);
                                 } else {
                                     isStreamFrameHeaderPart = true;
                                 }
                             } else {
-                                response.set(new MultiplexedFrames(frameList));
                                 isStreamFrameHeaderPart = true;
                             }
                         }

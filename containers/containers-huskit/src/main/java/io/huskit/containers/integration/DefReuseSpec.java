@@ -27,4 +27,9 @@ public class DefReuseSpec implements ReuseSpec {
         value.set(new ReuseWithTimeout(true, cleanupAfter));
         return parent;
     }
+
+    @Override
+    public ContainerSpec keepForever() {
+        return enabledWithCleanupAfter(Duration.ofDays(365));
+    }
 }

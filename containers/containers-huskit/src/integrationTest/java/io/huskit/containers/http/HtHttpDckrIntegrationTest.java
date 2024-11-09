@@ -28,7 +28,7 @@ class HtHttpDckrIntegrationTest implements DockerIntegrationTest {
     Supplier<HtHttpDckr> subjectSupplier = () ->
         new HtHttpDckr()
             .withCleanOnClose(true)
-            .withLog(Log.fakeVerbose());
+            .withLog(Log.noop());
 
     @Nested
     class SameContainer {
@@ -113,14 +113,20 @@ class HtHttpDckrIntegrationTest implements DockerIntegrationTest {
                 );
             assertThat(logs).containsExactly("Hello World 1", "Hello World 123");
             assertThat(frames.list()).hasSize(2);
-            assertThat(frames.list().get(0)).satisfies(frame -> {
-                assertThat(frame.stringData()).contains("Hello World 1");
-                assertThat(frame.type()).isEqualTo(FrameType.STDOUT);
-            });
-            assertThat(frames.list().get(1)).satisfies(frame -> {
-                assertThat(frame.stringData()).contains("Hello World 123");
-                assertThat(frame.type()).isEqualTo(FrameType.STDOUT);
-            });
+            assertThat(frames.list().get(0))
+                .satisfies(
+                    frame -> {
+                        assertThat(frame.stringData()).contains("Hello World 1");
+                        assertThat(frame.type()).isEqualTo(FrameType.STDOUT);
+                    }
+                );
+            assertThat(frames.list().get(1))
+                .satisfies(
+                    frame -> {
+                        assertThat(frame.stringData()).contains("Hello World 123");
+                        assertThat(frame.type()).isEqualTo(FrameType.STDOUT);
+                    }
+                );
         }
 
         @Test

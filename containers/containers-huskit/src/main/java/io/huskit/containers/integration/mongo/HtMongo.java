@@ -109,13 +109,11 @@ public final class HtMongo implements HtServiceContainer {
             if (reuseEnabled && newDatabaseForEachRequest.require()) {
                 var counter = databaseNameCounter.incrementAndGet();
                 var db = databaseName.require() + "_" + counter;
-                var conn = String.format(HtConstants.Mongo.CONNECTION_STRING_PATTERN,
-                    "localhost", container.firstMappedPort()) + "/" + db;
+                var conn = HtConstants.Mongo.CONNECTION_STRING_PATTERN.apply("localhost", container.firstMappedPort()) + "/" + db;
                 dbName.set(db);
                 connectionString.set(conn);
             } else {
-                var conn = String.format(HtConstants.Mongo.CONNECTION_STRING_PATTERN,
-                    "localhost", container.firstMappedPort());
+                var conn = HtConstants.Mongo.CONNECTION_STRING_PATTERN.apply("localhost", container.firstMappedPort());
                 dbName.set(databaseName.require());
                 connectionString.set(conn);
             }

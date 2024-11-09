@@ -35,9 +35,7 @@ final class HttpLogs implements HtLogs {
     public CompletableFuture<Stream<String>> asyncStdOut() {
         return asyncStreamOpen()
             .thenApply(
-                logs -> logs.list().stream()
-                    .filter(frame -> frame.type() == FrameType.STDOUT)
-                    .map(MultiplexedFrame::stringData)
+                MultiplexedFrames::stdOut
             );
     }
 
@@ -50,9 +48,7 @@ final class HttpLogs implements HtLogs {
     public CompletableFuture<Stream<String>> asyncStdErr() {
         return asyncStreamOpen()
             .thenApply(
-                logs -> logs.list().stream()
-                    .filter(frame -> frame.type() == FrameType.STDERR)
-                    .map(MultiplexedFrame::stringData)
+                MultiplexedFrames::stdErr
             );
     }
 

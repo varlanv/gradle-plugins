@@ -1,20 +1,15 @@
 package io.huskit.common;
 
 import lombok.NoArgsConstructor;
-import org.intellij.lang.annotations.PrintFormat;
 
 import java.time.Duration;
 import java.time.temporal.ChronoUnit;
+import java.util.function.BiFunction;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
 
 @NoArgsConstructor(access = lombok.AccessLevel.PRIVATE)
 public class HtConstants {
-
-    @Override
-    public boolean equals(Object obj) {
-        return super.equals(obj);
-    }
 
     public static final String TEST_SYSTEM_PROPERTY = "htct.test";
     public static final Long ZERO_INSTANT_MILLIS = -62135596800000L;
@@ -66,14 +61,13 @@ public class HtConstants {
 
         public static final Integer DEFAULT_PORT = 27017;
         public static final String DROP_COMMAND = "mongo --eval 'db.adminCommand(\"listDatabases\").databases.forEach(d => "
-                + "{if(![\"admin\", \"config\", \"local\"].includes(d.name)) { db.getSiblingDB(d.name).dropDatabase();} });'";
+            + "{if(![\"admin\", \"config\", \"local\"].includes(d.name)) { db.getSiblingDB(d.name).dropDatabase();} });'";
         public static final String DEFAULT_CONNECTION_STRING_ENV = "MONGO_CONNECTION_STRING";
         public static final String DEFAULT_DB_NAME_ENV = "MONGO_DB_NAME";
         public static final String DEFAULT_PORT_ENV = "MONGO_PORT";
         public static final String NEW_DB_EACH_REQUEST = "MONGO_NEW_DB_EACH_REQUEST";
         public static final String DEFAULT_IMAGE = "mongo:4.4.8";
         public static final String DEFAULT_DB_NAME = "mongoHuskitContainerDb";
-        @PrintFormat
-        public static final String CONNECTION_STRING_PATTERN = "mongodb://%s:%d";
+        public static final BiFunction<Object, Object, String> CONNECTION_STRING_PATTERN = (host, port) -> "mongodb://" + host + ":" + port;
     }
 }

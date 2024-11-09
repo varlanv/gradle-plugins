@@ -22,36 +22,49 @@ class HtMongoIntegrationTest implements DockerIntegrationTest {
     @Test
     @Disabled
     void mongo_test() {
-        long var = System.currentTimeMillis();
+        System.out.println("Huskit container total memory before - "
+            + Runtime.getRuntime().totalMemory() / 1024 / 1024
+            + " Huskit container free memory before - "
+            + Runtime.getRuntime().freeMemory() / 1024 / 1024);
+        var millis = System.currentTimeMillis();
         var subject = HtMongo.fromImage(HtConstants.Mongo.DEFAULT_IMAGE)
-//            .withContainerSpec(spec -> spec.reuse().enabledWithCleanupAfter(Duration.ofMinutes(120)))
-            .withContainerSpec(spec -> spec.reuse().disabled())
+            .withContainerSpec(spec -> spec.reuse().enabledWithCleanupAfter(Duration.ofSeconds(60)))
             .start();
         var connectionString = subject.connectionString();
-        System.out.println("Mongo container create time - " + Duration.ofMillis(System.currentTimeMillis() - var));
+        System.out.println("Mongo huskit container create time - " + Duration.ofMillis(System.currentTimeMillis() - millis));
         verifyMongoConnection(connectionString);
+        System.out.println("Mongo huskit container full time - " + Duration.ofMillis(System.currentTimeMillis() - millis));
+        System.gc();
+        System.out.println("Huskit container total memory after - "
+            + Runtime.getRuntime().totalMemory() / 1024 / 1024
+            + " Huskit container free memory after - "
+            + Runtime.getRuntime().freeMemory() / 1024 / 1024);
 
         assertThat(subject.connectionString()).isEqualTo(subject.connectionString());
         assertThat(subject.id()).isNotBlank();
         assertThat(subject.properties()).containsEntry(HtConstants.Mongo.DEFAULT_CONNECTION_STRING_ENV, subject.connectionString());
         assertThat(subject.properties()).containsEntry(HtConstants.Mongo.DEFAULT_DB_NAME_ENV, HtConstants.Mongo.DEFAULT_DB_NAME);
         assertThat(subject.properties()).containsKey(HtConstants.Mongo.DEFAULT_PORT_ENV);
-        System.out.println("Mongo container create and verify time - " + Duration.ofMillis(System.currentTimeMillis() - var));
     }
 
     @Test
     @Disabled
     void testcontainers() {
-        try (var mongoDBContainer = new MongoDBContainer(HtConstants.Mongo.DEFAULT_IMAGE)) {
-//            var time = System.currentTimeMillis();
-            mongoDBContainer.start();
-//            System.out.println("Mongo container create time - " + Duration.ofMillis(System.currentTimeMillis() - time));
-        }
-        try (var mongoDBContainer = new MongoDBContainer(HtConstants.Mongo.DEFAULT_IMAGE)) {
-            var time = System.currentTimeMillis();
-            mongoDBContainer.start();
-            System.out.println("Mongo container create time - " + Duration.ofMillis(System.currentTimeMillis() - time));
-        }
+        var time = System.currentTimeMillis();
+        System.out.println("Testcontainers total memory before - "
+            + Runtime.getRuntime().totalMemory() / 1024 / 1024
+            + " Testcontainers free memory before - "
+            + Runtime.getRuntime().freeMemory() / 1024 / 1024);
+        var mongoDBContainer = new MongoDBContainer(HtConstants.Mongo.DEFAULT_IMAGE).withReuse(true);
+        mongoDBContainer.start();
+        System.out.println("Mongo testcontainer create time - " + Duration.ofMillis(System.currentTimeMillis() - time));
+        verifyMongoConnection(mongoDBContainer.getConnectionString());
+        System.out.println("Mongo testcontainer full time - " + Duration.ofMillis(System.currentTimeMillis() - time));
+        System.gc();
+        System.out.println("Testcontainers total memory after - "
+            + Runtime.getRuntime().totalMemory() / 1024 / 1024
+            + " Testcontainers free memory after - "
+            + Runtime.getRuntime().freeMemory() / 1024 / 1024);
     }
 
     @Test

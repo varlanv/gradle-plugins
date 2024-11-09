@@ -7,4 +7,6 @@ public interface ReuseSpec {
     ContainerSpec disabled();
 
     ContainerSpec enabledWithCleanupAfter(Duration cleanupAfter);
+
+    ContainerSpec keepForever();
 }
