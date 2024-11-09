@@ -17,6 +17,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -24,10 +25,15 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 class HtHttpDckrIntegrationTest implements DockerIntegrationTest {
 
+    Supplier<HtHttpDckr> subjectSupplier = () ->
+        new HtHttpDckr()
+            .withCleanOnClose(true)
+            .withLog(Log.fakeVerbose());
+
     @Nested
     class SameContainer {
 
-        Mutable<HtHttpDckr> subjectRef = Mutable.of();
+        HtHttpDckr subject = subjectSupplier.get();
         Mutable<HtContainer> containerRef = Mutable.of();
         Map<String, String> containerEnv = Map.of(
             "ENV1", "ENVVALUE1",
@@ -42,12 +48,7 @@ class HtHttpDckrIntegrationTest implements DockerIntegrationTest {
 
         @BeforeAll
         void setupAll() {
-            subjectRef.set(
-                new HtHttpDckr()
-                    .withCleanOnClose(true)
-                    .withLog(Log.fakeVerbose())
-            );
-            var container = subjectRef.require().containers().run(
+            var container = subject.containers().run(
                     DockerImagesStash.defaultSmall(),
                     spec -> spec
                         .withCommand(
@@ -72,7 +73,7 @@ class HtHttpDckrIntegrationTest implements DockerIntegrationTest {
         void cleanupAll() {
             Sneaky.tryQuietly(
                 () -> containerRef.ifPresent(
-                    container -> subjectRef.require()
+                    container -> subject
                         .containers()
                         .remove(
                             container.id(),
@@ -80,7 +81,7 @@ class HtHttpDckrIntegrationTest implements DockerIntegrationTest {
                         )
                         .exec()
                 ),
-                () -> subjectRef.ifPresent(HtHttpDckr::close)
+                () -> subject.close()
             );
         }
 
@@ -100,7 +101,7 @@ class HtHttpDckrIntegrationTest implements DockerIntegrationTest {
         @Test
         void logs_follow__when_look_for_second_line__should_return_two_lines() {
             var logs = new ConcurrentLinkedQueue<>();
-            var frames = subjectRef.require().containers().logs(containerRef.require().id())
+            var frames = subject.containers().logs(containerRef.require().id())
                 .follow()
                 .lookFor(
                     LookFor.lineMatching(
@@ -125,7 +126,7 @@ class HtHttpDckrIntegrationTest implements DockerIntegrationTest {
         @Test
         void logs_follow__when_look_for_first_line__should_return_only_first_line() {
             var logs = new ConcurrentLinkedQueue<>();
-            var frames = subjectRef.require().containers().logs(containerRef.require().id())
+            var frames = subject.containers().logs(containerRef.require().id())
                 .follow()
                 .lookFor(
                     LookFor.lineMatching(
@@ -145,7 +146,7 @@ class HtHttpDckrIntegrationTest implements DockerIntegrationTest {
 
         @Test
         void logs_should_return_expected_lines() {
-            var frames = subjectRef.require()
+            var frames = subject
                 .containers()
                 .logs(containerRef.require().id())
                 .frames();
@@ -155,7 +156,7 @@ class HtHttpDckrIntegrationTest implements DockerIntegrationTest {
 
         @Test
         void logs_stdout_should_return_expected_lines() {
-            var stdout = subjectRef.require()
+            var stdout = subject
                 .containers()
                 .logs(containerRef.require().id())
                 .stdOut();
@@ -165,7 +166,7 @@ class HtHttpDckrIntegrationTest implements DockerIntegrationTest {
 
         @Test
         void logs_stderr_should_return_empty() {
-            var stdErr = subjectRef.require()
+            var stdErr = subject
                 .containers()
                 .logs(containerRef.require().id())
                 .stdErr();
@@ -174,7 +175,7 @@ class HtHttpDckrIntegrationTest implements DockerIntegrationTest {
 
         @Test
         void logs_asyncStdOut_should_return_expected_lines() {
-            var stdout = subjectRef.require()
+            var stdout = subject
                 .containers()
                 .logs(containerRef.require().id())
                 .asyncStdOut()
@@ -185,7 +186,7 @@ class HtHttpDckrIntegrationTest implements DockerIntegrationTest {
 
         @Test
         void logs_asyncStdErr_should_return_empty() {
-            var stdErr = subjectRef.require()
+            var stdErr = subject
                 .containers()
                 .logs(containerRef.require().id())
                 .asyncStdErr()
@@ -195,7 +196,7 @@ class HtHttpDckrIntegrationTest implements DockerIntegrationTest {
 
         @Test
         void logs_asyncFrames_should_return_expected_lines() {
-            var frames = subjectRef.require()
+            var frames = subject
                 .containers()
                 .logs(containerRef.require().id())
                 .asyncFrames()
@@ -206,7 +207,7 @@ class HtHttpDckrIntegrationTest implements DockerIntegrationTest {
 
         @Test
         void inspect_should_return_correct_root_data() {
-            var actual = subjectRef.require().containers().inspect(containerRef.require().id());
+            var actual = subject.containers().inspect(containerRef.require().id());
             assertThat(actual.id()).isEqualTo(containerRef.require().id());
             assertThat(actual.name()).isNotEmpty();
             assertThat(actual.createdAt()).is(today());
@@ -225,7 +226,7 @@ class HtHttpDckrIntegrationTest implements DockerIntegrationTest {
 
         @Test
         void inspect_should_return_correct_container_config() {
-            var actual = subjectRef.require().containers().inspect(containerRef.require().id());
+            var actual = subject.containers().inspect(containerRef.require().id());
             var containerConfig = actual.config();
             assertThat(containerConfig.labels()).containsAllEntriesOf(containerLabels);
             assertThat(containerConfig.env()).containsAllEntriesOf(containerEnv);
@@ -241,7 +242,7 @@ class HtHttpDckrIntegrationTest implements DockerIntegrationTest {
 
         @Test
         void inspect_should_return_correct_network_data() {
-            var actual = subjectRef.require().containers().inspect(containerRef.require().id());
+            var actual = subject.containers().inspect(containerRef.require().id());
             var containerNetwork = actual.network();
             assertThat(containerNetwork.gateway()).isNotEmpty();
             assertThat(containerNetwork.ipAddress()).isNotEmpty();
@@ -263,7 +264,7 @@ class HtHttpDckrIntegrationTest implements DockerIntegrationTest {
 
         @Test
         void inspect_should_return_correct_state_data() {
-            var actual = subjectRef.require().containers().inspect(containerRef.require().id());
+            var actual = subject.containers().inspect(containerRef.require().id());
             var containerState = actual.state();
             assertThat(containerState.status()).isEqualTo(HtContainerStatus.RUNNING);
             assertThat(containerState.pid()).isPositive();
@@ -280,7 +281,7 @@ class HtHttpDckrIntegrationTest implements DockerIntegrationTest {
 
         @Test
         void inspect_should_return_correct_graph_driver_data() {
-            var actual = subjectRef.require().containers().inspect(containerRef.require().id());
+            var actual = subject.containers().inspect(containerRef.require().id());
             var containerGraphDriver = actual.graphDriver();
             assertThat(containerGraphDriver.data()).isNotEmpty();
             assertThat(containerGraphDriver.name()).isNotEmpty();
@@ -289,7 +290,7 @@ class HtHttpDckrIntegrationTest implements DockerIntegrationTest {
         @Test
         @Disabled
         void execInContainer__should_return_expected_output() {
-            subjectRef.require().containers().execInContainer(
+            subject.containers().execInContainer(
                 containerRef.require().id(),
                 "sh",
                 List.of("-c", "echo $((1 + 1)) && echo $((2 + 2))")

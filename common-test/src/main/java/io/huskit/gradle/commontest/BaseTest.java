@@ -255,11 +255,11 @@ public interface BaseTest {
         var averageTime = totalTime / iterations;
         var averageGcTime = totalGcTime / iterations;
         Function<Long, String> timeFormat = time -> {
-            if (time > 1_000_000_000) {
+            if (time > 1_000_000_000) {// 1 second
                 return Duration.ofNanos(time).toString();
-            } else if (time > 1_000_000) {
+            } else if (time > 10_000_000) {// 10 millis
                 return (time / 1_000_000) + " millis";
-            } else if (time > 1_000) {
+            } else if (time > 1_000) {// 1 millis
                 return (time / 1_000) + " micros";
             } else {
                 return time + " nanos";
