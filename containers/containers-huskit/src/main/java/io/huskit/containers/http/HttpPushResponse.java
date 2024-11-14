@@ -30,18 +30,20 @@ final class HttpPushResponse<T> implements PushResponse<Http.Response<T>> {
     @Override
     public Optional<Http.Response<T>> push(ByteBuffer byteBuffer) {
         return futureHead.value()
-                         .flatMap(val -> getHttpResponse(byteBuffer, val))
-                         .or(
-                             () -> futureHead.push(byteBuffer)
-                                             .flatMap(
-                                                 head -> {
-                                                     if (head.isChunked() && !(pushResponse.require() instanceof PushMultiplexedStream)) {
-                                                         pushResponse.set(new PushChunked<>(pushResponse.require()));
-                                                     }
-                                                     return getHttpResponse(byteBuffer, head);
-                                                 }
-                                             )
-                         );
+            .flatMap(val -> getHttpResponse(byteBuffer, val))
+            .or(
+                () -> futureHead.push(byteBuffer)
+                    .flatMap(
+                        head -> {
+                            if (head.isChunked()
+                                && !(pushResponse.require() instanceof PushMultiplexedStream)
+                                && !(pushResponse.require() instanceof PushChunked)) {
+                                pushResponse.set(new PushChunked<>(pushResponse.require()));
+                            }
+                            return getHttpResponse(byteBuffer, head);
+                        }
+                    )
+            );
     }
 
     private Optional<Http.Response<T>> getHttpResponse(ByteBuffer byteBuffer, Http.Head head) {

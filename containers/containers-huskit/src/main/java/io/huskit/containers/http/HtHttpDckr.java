@@ -43,12 +43,12 @@ public final class HtHttpDckr implements HtHttpDocker {
 
     @Override
     public HtContainers containers() {
-        return new HtHttpContainers(spec);
+        return new HtHttpContainers(spec, images());
     }
 
     @Override
     public HtImages images() {
-        return null;
+        return new HtHttpImages(spec);
     }
 
     @Override

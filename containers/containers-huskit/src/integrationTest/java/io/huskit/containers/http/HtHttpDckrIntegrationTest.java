@@ -299,6 +299,23 @@ class HtHttpDckrIntegrationTest implements DockerIntegrationTest {
         }
 
         @Test
+        void images_list__should_find_default_small_image() {
+            var images = subject.images().list().collect();
+
+            var maybeImage = images.stream()
+                .flatMap(image -> image.inspect().tags())
+                .filter(imageTag -> DockerImagesStash.defaultSmall().equals(imageTag.repository() + ":" + imageTag.tag()))
+                .findAny();
+
+            assertThat(maybeImage).isPresent();
+        }
+
+        @Test
+        void images_pull__should_pull_image() {
+            subject.images().pull(DockerImagesStash.defaultSmall()).exec();
+        }
+
+        @Test
         @Disabled
         void execInContainer__should_return_expected_output() {
             subject.containers().execInContainer(

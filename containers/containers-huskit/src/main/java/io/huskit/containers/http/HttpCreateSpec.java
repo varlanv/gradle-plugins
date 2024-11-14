@@ -2,12 +2,14 @@ package io.huskit.containers.http;
 
 import io.huskit.containers.api.container.run.HtCreateSpec;
 import io.huskit.containers.api.image.HtImgName;
+import lombok.Getter;
 
 import java.util.*;
 import java.util.stream.Collectors;
 
 final class HttpCreateSpec implements HtCreateSpec, HtUrl {
 
+    @Getter
     HtImgName image;
     Map<String, Object> body;
 

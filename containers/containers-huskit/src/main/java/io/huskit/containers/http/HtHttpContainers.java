@@ -11,6 +11,7 @@ import io.huskit.containers.api.container.run.HtCreateSpec;
 import io.huskit.containers.api.container.run.HtRmSpec;
 import io.huskit.containers.api.container.run.HtRun;
 import io.huskit.containers.api.container.run.HtRunSpec;
+import io.huskit.containers.api.image.HtImages;
 import io.huskit.containers.api.image.HtImgName;
 import lombok.RequiredArgsConstructor;
 
@@ -24,6 +25,7 @@ import java.util.stream.Stream;
 final class HtHttpContainers implements HtContainers {
 
     HtHttpDockerSpec dockerSpec;
+    HtImages images;
 
     @Override
     public HtListContainers list() {
@@ -61,14 +63,16 @@ final class HtHttpContainers implements HtContainers {
     }
 
     @Override
-    public HtRun run(CharSequence dockerImageName, Consumer<HtRunSpec> specAction) {
+    public HtRun run(CharSequence  dockerImageName, Consumer<HtRunSpec> specAction) {
         var spec = new HttpRunSpec(dockerImageName);
         specAction.accept(spec);
         return new HttpRun(
             new HttpCreate(
+                dockerImageName.toString(),
                 dockerSpec,
                 spec.createSpec(),
-                new HttpInspect(dockerSpec)
+                new HttpInspect(dockerSpec),
+                new LocalImagesStash(images)
             ),
             spec,
             this::start,
@@ -90,9 +94,11 @@ final class HtHttpContainers implements HtContainers {
         var spec = new HttpCreateSpec(HtImgName.of(dockerImageName));
         specAction.accept(spec);
         return new HttpCreate(
+            dockerImageName.toString(),
             dockerSpec,
             spec,
-            new HttpInspect(dockerSpec)
+            new HttpInspect(dockerSpec),
+            new LocalImagesStash(images)
         );
     }
 

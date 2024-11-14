@@ -121,13 +121,13 @@ final class HttpChannel implements AutoCloseable {
     <T> CompletableFuture<T> writeAndReadAsync(PushRequest<T> pushRequest) {
         var completion = new CompletableFuture<T>();
         in.write(pushRequest.request())
-          .thenRun(
-              () -> new NpipeRead<T>(
-                  completion,
-                  out::readToBufferAsync,
-                  executor
-              ).pushTo(pushRequest.pushResponse())
-          );
+            .thenRun(
+                () -> new NpipeRead<T>(
+                    completion,
+                    out::readToBufferAsync,
+                    executor
+                ).pushTo(pushRequest.pushResponse())
+            );
         return completion.whenComplete(
             (ignore, throwable) -> {
                 syncCallback.removeFromQueueAndStartNext(

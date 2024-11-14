@@ -11,9 +11,11 @@ import java.util.concurrent.CompletableFuture;
 @RequiredArgsConstructor
 final class HttpCreate implements HtCreate {
 
+    String imgName;
     HtHttpDockerSpec dockerSpec;
     HttpCreateSpec httpCreateSpec;
     HttpInspect httpInspect;
+    LocalImagesStash localImagesStash;
 
     @Override
     public HtContainer exec() {
@@ -22,6 +24,7 @@ final class HttpCreate implements HtCreate {
 
     @Override
     public CompletableFuture<HtContainer> execAsync() {
+        localImagesStash.pullIfAbsent(imgName);
         return dockerSpec.socket()
             .sendPushAsync(
                 new PushRequest<>(

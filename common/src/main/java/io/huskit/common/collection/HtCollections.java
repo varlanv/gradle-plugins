@@ -2,10 +2,7 @@ package io.huskit.common.collection;
 
 import lombok.experimental.UtilityClass;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 @UtilityClass
 public class HtCollections {
@@ -48,10 +45,10 @@ public class HtCollections {
     public static <K, V> void putOrAdd(Map<K, List<V>> map, K key, V value) {
         var list = map.get(key);
         if (list != null) {
-            list.add(value);
+            list.add(Objects.requireNonNull(value));
         } else {
             var newList = new ArrayList<V>();
-            newList.add(value);
+            newList.add(Objects.requireNonNull(value));
             map.put(key, newList);
         }
     }
