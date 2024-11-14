@@ -1,5 +1,6 @@
 package io.huskit.containers.http;
 
+import io.huskit.common.concurrent.FinishFuture;
 import io.huskit.containers.api.container.HtContainer;
 import io.huskit.containers.api.container.run.HtRun;
 import lombok.RequiredArgsConstructor;
@@ -19,7 +20,10 @@ final class HttpRun implements HtRun {
 
     @Override
     public HtContainer exec() {
-        return execAsync().join();
+        return FinishFuture.finish(
+            execAsync(),
+            dockerSpec.defaultTimeout()
+        );
     }
 
     @Override

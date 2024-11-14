@@ -1,10 +1,11 @@
 package io.huskit.containers.http;
 
+import io.huskit.common.concurrent.FinishFuture;
 import io.huskit.containers.api.container.HtContainer;
 import io.huskit.containers.api.container.HtJsonContainer;
 import io.huskit.containers.api.container.list.HtListContainers;
-import io.huskit.containers.internal.HtJson;
 import lombok.RequiredArgsConstructor;
+import lombok.SneakyThrows;
 
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
@@ -19,8 +20,9 @@ final class HtHttpListContainers implements HtListContainers {
     HtHttpListContainersSpec spec;
 
     @Override
+    @SneakyThrows
     public Stream<HtContainer> asStream() {
-        return asStreamAsync().join();
+        return FinishFuture.finish(asStreamAsync(), dockerSpec.defaultTimeout());
     }
 
     @Override

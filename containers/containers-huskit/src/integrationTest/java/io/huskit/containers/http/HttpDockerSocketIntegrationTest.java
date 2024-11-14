@@ -314,10 +314,18 @@ public class HttpDockerSocketIntegrationTest implements DockerIntegrationTest {
     }
 
     @Test
-    @Disabled
     void tst() throws Exception {
         try (var channel = SocketChannel.open(UnixDomainSocketAddress.of(HtConstants.UNIX_SOCKET))) {
-            channel.write(ByteBuffer.wrap("GET /containers/json?all=true HTTP/1.1\r\nHost: localhost\r\n\r\n".getBytes(StandardCharsets.UTF_8)));
+            channel.write(
+                ByteBuffer.wrap((
+                    "POST /containers/create HTTP/1.1\r\n"
+                        + "Host: localhost\r\n"
+                        + "Connection: keep-alive\r\n"
+                        + "Content-Type: application/json\r\n"
+                        + "Content-Length: 383\r\n"
+                        + "\r\n"
+                        + "{\"HostConfig\":{\"PortBindings\":{\"80/tcp\":[{\"HostPort\":\"36217\"}],\"8080/tcp\":[{\"HostPort\":\"35379\"}]}},\"Labels\":{\"LABEL2\":\"LABELVALUE2\",\"LABEL1\":\"LABELVALUE1\"},\"Cmd\":[\"sh\",\"-c\",\"echo 'Hello World 1' && echo 'Hello World 123' && tail -f /dev/null\"],\"Env\":[\"ENV2=ENVVALUE2\",\"ENV1=ENVVALUE1\"],\"Image\":\"public.ecr.aws/docker/library/alpine:3.20.3\",\"ExposedPorts\":{\"80/tcp\":{},\"8080/tcp\":{}}}").getBytes(StandardCharsets.UTF_8))
+            );
             var buffer = ByteBuffer.allocate(4096);
             channel.read(buffer);
             buffer.flip();

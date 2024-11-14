@@ -99,14 +99,13 @@ final class HttpChannel implements AutoCloseable {
         this.executor = executor;
         this.channel = asyncChannelSupplier.get();
         this.syncCallback = new SyncCallback(log);
-        var memoizedChannel = MemoizedSupplier.of(() -> channel);
         this.in = new DockerChannelIn(
-            memoizedChannel,
+            () -> channel,
             syncCallback,
             log
         );
         this.out = new DockerChannelOut(
-            memoizedChannel,
+            () -> channel,
             bufferSize,
             log
         );
@@ -146,10 +145,7 @@ final class HttpChannel implements AutoCloseable {
 
     @Override
     public void close() throws Exception {
-        var ch = channel;
-        if (ch != null) {
-            ch.close();
-        }
+        channel.close();
     }
 }
 
@@ -168,34 +164,34 @@ final class DockerChannelIn {
                 new IllegalArgumentException("Cannot write empty body")
             );
         } else {
-            Runnable action = () -> {
-                log.debug(
-                    () -> "Writing to channel: "
-                        + System.lineSeparator()
-                        + new String(
-                        request.http().body(),
-                        StandardCharsets.UTF_8
-                    )
-                );
-                channel.get().write(
-                    ByteBuffer.wrap(request.http().body()),
-                    0,
-                    null,
-                    new CompletionHandler<>() {
+            syncCallback.placeInQueueAndTryStart(
+                request,
+                () -> {
+                    log.debug(
+                        () -> "Writing to channel: "
+                            + System.lineSeparator()
+                            + new String(
+                            request.http().body(),
+                            StandardCharsets.UTF_8
+                        )
+                    );
+                    channel.get().write(
+                        ByteBuffer.wrap(request.http().body()),
+                        new CompletionHandler<>() {
 
-                        @Override
-                        public void completed(Integer result, Object attachment) {
-                            completion.complete(result);
-                        }
+                            @Override
+                            public void completed(Integer result, Object attachment) {
+                                completion.complete(result);
+                            }
 
-                        @Override
-                        public void failed(Throwable exc, Object attachment) {
-                            completion.completeExceptionally(exc);
+                            @Override
+                            public void failed(Throwable exc, Object attachment) {
+                                completion.completeExceptionally(exc);
+                            }
                         }
-                    }
-                );
-            };
-            syncCallback.placeInQueueAndTryStart(request, action);
+                    );
+                }
+            );
         }
         return completion;
     }
@@ -221,8 +217,6 @@ final class DockerChannelOut {
         log.debug(() -> "Started reading from channel");
         channel.get().read(
             byteBuffer.clear(),
-            0,
-            null,
             new CompletionHandler<>() {
 
                 @Override

@@ -1,5 +1,6 @@
 package io.huskit.containers.http;
 
+import io.huskit.common.concurrent.FinishFuture;
 import io.huskit.containers.api.container.rm.HtRm;
 import lombok.RequiredArgsConstructor;
 
@@ -14,14 +15,17 @@ final class HttpRm implements HtRm {
     public void exec() {
         var ran = false;
         for (var containerId : containerIds) {
-            dockerSpec.socket().sendPushAsync(
-                new PushRequest<>(
-                    new Request(
-                        spec.toRequest(containerId)
-                    ).withExpectedStatus(204),
-                    PushResponse.ready()
-                )
-            ).join();
+            FinishFuture.finish(
+                dockerSpec.socket().sendPushAsync(
+                    new PushRequest<>(
+                        new Request(
+                            spec.toRequest(containerId)
+                        ).withExpectedStatus(204),
+                        PushResponse.ready()
+                    )
+                ),
+                dockerSpec.defaultTimeout()
+            );
             ran = true;
         }
         if (!ran) {

@@ -1,8 +1,8 @@
 package io.huskit.containers.http;
 
+import io.huskit.common.concurrent.FinishFuture;
 import io.huskit.containers.api.container.HtContainer;
 import io.huskit.containers.api.container.HtJsonContainer;
-import io.huskit.containers.internal.HtJson;
 import lombok.RequiredArgsConstructor;
 
 import java.util.concurrent.CompletableFuture;
@@ -15,7 +15,7 @@ final class HttpInspect {
     HtHttpDockerSpec dockerSpec;
 
     public HtContainer inspect(CharSequence id) {
-        return inspectAsync(id).join();
+        return FinishFuture.finish(inspectAsync(id), dockerSpec.defaultTimeout());
     }
 
     public Stream<HtContainer> inspect(Iterable<? extends CharSequence> containerIds) {

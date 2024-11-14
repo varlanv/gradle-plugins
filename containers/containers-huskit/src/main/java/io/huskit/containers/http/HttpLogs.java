@@ -1,5 +1,6 @@
 package io.huskit.containers.http;
 
+import io.huskit.common.concurrent.FinishFuture;
 import io.huskit.containers.api.container.logs.HtFollowedLogs;
 import io.huskit.containers.api.container.logs.HtLogs;
 
@@ -18,7 +19,7 @@ final class HttpLogs implements HtLogs {
 
     @Override
     public MultiplexedFrames frames() {
-        return asyncFrames().join();
+        return FinishFuture.finish(asyncFrames(), dockerSpec.defaultTimeout());
     }
 
     @Override
@@ -28,7 +29,7 @@ final class HttpLogs implements HtLogs {
 
     @Override
     public Stream<String> stdOut() {
-        return asyncStdOut().join();
+        return FinishFuture.finish(asyncStdOut(), dockerSpec.defaultTimeout());
     }
 
     @Override
@@ -41,7 +42,7 @@ final class HttpLogs implements HtLogs {
 
     @Override
     public Stream<String> stdErr() {
-        return asyncStdErr().join();
+        return FinishFuture.finish(asyncStdErr(), dockerSpec.defaultTimeout());
     }
 
     @Override

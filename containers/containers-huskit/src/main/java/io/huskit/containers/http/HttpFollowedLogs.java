@@ -1,5 +1,6 @@
 package io.huskit.containers.http;
 
+import io.huskit.common.concurrent.FinishFuture;
 import io.huskit.containers.api.container.logs.HtFollowedLogs;
 import io.huskit.containers.api.container.logs.LookFor;
 import lombok.RequiredArgsConstructor;
@@ -17,7 +18,7 @@ final class HttpFollowedLogs implements HtFollowedLogs {
 
     @Override
     public MultiplexedFrames stream() {
-        return streamAsyncInternal().join();
+        return FinishFuture.finish(streamAsyncInternal(), dockerSpec.defaultTimeout());
     }
 
     @Override
@@ -27,7 +28,7 @@ final class HttpFollowedLogs implements HtFollowedLogs {
 
     @Override
     public Stream<String> streamStdOut() {
-        return this.streamStdOutAsync().join();
+        return FinishFuture.finish(this.streamStdOutAsync(), dockerSpec.defaultTimeout());
     }
 
     @Override
@@ -42,7 +43,7 @@ final class HttpFollowedLogs implements HtFollowedLogs {
 
     @Override
     public Stream<String> streamStdErr() {
-        return this.streamStdErrAsync().join();
+        return FinishFuture.finish(streamStdErrAsync(), dockerSpec.defaultTimeout());
     }
 
     @Override
@@ -57,7 +58,7 @@ final class HttpFollowedLogs implements HtFollowedLogs {
 
     @Override
     public MultiplexedFrames lookFor(LookFor lookFor) {
-        return lookForAsync(lookFor).join();
+        return FinishFuture.finish(lookForAsync(lookFor), dockerSpec.defaultTimeout());
     }
 
     @Override

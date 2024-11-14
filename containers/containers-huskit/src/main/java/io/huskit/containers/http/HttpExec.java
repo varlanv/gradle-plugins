@@ -1,5 +1,6 @@
 package io.huskit.containers.http;
 
+import io.huskit.common.concurrent.FinishFuture;
 import io.huskit.containers.api.container.exec.HtExec;
 import lombok.RequiredArgsConstructor;
 
@@ -13,7 +14,7 @@ final class HttpExec implements HtExec {
 
     @Override
     public void exec() {
-        execAsync().join();
+        FinishFuture.finish(execAsync(), dockerSpec.defaultTimeout());
     }
 
     @Override

@@ -15,13 +15,9 @@ import java.util.concurrent.ExecutorService;
 public interface HttpAsyncChannel extends AutoCloseable {
 
     <A> void write(ByteBuffer src,
-                   long position,
-                   A attachment,
                    CompletionHandler<Integer, ? super A> handler);
 
     <A> void read(ByteBuffer dst,
-                  long position,
-                  A attachment,
                   CompletionHandler<Integer, ? super A> handler);
 
     @SneakyThrows
@@ -30,22 +26,22 @@ public interface HttpAsyncChannel extends AutoCloseable {
         return new HttpAsyncChannel() {
 
             @Override
-            public <A> void write(ByteBuffer src, long position, A attachment, CompletionHandler<Integer, ? super A> handler) {
+            public <A> void write(ByteBuffer src, CompletionHandler<Integer, ? super A> handler) {
                 try {
                     delegate.write(src);
-                    handler.completed(src.position(), attachment);
+                    handler.completed(src.position(), null);
                 } catch (Exception e) {
-                    handler.failed(e, attachment);
+                    handler.failed(e, null);
                 }
             }
 
             @Override
-            public <A> void read(ByteBuffer dst, long position, A attachment, CompletionHandler<Integer, ? super A> handler) {
+            public <A> void read(ByteBuffer dst, CompletionHandler<Integer, ? super A> handler) {
                 try {
                     delegate.read(dst);
-                    handler.completed(dst.position(), attachment);
+                    handler.completed(dst.position(), null);
                 } catch (Exception e) {
-                    handler.failed(e, attachment);
+                    handler.failed(e, null);
                 }
             }
 
@@ -70,13 +66,13 @@ public interface HttpAsyncChannel extends AutoCloseable {
         return new HttpAsyncChannel() {
 
             @Override
-            public <A> void write(ByteBuffer src, long position, A attachment, CompletionHandler<Integer, ? super A> handler) {
-                delegate.write(src, position, attachment, handler);
+            public <A> void write(ByteBuffer src, CompletionHandler<Integer, ? super A> handler) {
+                delegate.write(src, 0, null, handler);
             }
 
             @Override
-            public <A> void read(ByteBuffer dst, long position, A attachment, CompletionHandler<Integer, ? super A> handler) {
-                delegate.read(dst, position, attachment, handler);
+            public <A> void read(ByteBuffer dst, CompletionHandler<Integer, ? super A> handler) {
+                delegate.read(dst, 0, null, handler);
             }
 
             @Override

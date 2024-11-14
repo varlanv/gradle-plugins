@@ -17,6 +17,7 @@ import java.util.stream.Stream;
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class DockerImagesStash {
 
+//    private static final String REPOSITORY = "public.ecr.aws/docker/library/";
     private static final String REPOSITORY = "public.ecr.aws/docker/library/";
     private static final Queue<String> SMALL_IMAGES = new ConcurrentLinkedQueue<>(
             Stream.of(

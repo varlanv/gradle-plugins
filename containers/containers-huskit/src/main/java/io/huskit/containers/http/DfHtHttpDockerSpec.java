@@ -5,6 +5,7 @@ import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.With;
 
+import java.time.Duration;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 
@@ -20,6 +21,9 @@ final class DfHtHttpDockerSpec implements HtHttpDockerSpec {
     ScheduledExecutorService executor;
     @With
     Log log;
+    @With
+    @Getter
+    Duration defaultTimeout;
 
     public DfHtHttpDockerSpec() {
         this(
@@ -27,7 +31,8 @@ final class DfHtHttpDockerSpec implements HtHttpDockerSpec {
             false,
             new HttpRequests(),
             Executors.newScheduledThreadPool(2),
-            Log.noop()
+            Log.noop(),
+            Duration.ZERO
         );
     }
 

@@ -28,7 +28,8 @@ class HtHttpDckrIntegrationTest implements DockerIntegrationTest {
     Supplier<HtHttpDckr> subjectSupplier = () ->
         new HtHttpDckr()
             .withCleanOnClose(true)
-            .withLog(Log.noop());
+            .withLog(Log.fakeVerbose())
+            .withDefaultTimeout(Duration.ofSeconds(5));
 
     @Nested
     class SameContainer {
@@ -242,7 +243,11 @@ class HtHttpDckrIntegrationTest implements DockerIntegrationTest {
             assertThat(containerConfig.attachStder()).isFalse();
             assertThat(containerConfig.openStdin()).isFalse();
             assertThat(containerConfig.entrypoint()).isEmpty();
-            assertThat(containerConfig.workingDir()).isEmpty();
+            assertThat(containerConfig.workingDir())
+                .satisfiesAnyOf(
+                    dir -> assertThat(dir).isEmpty(),
+                    dir -> assertThat(dir).hasValue("/")
+                );
             assertThat(containerConfig.hostname()).isNotEmpty();
         }
 

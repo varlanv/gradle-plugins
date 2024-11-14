@@ -7,6 +7,7 @@ import io.huskit.containers.api.volume.HtVolumes;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 
+import java.time.Duration;
 import java.util.Objects;
 
 @RequiredArgsConstructor
@@ -30,6 +31,13 @@ public final class HtHttpDckr implements HtHttpDocker {
     public HtHttpDckr withLog(Log log) {
         return new HtHttpDckr(
             spec.withLog(log)
+        );
+    }
+
+    @Override
+    public HtHttpDckr withDefaultTimeout(Duration timeout) {
+        return new HtHttpDckr(
+            spec.withDefaultTimeout(timeout)
         );
     }
 

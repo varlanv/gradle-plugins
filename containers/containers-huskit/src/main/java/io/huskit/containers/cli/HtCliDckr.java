@@ -4,6 +4,7 @@ import io.huskit.common.Log;
 import io.huskit.containers.api.docker.HtDocker;
 import lombok.RequiredArgsConstructor;
 
+import java.time.Duration;
 import java.util.function.Consumer;
 
 @RequiredArgsConstructor
@@ -26,6 +27,11 @@ public class HtCliDckr implements HtCliDocker {
     @Override
     public void close() {
         cli.close();
+    }
+
+    @Override
+    public HtDocker withDefaultTimeout(Duration timeout) {
+        return null;
     }
 
     @Override

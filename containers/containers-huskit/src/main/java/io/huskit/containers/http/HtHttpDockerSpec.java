@@ -2,6 +2,8 @@ package io.huskit.containers.http;
 
 import io.huskit.common.Log;
 
+import java.time.Duration;
+
 public interface HtHttpDockerSpec {
 
     DockerSocket socket();
@@ -11,4 +13,6 @@ public interface HtHttpDockerSpec {
     HttpRequests requests();
 
     Log log();
+
+    Duration defaultTimeout();
 }

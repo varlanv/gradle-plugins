@@ -8,7 +8,11 @@ import io.huskit.containers.cli.*;
 import io.huskit.containers.http.HtHttpDckr;
 import io.huskit.containers.http.HtHttpDocker;
 
+import java.time.Duration;
+
 public interface HtDocker {
+
+    HtDocker withDefaultTimeout(Duration timeout);
 
     HtDocker withCleanOnClose(Boolean cleanOnClose);
 
