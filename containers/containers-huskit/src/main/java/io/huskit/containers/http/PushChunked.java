@@ -22,17 +22,12 @@ final class PushChunked<T> implements PushResponse<T> {
     Hexadecimal currentChunkSizeHex = Hexadecimal.fromHexChars();
 
     @Override
-    public boolean isReady() {
-        return delegate.isReady();
-    }
-
-    @Override
-    public T value() {
+    public Optional<T> value() {
         return delegate.value();
     }
 
     @Override
-    public Optional<T> apply(ByteBuffer byteBuffer) {
+    public Optional<T> push(ByteBuffer byteBuffer) {
         while (byteBuffer.hasRemaining()) {
             byte b = byteBuffer.get();
             int i = b & 0xFF;
@@ -45,7 +40,10 @@ final class PushChunked<T> implements PushResponse<T> {
                 if (i == '\r' || (i == '\n' && prev != '\r')) {
                     isChunkSizePart = false;
                     if (currentChunkSizeHex.intValue() == 0) {
-                        return delegate.apply(bytes.buffer().flip());
+                        return delegate.push(bytes.buffer().flip());
+                    }
+                    if (i == '\r') {
+                        skipNext = 1;
                     }
                 } else if (i == '\n') {
                     prev = i;

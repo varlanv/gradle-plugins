@@ -19,17 +19,12 @@ final class PushHead implements PushResponse<Http.Head> {
     char previousChar;
 
     @Override
-    public boolean isReady() {
-        return head.isPresent();
+    public Optional<Http.Head> value() {
+        return head.maybe();
     }
 
     @Override
-    public Http.Head value() {
-        return head.require();
-    }
-
-    @Override
-    public synchronized Optional<Http.Head> apply(ByteBuffer byteBuffer) {
+    public synchronized Optional<Http.Head> push(ByteBuffer byteBuffer) {
         if (head.isPresent()) {
             return head.maybe();
         }

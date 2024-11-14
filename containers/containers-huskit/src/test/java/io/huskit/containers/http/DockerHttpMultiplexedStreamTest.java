@@ -1,22 +1,8 @@
 package io.huskit.containers.http;
 
-import io.huskit.common.io.BufferLines;
 import io.huskit.gradle.commontest.UnitTest;
-import lombok.SneakyThrows;
-import org.apache.commons.io.IOUtils;
-import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.parallel.Execution;
 import org.junit.jupiter.api.parallel.ExecutionMode;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.EnumSource;
-
-import java.nio.ByteBuffer;
-import java.nio.charset.StandardCharsets;
-import java.time.Duration;
-import java.util.concurrent.Executors;
-import java.util.concurrent.atomic.AtomicInteger;
-
-import static org.assertj.core.api.Assertions.assertThat;
 
 @Execution(ExecutionMode.CONCURRENT)
 class DockerHttpMultiplexedStreamTest implements UnitTest {

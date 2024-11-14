@@ -1,7 +1,5 @@
 package io.huskit.containers.api.image;
 
-import io.huskit.containers.cli.HtListImagesSpec;
-
 import java.util.function.Consumer;
 
 public interface HtImages {

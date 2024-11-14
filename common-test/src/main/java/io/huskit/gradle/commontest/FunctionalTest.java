@@ -43,13 +43,13 @@ public interface FunctionalTest extends BaseTest {
             var rootBuildFile = new File(subjectProjectDir, "build.gradle");
             var propertiesFile = new File(subjectProjectDir, "gradle.properties");
             fixtureConsumer.accept(
-                    new FunctionalFixture(
-                            rootTestProjectDir,
-                            subjectProjectDir,
-                            settingsFile,
-                            rootBuildFile,
-                            propertiesFile
-                    )
+                new FunctionalFixture(
+                    rootTestProjectDir,
+                    subjectProjectDir,
+                    settingsFile,
+                    rootBuildFile,
+                    propertiesFile
+                )
             );
         });
     }
@@ -75,20 +75,20 @@ public interface FunctionalTest extends BaseTest {
             var env = new HashMap<>(System.getenv());
             env.putAll(params.isCi() ? Map.of("CI", "true") : Map.of("CI", "false"));
             fixtureConsumer.accept(
-                    new RunnerFunctionalFixture(
-                            GradleRunner.create()
-                                    .withPluginClasspath()
-                                    .withProjectDir(parentFixture.subjectProjectDir())
-                                    .withEnvironment(env)
-                                    .withArguments(args)
-                                    .forwardOutput()
-                                    .withGradleVersion(params.gradleVersion()),
-                            parentFixture.rootTestProjectDir(),
-                            parentFixture.subjectProjectDir(),
-                            parentFixture.settingsFile(),
-                            parentFixture.rootBuildFile(),
-                            parentFixture.propertiesFile()
-                    )
+                new RunnerFunctionalFixture(
+                    GradleRunner.create()
+                                .withPluginClasspath()
+                                .withProjectDir(parentFixture.subjectProjectDir())
+                                .withEnvironment(env)
+                                .withArguments(args)
+                                .forwardOutput()
+                                .withGradleVersion(params.gradleVersion()),
+                    parentFixture.rootTestProjectDir(),
+                    parentFixture.subjectProjectDir(),
+                    parentFixture.settingsFile(),
+                    parentFixture.rootBuildFile(),
+                    parentFixture.propertiesFile()
+                )
             );
         });
     }
@@ -101,7 +101,7 @@ public interface FunctionalTest extends BaseTest {
         System.err.println(lineStart);
         System.err.println();
         System.err.printf("%s STARTING GRADLE FUNCTIONAL TEST BUILD FOR SPEC %s. "
-                + "LOGS BELOW ARE COMMING FROM GRADLE BUILD UNDER TEST %s%n", mark, getClass().getSimpleName(), mark);
+            + "LOGS BELOW ARE COMMING FROM GRADLE BUILD UNDER TEST %s%n", mark, getClass().getSimpleName(), mark);
         System.err.printf("Gradle build args: %s%n", String.join(" ", runner.getArguments()));
         System.err.printf("Java version - %s%n", System.getProperty("java.version"));
         System.err.println();
@@ -161,17 +161,17 @@ public interface FunctionalTest extends BaseTest {
             destDir.mkdirs();
         }
         FileUtils.listFilesAndDirs(srcDir, TrueFileFilter.INSTANCE, TrueFileFilter.INSTANCE)
-                .forEach(file -> {
-                    if (!file.getAbsolutePath().equals(srcDir.getAbsolutePath()) && !IGNORED_FILES_FOR_COPY.contains(file.getName())) {
-                        var relativePath = getRelativePath(srcDir, file);
-                        var destFile = new File(destDir, relativePath);
-                        if (file.isDirectory()) {
-                            destFile.mkdirs();
-                        } else {
-                            copyFile(file, destFile);
-                        }
-                    }
-                });
+                 .forEach(file -> {
+                     if (!file.getAbsolutePath().equals(srcDir.getAbsolutePath()) && !IGNORED_FILES_FOR_COPY.contains(file.getName())) {
+                         var relativePath = getRelativePath(srcDir, file);
+                         var destFile = new File(destDir, relativePath);
+                         if (file.isDirectory()) {
+                             destFile.mkdirs();
+                         } else {
+                             copyFile(file, destFile);
+                         }
+                     }
+                 });
     }
 
     default File useCasesDir() {

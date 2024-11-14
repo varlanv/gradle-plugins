@@ -1,11 +1,12 @@
 package io.huskit.gradle.containers.plugin.internal.spec.mongo;
 
-import io.huskit.common.Opt;
+import io.huskit.common.HtConstants;
+import io.huskit.common.Log;
+import io.huskit.common.Mutable;
 import io.huskit.containers.api.image.HtImgName;
 import io.huskit.containers.integration.ContainerSpec;
 import io.huskit.containers.integration.DefContainerSpec;
 import io.huskit.containers.model.ContainerType;
-import io.huskit.common.HtConstants;
 import io.huskit.containers.model.image.DefaultContainerImage;
 import io.huskit.containers.model.request.DefaultMongoRequestedContainer;
 import io.huskit.containers.model.request.MongoExposedEnvironment;
@@ -43,23 +44,23 @@ public interface MongoContainerRequestSpec extends ContainerRequestSpec, MongoCo
         var cleanupSpec = containerReuseSpec.getCleanupSpec().get();
         var port = getPort().get();
         return new DefaultMongoRequestedContainer(
-                () -> getProjectPath().get(),
-                new MongoExposedEnvironment.Default(
-                        exposedEnvironmentSpec.getConnectionString().get(),
-                        exposedEnvironmentSpec.getDatabaseName().get(),
-                        exposedEnvironmentSpec.getPort().get()
-                ),
-                getDatabaseName().get(),
-                new DefaultContainerImage(getImage().get()),
-                port.resolve(port),
-                key(),
-                DefaultMongoContainerReuseOptions.builder()
-                        .enabled(Boolean.TRUE.equals(containerReuseSpec.getEnabled().getOrNull()))
-                        .reuseBetweenBuilds(Boolean.TRUE.equals(containerReuseSpec.getReuseBetweenBuilds().getOrNull()))
-                        .newDatabaseForEachRequest(Boolean.TRUE.equals(containerReuseSpec.getNewDatabaseForEachTask().getOrNull()))
-                        .cleanup(ContainerCleanupOptions.after(
-                                Optional.ofNullable(cleanupSpec.getCleanupAfter().getOrNull()).orElse(Duration.ZERO)))
-                        .build()
+            () -> getProjectPath().get(),
+            new MongoExposedEnvironment.Default(
+                exposedEnvironmentSpec.getConnectionString().get(),
+                exposedEnvironmentSpec.getDatabaseName().get(),
+                exposedEnvironmentSpec.getPort().get()
+            ),
+            getDatabaseName().get(),
+            new DefaultContainerImage(getImage().get()),
+            port.resolve(port),
+            key(),
+            DefaultMongoContainerReuseOptions.builder()
+                .enabled(Boolean.TRUE.equals(containerReuseSpec.getEnabled().getOrNull()))
+                .reuseBetweenBuilds(Boolean.TRUE.equals(containerReuseSpec.getReuseBetweenBuilds().getOrNull()))
+                .newDatabaseForEachRequest(Boolean.TRUE.equals(containerReuseSpec.getNewDatabaseForEachTask().getOrNull()))
+                .cleanup(ContainerCleanupOptions.after(
+                    Optional.ofNullable(cleanupSpec.getCleanupAfter().getOrNull()).orElse(Duration.ZERO)))
+                .build()
         );
     }
 
@@ -77,16 +78,16 @@ public interface MongoContainerRequestSpec extends ContainerRequestSpec, MongoCo
         var exposedEnv = getExposedEnvironment().get();
         var reuseEnabled = reuse.getEnabled().get();
         return Map.of(
-                "rootProjectName", getRootProjectName().get(),
-                "projectName", reuseEnabled ? "" : getProjectName().get(),
-                "image", getImage().get(),
-                "databaseName", getDatabaseName().get(),
-                "reuseBetweenBuilds", reuse.getReuseBetweenBuilds().get(),
-                "newDatabaseForEachTask", reuse.getNewDatabaseForEachTask().get(),
-                "reuseEnabled", reuseEnabled,
-                "exposedPort", exposedEnv.getPort().get(),
-                "exposedConnectionString", exposedEnv.getConnectionString().get(),
-                "exposedDatabaseName", exposedEnv.getDatabaseName().get()
+            "rootProjectName", getRootProjectName().get(),
+            "projectName", reuseEnabled ? "" : getProjectName().get(),
+            "image", getImage().get(),
+            "databaseName", getDatabaseName().get(),
+            "reuseBetweenBuilds", reuse.getReuseBetweenBuilds().get(),
+            "newDatabaseForEachTask", reuse.getNewDatabaseForEachTask().get(),
+            "reuseEnabled", reuseEnabled,
+            "exposedPort", exposedEnv.getPort().get(),
+            "exposedConnectionString", exposedEnv.getConnectionString().get(),
+            "exposedDatabaseName", exposedEnv.getDatabaseName().get()
         );
     }
 
@@ -139,7 +140,11 @@ public interface MongoContainerRequestSpec extends ContainerRequestSpec, MongoCo
 
     @Override
     default ContainerSpec toContainerSpec() {
-        var containerSpec = new DefContainerSpec(HtImgName.of(getImage().get()), containerType());
+        var containerSpec = new DefContainerSpec(
+            Mutable.of(Log.noop()),
+            HtImgName.of(getImage().get()),
+            containerType()
+        );
         var reuseSpec = getReuse().get();
         var cleanupSpec = reuseSpec.getCleanupSpec().get();
         var reuseEnabled = reuseSpec.getEnabled().get();
@@ -153,10 +158,23 @@ public interface MongoContainerRequestSpec extends ContainerRequestSpec, MongoCo
             containerSpec.ports().dynamic(portSpec.getContainerDefaultPort().get());
         } else {
             var fixedPortSpec = portSpec.getFixed().get();
-            Opt.maybe(fixedPortSpec.getHostRange().getOrNull()).ifPresent(fixedRange ->
-                    containerSpec.ports().range(fixedRange.left(), fixedRange.right(), fixedPortSpec.getContainerValue().get()));
-            Opt.maybe(fixedPortSpec.getHostValue().getOrNull()).ifPresent(fixedValue ->
-                    containerSpec.ports().fixed(fixedValue, fixedPortSpec.getContainerValue().get()));
+            Optional.ofNullable(fixedPortSpec.getHostRange().getOrNull())
+                .ifPresent(
+                    fixedRange ->
+                        containerSpec.ports().range(
+                            fixedRange.left(),
+                            fixedRange.right(),
+                            fixedPortSpec.getContainerValue().get()
+                        )
+                );
+            Optional.ofNullable(fixedPortSpec.getHostValue().getOrNull())
+                .ifPresent(
+                    fixedValue ->
+                        containerSpec.ports().fixed(
+                            fixedValue,
+                            fixedPortSpec.getContainerValue().get()
+                        )
+                );
         }
         var labelsSpec = containerSpec.labels();
         labelsSpec.pair(HtConstants.GRADLE_ROOT_PROJECT, getRootProjectName().get());

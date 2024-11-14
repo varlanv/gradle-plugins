@@ -48,17 +48,12 @@ final class PushMultiplexedStream implements PushResponse<MultiplexedFrames> {
     }
 
     @Override
-    public boolean isReady() {
-        return response.isPresent();
+    public Optional<MultiplexedFrames> value() {
+        return response.maybe();
     }
 
     @Override
-    public MultiplexedFrames value() {
-        return response.require();
-    }
-
-    @Override
-    public synchronized Optional<MultiplexedFrames> apply(ByteBuffer byteBuffer) {
+    public synchronized Optional<MultiplexedFrames> push(ByteBuffer byteBuffer) {
         if (response.isPresent()) {
             return response.maybe();
         }
@@ -118,8 +113,8 @@ final class PushMultiplexedStream implements PushResponse<MultiplexedFrames> {
                     } else {
                         currentFrameBuffer[currentFrameBuffer.length - currentFrameSize] = currentByte;
                         var frame = new MultiplexedFrame(currentFrameBuffer, currentFrameType);
-                        if (streamType == StreamType.ALL || (currentFrameType == FrameType.STDERR && streamType == StreamType.STDERR) ||
-                            (currentFrameType == FrameType.STDOUT && streamType == StreamType.STDOUT)) {
+                        if (streamType == StreamType.ALL || (currentFrameType == FrameType.STDERR && streamType == StreamType.STDERR)
+                            || (currentFrameType == FrameType.STDOUT && streamType == StreamType.STDOUT)) {
                             frameList.add(frame);
                             if (follow.isPresent()) {
                                 if (follow.require().test(frame)) {

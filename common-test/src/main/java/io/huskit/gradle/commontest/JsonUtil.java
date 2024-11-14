@@ -8,7 +8,7 @@ import java.util.Map;
 import static org.assertj.core.api.Assertions.assertThat;
 
 @UtilityClass
-public class JsonUtil {
+public final class JsonUtil {
 
     @SuppressWarnings({"unchecked", "rawtypes"})
     <T> T getJsonField(String json, String field, Class<T> type) {
@@ -17,8 +17,8 @@ public class JsonUtil {
         var parsedMap = (Map) parsed;
         var fieldValue = parsedMap.get(field);
         assertThat(fieldValue).satisfiesAnyOf(
-                it -> assertThat(it).isNull(),
-                it -> assertThat(it).isInstanceOf(type)
+            it -> assertThat(it).isNull(),
+            it -> assertThat(it).isInstanceOf(type)
         );
         return (T) fieldValue;
     }

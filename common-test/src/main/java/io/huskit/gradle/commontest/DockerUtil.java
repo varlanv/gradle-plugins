@@ -66,10 +66,10 @@ public class DockerUtil {
     public List<Container> findHuskitContainersWithKey(String key) {
         var client = DockerClientFactory.instance().client();
         var listContainersCmd = client.listContainersCmd().withLabelFilter(
-                Map.of(
-                        "HTCT_CONTAINER", "true",
-                        "HTCT_GRADLE_ROOT_PROJECT", key
-                )
+            Map.of(
+                "HTCT_CONTAINER", "true",
+                "HTCT_GRADLE_ROOT_PROJECT", key
+            )
         );
         return listContainersCmd.exec();
     }
@@ -77,7 +77,7 @@ public class DockerUtil {
     public List<Container> findHuskitContainersWithIds(String... ids) {
         var idSet = new HashSet<>(Arrays.asList(ids));
         return findHuskitContainers().stream()
-                .filter(container -> idSet.contains(container.getLabels().get("HTCT_GRADLE_ROOT_PROJECT")))
-                .collect(Collectors.toList());
+                                     .filter(container -> idSet.contains(container.getLabels().get("HTCT_GRADLE_ROOT_PROJECT")))
+                                     .collect(Collectors.toList());
     }
 }

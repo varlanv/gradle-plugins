@@ -170,7 +170,7 @@ public final class HtJsonContainer implements HtContainer {
             return Optional.empty();
         }
         var ports = (List<Map<String, Object>>) p;
-        var mappedPorts = new ArrayList<MappedPort>();
+        var mappedPorts = new LinkedHashSet<MappedPort>();
         for (var port : ports) {
             var privatePort = Integer.parseInt(port.get("PrivatePort").toString());
             var publicPort = port.get("PublicPort");
@@ -179,6 +179,6 @@ public final class HtJsonContainer implements HtContainer {
             }
             mappedPorts.add(new MappedPort(Integer.parseInt(publicPort.toString()), privatePort));
         }
-        return Optional.of(Collections.unmodifiableList(mappedPorts));
+        return Optional.of(List.copyOf(mappedPorts));
     }
 }

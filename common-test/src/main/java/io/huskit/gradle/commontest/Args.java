@@ -42,9 +42,9 @@ final class HeadersExtension implements ParameterResolver {
             } else if (parameter.getType().equals(Consumer.class)) {
                 var parameterizedType = (ParameterizedType) parameter.getParameterizedType();
                 var consumerType = (ParameterizedType) parameterizedType.getActualTypeArguments()[0];
-                return consumerType.getRawType().equals(Map.class) &&
-                    consumerType.getActualTypeArguments()[0].equals(String.class) &&
-                    consumerType.getActualTypeArguments()[1].equals(String.class);
+                return consumerType.getRawType().equals(Map.class)
+                    && consumerType.getActualTypeArguments()[0].equals(String.class)
+                    && consumerType.getActualTypeArguments()[1].equals(String.class);
             } else {
                 return false;
             }

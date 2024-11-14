@@ -7,7 +7,7 @@ import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Supplier;
 
 @NoArgsConstructor(access = lombok.AccessLevel.PRIVATE)
-class TestUtils {
+final class TestUtils {
 
     private static final AtomicReference<File> huskitProjectRoot = new AtomicReference<>();
 

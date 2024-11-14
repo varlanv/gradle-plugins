@@ -12,7 +12,7 @@ import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.TimeUnit;
 
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
-public class ShellConditions {
+public final class ShellConditions {
 
     private static final long TIMEOUT = 2000L; // Timeout in milliseconds
     private static final ConcurrentMap<String, Boolean> CACHE = new ConcurrentHashMap<>();

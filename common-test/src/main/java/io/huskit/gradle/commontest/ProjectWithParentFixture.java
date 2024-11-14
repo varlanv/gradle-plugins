@@ -10,7 +10,7 @@ import java.io.File;
 
 @Getter
 @RequiredArgsConstructor
-public class ProjectWithParentFixture {
+public final class ProjectWithParentFixture {
 
     Project project;
     Project parentProject;

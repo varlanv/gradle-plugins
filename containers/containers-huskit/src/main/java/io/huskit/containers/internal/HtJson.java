@@ -15,7 +15,7 @@ import java.util.stream.Stream;
 public class HtJson {
 
     public static Map<String, Object> toMap(String json) {
-        return json.equals("{}") ? Map.of() : toMap(new StringReader(json));
+        return "{}".equals(json) ? Map.of() : toMap(new StringReader(json));
     }
 
     public static Map<String, Object> toMap(Reader json) {
@@ -23,7 +23,7 @@ public class HtJson {
     }
 
     public static Stream<Map<String, Object>> toMapStream(String json) {
-        return json.equals("[]") ? Stream.of() : toMapStream(new StringReader(json));
+        return "[]".equals(json) ? Stream.of() : toMapStream(new StringReader(json));
     }
 
     public static Stream<Map<String, Object>> toMapStream(Reader json) {
@@ -31,7 +31,7 @@ public class HtJson {
     }
 
     public static List<Map<String, Object>> toMapList(String json) {
-        return json.equals("[]") ? List.of() : toMapList(new StringReader(json));
+        return "[]".equals(json) ? List.of() : toMapList(new StringReader(json));
     }
 
     public static List<Map<String, Object>> toMapList(Reader json) {

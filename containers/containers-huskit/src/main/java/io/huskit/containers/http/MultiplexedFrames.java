@@ -13,9 +13,9 @@ public final class MultiplexedFrames {
 
     @Override
     public String toString() {
-        return "MultiplexedFrames{" +
-            "frames=" + frames +
-            '}';
+        return "MultiplexedFrames{"
+            + "frames=" + frames
+            + '}';
     }
 
     public List<MultiplexedFrame> list() {

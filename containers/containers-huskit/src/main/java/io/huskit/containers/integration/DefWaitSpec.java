@@ -10,15 +10,20 @@ import java.time.Duration;
 @RequiredArgsConstructor
 public class DefWaitSpec implements WaitSpec {
 
-    ContainerSpec parent;
+    DefContainerSpec parent;
     Mutable<TextWait> textWait = Mutable.of();
 
     @Override
-    public ContainerSpec forLogMessageContaining(CharSequence text, Duration timeout) {
+    public DefContainerSpec forLogMessageContaining(CharSequence text, Duration timeout) {
         if (timeout.isNegative()) {
             throw new IllegalArgumentException("Timeout must be positive (or zero for no timeout). Received: " + timeout);
         }
         this.textWait.set(new TextWait(text.toString(), timeout));
         return parent;
+    }
+
+    @Override
+    public DefContainerSpec forLogMessageContaining(CharSequence text) {
+        return this.forLogMessageContaining(text, Duration.ofMinutes(2));
     }
 }

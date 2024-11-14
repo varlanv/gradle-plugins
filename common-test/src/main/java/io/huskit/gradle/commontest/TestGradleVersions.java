@@ -5,11 +5,11 @@ import lombok.experimental.UtilityClass;
 import java.util.List;
 
 @UtilityClass
-public class TestGradleVersions {
+public final class TestGradleVersions {
 
     List<String> list() {
         return List.of(
-                current()
+            current()
 //                latest7(),
 //                latest6()
         );

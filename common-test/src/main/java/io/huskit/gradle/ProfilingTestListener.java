@@ -9,7 +9,7 @@ import java.time.Duration;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
-public class ProfilingTestListener implements TestExecutionListener {
+public final class ProfilingTestListener implements TestExecutionListener {
 
     private final ConcurrentMap<String, Long> syncMap = new ConcurrentHashMap<>();
 

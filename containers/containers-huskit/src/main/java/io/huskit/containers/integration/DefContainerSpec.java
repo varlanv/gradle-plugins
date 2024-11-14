@@ -1,8 +1,9 @@
 package io.huskit.containers.integration;
 
 import io.huskit.common.HtConstants;
+import io.huskit.common.Log;
+import io.huskit.common.Mutable;
 import io.huskit.containers.api.image.HtImgName;
-import io.huskit.containers.integration.mongo.ContainerHash;
 import io.huskit.containers.model.ContainerType;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
@@ -16,6 +17,7 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class DefContainerSpec implements ContainerSpec {
 
+    Mutable<Log> log;
     HtImgName image;
     ContainerType containerType;
     DefEnvSpec envSpec = new DefEnvSpec(this);
@@ -26,22 +28,22 @@ public class DefContainerSpec implements ContainerSpec {
     Map<String, String> properties = new LinkedHashMap<>();
 
     @Override
-    public EnvSpec env() {
+    public DefEnvSpec env() {
         return envSpec;
     }
 
     @Override
-    public LabelSpec labels() {
+    public DefLabelSpec labels() {
         return labelSpec;
     }
 
     @Override
-    public WaitSpec await() {
+    public DefWaitSpec await() {
         return waitSpec;
     }
 
     @Override
-    public ReuseSpec reuse() {
+    public DefReuseSpec reuse() {
         return reuseSpec;
     }
 
@@ -52,7 +54,7 @@ public class DefContainerSpec implements ContainerSpec {
 
     @Override
     public String hash() {
-        return new ContainerHash()
+        return new ContainerHash(log)
             .add(image.reference())
             .add(envSpec().envMap())
             .add(labelSpec().labelMap().require().entrySet().stream()

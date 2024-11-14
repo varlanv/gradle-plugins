@@ -7,7 +7,7 @@ import org.junit.jupiter.api.extension.ExtensionContext;
 import java.io.IOException;
 import java.util.List;
 
-public class DockerAvailableCondition implements ExecutionCondition {
+public final class DockerAvailableCondition implements ExecutionCondition {
 
     private static volatile Boolean dockerAvailable;
 

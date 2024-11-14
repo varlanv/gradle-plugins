@@ -12,16 +12,21 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Supplier;
 
 final class HttpDockerSocket implements DockerSocket {
 
     ScheduledExecutorService executor;
     MemoizedSupplier<HttpChannel> stateSupplier;
+    AtomicBoolean isStopped = new AtomicBoolean(false);
 
     HttpDockerSocket(Supplier<HttpAsyncChannel> asyncChannelSupplier, ScheduledExecutorService executor, Log log) {
         this.executor = executor;
-        this.stateSupplier = MemoizedSupplier.of(() -> new HttpChannel(asyncChannelSupplier, executor, log, 16384));
+        this.stateSupplier = MemoizedSupplier.of(() -> {
+            DockerOnShutdown.register(this::release);
+            return new HttpChannel(asyncChannelSupplier, executor, log, 16384);
+        });
 
     }
 
@@ -42,8 +47,10 @@ final class HttpDockerSocket implements DockerSocket {
 
     @Override
     public void release() {
-        stateSupplier.ifInitialized(HttpChannel::close);
-        executor.shutdownNow();
+        if (isStopped.compareAndSet(false, true)) {
+            stateSupplier.ifInitialized(HttpChannel::close);
+            executor.shutdownNow();
+        }
     }
 }
 
@@ -63,7 +70,7 @@ final class NpipeRead<T> {
         bytesSupplier.get().thenAccept(
             buffer -> {
                 try {
-                    action.apply(buffer).ifPresentOrElse(
+                    action.push(buffer).ifPresentOrElse(
                         completion::complete,
                         () -> executorService.submit(
                             () -> act(
@@ -114,13 +121,13 @@ final class HttpChannel implements AutoCloseable {
     <T> CompletableFuture<T> writeAndReadAsync(PushRequest<T> pushRequest) {
         var completion = new CompletableFuture<T>();
         in.write(pushRequest.request())
-            .thenRun(
-                () -> new NpipeRead<T>(
-                    completion,
-                    out::readToBufferAsync,
-                    executor
-                ).pushTo(pushRequest.pushResponse())
-            );
+          .thenRun(
+              () -> new NpipeRead<T>(
+                  completion,
+                  out::readToBufferAsync,
+                  executor
+              ).pushTo(pushRequest.pushResponse())
+          );
         return completion.whenComplete(
             (ignore, throwable) -> {
                 syncCallback.removeFromQueueAndStartNext(
@@ -267,7 +274,7 @@ final class SyncCallback {
                 if (size == 1) {
                     log.debug(() -> "Starting action immediately as it is the only one in the queue");
                 } else {
-                    log.debug(() -> "Placed action in queue, will wait for " + (size) + " previous actions to finish");
+                    log.debug(() -> "Placed action in queue, will wait for " + size + " previous actions to finish");
                 }
                 return size;
             }

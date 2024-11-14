@@ -7,7 +7,7 @@ import lombok.ToString;
 @Getter
 @ToString
 @RequiredArgsConstructor
-public class DataTable {
+public final class DataTable {
 
     boolean isCi;
     boolean configurationCache;

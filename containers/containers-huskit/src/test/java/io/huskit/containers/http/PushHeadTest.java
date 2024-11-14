@@ -19,7 +19,7 @@ class PushHeadTest implements UnitTest {
         var subject = new PushHead();
         var byteBuffer = ByteBuffer.wrap(headers.getBytes(StandardCharsets.UTF_8));
 
-        var maybeActual = subject.apply(byteBuffer);
+        var maybeActual = subject.push(byteBuffer);
 
         assertThat(maybeActual)
             .isPresent()

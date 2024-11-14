@@ -10,7 +10,7 @@ import java.util.stream.Stream;
 
 @Builder(toBuilder = true)
 @RequiredArgsConstructor
-public class DataTables {
+public final class DataTables {
 
     List<Boolean> isCiList;
     List<Boolean> configurationCacheList;
@@ -28,17 +28,17 @@ public class DataTables {
     public static DataTables getDefault() {
         if (Objects.equals(System.getenv("CI"), "true")) {
             return new DataTables(
-                    List.of(true),
-                    List.of(true),
-                    List.of(true),
-                    List.of(TestGradleVersions.current()
-                    ));
+                List.of(true),
+                List.of(true),
+                List.of(true),
+                List.of(TestGradleVersions.current()
+                ));
         } else {
             return new DataTables(
-                    List.of(true),
-                    List.of(true),
-                    List.of(true),
-                    TestGradleVersions.list());
+                List.of(true),
+                List.of(true),
+                List.of(true),
+                TestGradleVersions.list());
         }
     }
 
@@ -69,13 +69,13 @@ public class DataTables {
     public List<DataTable> list() {
         List<DataTable> result = new ArrayList<>();
         gradleVersions.forEach(gradleVersion ->
-                isCiList.forEach(isCi ->
-                        configurationCacheList.forEach(configurationCache ->
-                                buildCacheList.forEach(buildCache ->
-                                        result.add(new DataTable(isCi, configurationCache, buildCache, gradleVersion))
-                                )
-                        )
+            isCiList.forEach(isCi ->
+                configurationCacheList.forEach(configurationCache ->
+                    buildCacheList.forEach(buildCache ->
+                        result.add(new DataTable(isCi, configurationCache, buildCache, gradleVersion))
+                    )
                 )
+            )
         );
         return result;
     }

@@ -15,35 +15,35 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
-public class DockerImagesStash {
+public final class DockerImagesStash {
 
-//    private static final String REPOSITORY = "public.ecr.aws/docker/library/";
+    //    private static final String REPOSITORY = "public.ecr.aws/docker/library/";
     private static final String REPOSITORY = "public.ecr.aws/docker/library/";
     private static final Queue<String> SMALL_IMAGES = new ConcurrentLinkedQueue<>(
-            Stream.of(
-                            "3.17.0",
-                            "3.17.1",
-                            "3.17.2",
-                            "3.17.3",
-                            "3.17.4",
-                            "3.17.5",
-                            "3.17.7",
-                            "3.17.8",
-                            "3.17.9",
-                            "3.17.10",
-                            "3.18.0",
-                            "3.19.0",
-                            "3.19.1",
-                            "3.19.2",
-                            "3.19.3",
-                            "3.19.4",
-                            "3.20.0",
-                            "3.20.1",
-                            "3.20.2",
-                            "3.20.3"
-                    )
-                    .map(tag -> REPOSITORY + "alpine:" + tag)
-                    .collect(Collectors.toSet()));
+        Stream.of(
+                  "3.17.0",
+                  "3.17.1",
+                  "3.17.2",
+                  "3.17.3",
+                  "3.17.4",
+                  "3.17.5",
+                  "3.17.7",
+                  "3.17.8",
+                  "3.17.9",
+                  "3.17.10",
+                  "3.18.0",
+                  "3.19.0",
+                  "3.19.1",
+                  "3.19.2",
+                  "3.19.3",
+                  "3.19.4",
+                  "3.20.0",
+                  "3.20.1",
+                  "3.20.2",
+                  "3.20.3"
+              )
+              .map(tag -> REPOSITORY + "alpine:" + tag)
+              .collect(Collectors.toSet()));
     private static final Map<String, String> USED_SMALL_IMAGES = new ConcurrentHashMap<>();
     private static final int SMALL_IMAGES_SIZE = SMALL_IMAGES.size();
 
@@ -52,8 +52,8 @@ public class DockerImagesStash {
             if (SMALL_IMAGES.size() != SMALL_IMAGES_SIZE) {
                 var dashes = "-".repeat(60);
                 var message = String.format("%n%s%n%nERROR: [%s] small images were not returned to stash, "
-                                + "perhaps there were test failure. Check %s.%n%n%s%n%n",
-                        dashes, SMALL_IMAGES_SIZE - SMALL_IMAGES.size(), DockerImagesStash.class, dashes);
+                        + "perhaps there were test failure. Check %s.%n%n%s%n%n",
+                    dashes, SMALL_IMAGES_SIZE - SMALL_IMAGES.size(), DockerImagesStash.class, dashes);
                 System.err.println(message);
             }
         }));

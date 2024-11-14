@@ -15,17 +15,12 @@ final class PushJsonArray implements PushResponse<List<Map<String, Object>>> {
     Mutable<List<Map<String, Object>>> response = Mutable.of();
 
     @Override
-    public boolean isReady() {
-        return response.isPresent();
+    public Optional<List<Map<String, Object>>> value() {
+        return response.maybe();
     }
 
     @Override
-    public List<Map<String, Object>> value() {
-        return response.require();
-    }
-
-    @Override
-    public Optional<List<Map<String, Object>>> apply(ByteBuffer byteBuffer) {
+    public Optional<List<Map<String, Object>>> push(ByteBuffer byteBuffer) {
         if (response.isPresent()) {
             throw new IllegalStateException("Push response already set");
         } else {

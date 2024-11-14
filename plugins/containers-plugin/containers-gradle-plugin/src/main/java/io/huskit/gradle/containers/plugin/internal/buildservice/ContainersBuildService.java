@@ -37,18 +37,18 @@ public abstract class ContainersBuildService implements BuildService<ContainersB
         var app = singleBuildState.application().syncSetOrGet(() -> {
             var log = new GradleLog(ContainersBuildService.class);
             return ContainersApplication.application(
-                    log,
-                    Objects.requireNonNullElseGet(request.integratedDocker(), sharedBuildState::integratedDocker)
+                log,
+                Objects.requireNonNullElseGet(request.integratedDocker(), sharedBuildState::integratedDocker)
             );
         });
         return app.containers(
-                new ContainersRequest(
-                        request.taskLog(),
-                        request.projectDescription(),
-                        request.requestSpec().get().stream()
-                                .map(ContainerRequestSpec::toContainerSpec)
-                                .collect(Collectors.toList())
-                )
+            new ContainersRequest(
+                request.taskLog(),
+                request.projectDescription(),
+                request.requestSpec().get().stream()
+                    .map(ContainerRequestSpec::toContainerSpec)
+                    .collect(Collectors.toList())
+            )
         );
     }
 
@@ -57,9 +57,9 @@ public abstract class ContainersBuildService implements BuildService<ContainersB
         singleBuildState.application().maybe().ifPresent(app -> {
             ProfileLog.withProfile("io.huskit.gradle.containers.core.ContainersApplication.close", app::close);
             new GradleLog(ContainersBuildService.class)
-                    .error("------------------------------------------Finished in [{}]ms key [{}]----------------------------------------",
-                            Duration.ofMillis(System.currentTimeMillis() - singleBuildState.timeStarted().require()),
-                            sharedBuildState.counter().getAndIncrement());
+                .error("------------------------------------------Finished in [{}]ms key [{}]----------------------------------------",
+                    Duration.ofMillis(System.currentTimeMillis() - singleBuildState.timeStarted().require()),
+                    sharedBuildState.counter().getAndIncrement());
         });
     }
 

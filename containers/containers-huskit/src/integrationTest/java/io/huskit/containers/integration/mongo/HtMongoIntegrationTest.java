@@ -4,13 +4,13 @@ import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoClients;
 import com.mongodb.client.model.Filters;
 import io.huskit.common.HtConstants;
+import io.huskit.common.Log;
+import io.huskit.containers.integration.HtMongo;
 import io.huskit.gradle.commontest.DockerIntegrationTest;
-import io.huskit.log.ProfileLog;
 import org.bson.Document;
 import org.bson.types.ObjectId;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
-import org.testcontainers.DockerClientFactory;
 import org.testcontainers.containers.MongoDBContainer;
 
 import java.time.Duration;
@@ -29,7 +29,9 @@ class HtMongoIntegrationTest implements DockerIntegrationTest {
         var millis = System.currentTimeMillis();
         var subject = HtMongo.fromImage(HtConstants.Mongo.DEFAULT_IMAGE)
             .withContainerSpec(spec -> spec.reuse().enabledWithCleanupAfter(Duration.ofSeconds(60)))
+            .withLogger(Log.fakeVerbose())
             .start();
+
         var connectionString = subject.connectionString();
         System.out.println("Mongo huskit container create time - " + Duration.ofMillis(System.currentTimeMillis() - millis));
         verifyMongoConnection(connectionString);
@@ -50,32 +52,22 @@ class HtMongoIntegrationTest implements DockerIntegrationTest {
     @Test
     @Disabled
     void testcontainers() {
-        var time = System.currentTimeMillis();
         System.out.println("Testcontainers total memory before - "
             + Runtime.getRuntime().totalMemory() / 1024 / 1024
             + " Testcontainers free memory before - "
             + Runtime.getRuntime().freeMemory() / 1024 / 1024);
-        var mongoDBContainer = new MongoDBContainer(HtConstants.Mongo.DEFAULT_IMAGE).withReuse(true);
-        mongoDBContainer.start();
+        var time = System.currentTimeMillis();
+        var mongoDbContainer = new MongoDBContainer(HtConstants.Mongo.DEFAULT_IMAGE).withReuse(true);
+        mongoDbContainer.start();
         System.out.println("Mongo testcontainer create time - " + Duration.ofMillis(System.currentTimeMillis() - time));
-        verifyMongoConnection(mongoDBContainer.getConnectionString());
+        verifyMongoConnection(mongoDbContainer.getConnectionString());
         System.out.println("Mongo testcontainer full time - " + Duration.ofMillis(System.currentTimeMillis() - time));
         System.gc();
         System.out.println("Testcontainers total memory after - "
             + Runtime.getRuntime().totalMemory() / 1024 / 1024
             + " Testcontainers free memory after - "
             + Runtime.getRuntime().freeMemory() / 1024 / 1024);
-    }
-
-    @Test
-    @Disabled
-    void http_client() {
-        var client = DockerClientFactory.instance().client();
-        client.authCmd().exec();
-        ProfileLog.withProfile("test", () -> {
-            System.out.println(client.listContainersCmd().exec());
-            System.out.println(client.listContainersCmd().exec());
-        });
+        mongoDbContainer.stop();
     }
 
     private void verifyMongoConnection(String connectionString) {

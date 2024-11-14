@@ -26,9 +26,9 @@ class HexFromChars implements Hexadecimal {
         if (hexChar >= '0' && hexChar <= '9') {
             value = hexChar - '0';
         } else if (hexChar >= 'a' && hexChar <= 'f') {
-            value = 10 + (hexChar - 'a');
+            value = 10 + hexChar - 'a';
         } else if (hexChar >= 'A' && hexChar <= 'F') {
-            value = 10 + (hexChar - 'A');
+            value = 10 + hexChar - 'A';
         } else {
             throw new IllegalArgumentException("Invalid hex character: " + hexChar);
         }

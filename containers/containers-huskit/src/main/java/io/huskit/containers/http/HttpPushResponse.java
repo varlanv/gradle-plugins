@@ -23,27 +23,25 @@ final class HttpPushResponse<T> implements PushResponse<Http.Response<T>> {
     }
 
     @Override
-    public boolean isReady() {
-        return response.isPresent();
+    public Optional<Http.Response<T>> value() {
+        return response.maybe();
     }
 
     @Override
-    public Http.Response<T> value() {
-        return response.require();
-    }
-
-    @Override
-    public Optional<Http.Response<T>> apply(ByteBuffer byteBuffer) {
-        if (futureHead.isReady()) {
-            return getHttpResponse(byteBuffer, futureHead.value());
-        } else {
-            return futureHead.apply(byteBuffer).flatMap(head -> {
-                if (head.isChunked() && !(pushResponse.require() instanceof PushMultiplexedStream)) {
-                    pushResponse.set(new PushChunked<>(pushResponse.require()));
-                }
-                return getHttpResponse(byteBuffer, head);
-            });
-        }
+    public Optional<Http.Response<T>> push(ByteBuffer byteBuffer) {
+        return futureHead.value()
+                         .flatMap(val -> getHttpResponse(byteBuffer, val))
+                         .or(
+                             () -> futureHead.push(byteBuffer)
+                                             .flatMap(
+                                                 head -> {
+                                                     if (head.isChunked() && !(pushResponse.require() instanceof PushMultiplexedStream)) {
+                                                         pushResponse.set(new PushChunked<>(pushResponse.require()));
+                                                     }
+                                                     return getHttpResponse(byteBuffer, head);
+                                                 }
+                                             )
+                         );
     }
 
     private Optional<Http.Response<T>> getHttpResponse(ByteBuffer byteBuffer, Http.Head head) {
@@ -54,11 +52,11 @@ final class HttpPushResponse<T> implements PushResponse<Http.Response<T>> {
                         + request.request().expectedStatus().get().status()
                         + " but got "
                         + head.status()
-                        + new PushRaw().apply(byteBuffer).map(body -> ": " + body).orElse("")
+                        + new PushRaw().push(byteBuffer).map(body -> ": " + body).orElse("")
                 );
             }
         }
-        var maybeBody = pushResponse.require().apply(byteBuffer);
+        var maybeBody = pushResponse.require().push(byteBuffer);
         if (maybeBody.isEmpty()) {
             return Optional.empty();
         } else {

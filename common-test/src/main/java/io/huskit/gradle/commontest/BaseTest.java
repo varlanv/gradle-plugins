@@ -223,7 +223,7 @@ public interface BaseTest {
                 result[0] = r;
             }
         }
-        System.gc();
+        callGc();
         var totalTime = 0L;
         var totalGcTime = 0L;
         var minTime = 0L;
@@ -255,11 +255,11 @@ public interface BaseTest {
         var averageTime = totalTime / iterations;
         var averageGcTime = totalGcTime / iterations;
         Function<Long, String> timeFormat = time -> {
-            if (time > 1_000_000_000) {// 1 second
+            if (time > 1_000_000_000) { // 1 second
                 return Duration.ofNanos(time).toString();
-            } else if (time > 10_000_000) {// 10 millis
+            } else if (time > 10_000_000) { // 10 millis
                 return (time / 1_000_000) + " millis";
-            } else if (time > 1_000) {// 1 millis
+            } else if (time > 1_000) { // 1 millis
                 return (time / 1_000) + " micros";
             } else {
                 return time + " nanos";
@@ -277,5 +277,10 @@ public interface BaseTest {
             timeFormat.apply(minGcTime),
             timeFormat.apply(maxGcTime)
         );
+    }
+
+    @SuppressWarnings("PMD.DoNotCallGarbageCollectionExplicitly")
+    private void callGc() {
+        System.gc();
     }
 }

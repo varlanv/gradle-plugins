@@ -32,8 +32,8 @@ public interface GradleIntegrationTest extends IntegrationTest {
 
     default void runProjectFixture(ThrowingConsumer<SingleProjectFixture> fixtureConsumer) {
         runProjectFixture(
-                ProjectBuilder::build,
-                fixtureConsumer
+            ProjectBuilder::build,
+            fixtureConsumer
         );
     }
 
@@ -41,8 +41,8 @@ public interface GradleIntegrationTest extends IntegrationTest {
     default void runProjectFixture(ThrowingConsumer<File> projectDirConsumer,
                                    ThrowingConsumer<SingleProjectFixture> fixtureConsumer) {
         runProjectFixture(
-                projectDirConsumer,
-                ProjectBuilder::build, fixtureConsumer
+            projectDirConsumer,
+            ProjectBuilder::build, fixtureConsumer
         );
     }
 
@@ -50,10 +50,10 @@ public interface GradleIntegrationTest extends IntegrationTest {
     default void runProjectFixture(Function<ProjectBuilder, Project> projectBuilderFn,
                                    ThrowingConsumer<SingleProjectFixture> fixtureConsumer) {
         runProjectFixture(
-                pb -> {
-                },
-                projectBuilderFn,
-                fixtureConsumer);
+            pb -> {
+            },
+            projectBuilderFn,
+            fixtureConsumer);
     }
 
     default void runProjectFixture(ThrowingConsumer<File> projectDirConsumer,
@@ -63,8 +63,8 @@ public interface GradleIntegrationTest extends IntegrationTest {
         runAndDeleteFile(projectDir, () -> {
             projectDirConsumer.accept(projectDir);
             var projectBuilder = ProjectBuilder.builder()
-                    .withProjectDir(projectDir)
-                    .withGradleUserHomeDir(projectDir);
+                                               .withProjectDir(projectDir)
+                                               .withGradleUserHomeDir(projectDir);
             var project = projectBuilderFn.apply(projectBuilder);
             fixtureConsumer.accept(new SingleProjectFixture(projectDir, project));
         });
@@ -79,14 +79,14 @@ public interface GradleIntegrationTest extends IntegrationTest {
             var parentProject = ProjectBuilder.builder().withProjectDir(parentProjectDirectory).build();
             var project = ProjectBuilder.builder().withProjectDir(projectDirectory).withParent(parentProject).build();
             fixtureConsumer.accept(
-                    new ProjectWithParentFixture(
-                            project,
-                            parentProject,
-                            projectDirectory,
-                            parentProjectDirectory,
-                            project.getObjects(),
-                            project.getProviders()
-                    )
+                new ProjectWithParentFixture(
+                    project,
+                    parentProject,
+                    projectDirectory,
+                    parentProjectDirectory,
+                    project.getObjects(),
+                    project.getProviders()
+                )
             );
         });
     }
@@ -180,9 +180,9 @@ public interface GradleIntegrationTest extends IntegrationTest {
             Consumer<Set> containsTask = deps -> assertThat(deps).contains(taskProvider.get());
             Consumer<Set> containsTaskName = deps -> assertThat(deps).contains(taskProvider.getName());
             assertThat(dependencies).satisfiesAnyOf(
-                    containsTaskProvider,
-                    containsTaskName,
-                    containsTask
+                containsTaskProvider,
+                containsTaskName,
+                containsTask
             );
             return this;
         }
@@ -202,8 +202,8 @@ public interface GradleIntegrationTest extends IntegrationTest {
 
         public ProjectAssertions doesNotHaveTask(String taskName) {
             assertThatThrownBy(() -> project.getTasks().named(taskName))
-                    .isInstanceOf(UnknownTaskException.class)
-                    .hasMessageContaining(taskName);
+                .isInstanceOf(UnknownTaskException.class)
+                .hasMessageContaining(taskName);
             return this;
         }
 
@@ -217,9 +217,9 @@ public interface GradleIntegrationTest extends IntegrationTest {
         @SneakyThrows
         @SuppressWarnings("unchecked")
         public <BSP extends BuildServiceParameters,
-                BS extends BuildService<BSP>,
-                BSR extends BuildServiceRegistration<BS, BSP>
-                > ProjectAssertions withBuildServiceRegistration(String name, ThrowingConsumer<BSR> consumer) {
+            BS extends BuildService<BSP>,
+            BSR extends BuildServiceRegistration<BS, BSP>
+            > ProjectAssertions withBuildServiceRegistration(String name, ThrowingConsumer<BSR> consumer) {
             var registrations = List.copyOf(project.getGradle().getSharedServices().getRegistrations());
             var maybeBuildServiceRegistration = registrations.stream().filter(reg -> reg.getName().equals(name)).findFirst();
             assertThat(maybeBuildServiceRegistration).isPresent();

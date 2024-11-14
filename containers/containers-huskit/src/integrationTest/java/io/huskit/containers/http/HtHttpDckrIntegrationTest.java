@@ -72,7 +72,7 @@ class HtHttpDckrIntegrationTest implements DockerIntegrationTest {
 
         @AfterAll
         void cleanupAll() {
-            Sneaky.tryQuietly(
+            Sneaky.tryAll(
                 () -> containerRef.ifPresent(
                     container -> subject
                         .containers()
@@ -82,7 +82,7 @@ class HtHttpDckrIntegrationTest implements DockerIntegrationTest {
                         )
                         .exec()
                 ),
-                () -> subject.close()
+                subject::close
             );
         }
 

@@ -19,7 +19,7 @@ public interface Log {
     }
 
     static Log noop() {
-        return new NoopLog();
+        return NoopLog.INSTANCE;
     }
 
     static Log conditional(Log delegate, MemoizedSupplier<Boolean> condition) {
@@ -101,6 +101,8 @@ final class FakeVerboseLog implements Log.Fake {
 }
 
 final class NoopLog implements Log {
+
+    static final Log INSTANCE = new NoopLog();
 
     @Override
     public void debug(Supplier<String> message) {

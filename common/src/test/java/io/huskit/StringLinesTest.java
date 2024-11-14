@@ -8,7 +8,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 public class StringLinesTest implements UnitTest {
 
     @Test
-    void _1() {
+    void check_how_string_lines_work() {
         assertThat("".lines()).isEmpty();
         assertThat("\n".lines()).containsExactly("");
         assertThat("a".lines()).containsExactly("a");
@@ -23,6 +23,5 @@ public class StringLinesTest implements UnitTest {
         assertThat("a\r\nb\\nq".lines()).containsExactly("a", "b\\nq");
         assertThat("\\r".lines()).containsExactly("\\r");
         assertThat("a\\r\nq".lines()).containsExactly("a\\r", "q");
-
     }
 }
