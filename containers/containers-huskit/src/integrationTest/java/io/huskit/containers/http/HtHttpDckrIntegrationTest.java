@@ -311,8 +311,23 @@ class HtHttpDckrIntegrationTest implements DockerIntegrationTest {
         }
 
         @Test
-        void images_pull__should_pull_image() {
-            subject.images().pull(DockerImagesStash.defaultSmall()).exec();
+        void asd() throws Exception {
+            var before = subject.containers().logs(containerRef.require().id()).frames().allLines().toList();
+            System.out.println(before);
+
+            subject.containers().execInContainer(
+                containerRef.require().id(),
+                "sh",
+                List.of("-c", "echo $((1 + 1)) && echo $((2 + 2))")
+            ).exec();
+
+            var after1 = subject.containers().logs(containerRef.require().id()).frames().allLines().toList();
+            System.out.println(after1);
+            Thread.sleep(2000);
+
+            var after2 = subject.containers().logs(containerRef.require().id()).frames().allLines().toList();
+            System.out.println(after2);
+
         }
 
         @Test
@@ -321,7 +336,7 @@ class HtHttpDckrIntegrationTest implements DockerIntegrationTest {
             subject.containers().execInContainer(
                 containerRef.require().id(),
                 "sh",
-                List.of("-c", "echo $((1 + 1)) && echo $((2 + 2))")
+                List.of("-c", "echo 123 > file.txt")
             ).exec();
         }
     }

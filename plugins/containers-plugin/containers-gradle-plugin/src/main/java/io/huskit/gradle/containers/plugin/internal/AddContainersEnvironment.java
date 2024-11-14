@@ -32,6 +32,7 @@ public class AddContainersEnvironment implements Action<Task> {
         if (task instanceof Test) {
             return ProfileLog.withProfile(
                 "io.huskit.gradle.containers.plugin.internal.AddContainersEnvironment.executeAndReturn",
+                log,
                 () -> {
                     var test = (Test) task;
                     var containersBuildService = containersBuildServiceProvider.get();

@@ -56,7 +56,11 @@ public abstract class ContainersBuildService implements BuildService<ContainersB
     public void close() throws Exception {
         singleBuildState.application().ifPresent(
             app -> {
-                ProfileLog.withProfile("io.huskit.gradle.containers.core.ContainersApplication.close", app::close);
+                ProfileLog.withProfile(
+                    "io.huskit.gradle.containers.core.ContainersApplication.close",
+                    app.log(),
+                    app::close
+                );
                 new GradleLog(ContainersBuildService.class)
                     .error(
                         () -> "------------------------------------------Finished in [%s]ms key [%s]----------------------------------------"

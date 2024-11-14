@@ -63,7 +63,7 @@ final class HtHttpContainers implements HtContainers {
     }
 
     @Override
-    public HtRun run(CharSequence  dockerImageName, Consumer<HtRunSpec> specAction) {
+    public HtRun run(CharSequence dockerImageName, Consumer<HtRunSpec> specAction) {
         var spec = new HttpRunSpec(dockerImageName);
         specAction.accept(spec);
         return new HttpRun(
@@ -72,7 +72,7 @@ final class HtHttpContainers implements HtContainers {
                 dockerSpec,
                 spec.createSpec(),
                 new HttpInspect(dockerSpec),
-                new LocalImagesStash(images)
+                new LocalImagesStash(images, dockerSpec.log())
             ),
             spec,
             this::start,
@@ -98,7 +98,7 @@ final class HtHttpContainers implements HtContainers {
             dockerSpec,
             spec,
             new HttpInspect(dockerSpec),
-            new LocalImagesStash(images)
+            new LocalImagesStash(images, dockerSpec.log())
         );
     }
 

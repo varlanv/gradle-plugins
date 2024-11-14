@@ -5,6 +5,7 @@ import io.huskit.containers.integration.HtIntegratedDocker;
 import io.huskit.containers.integration.HtStartedContainer;
 import io.huskit.containers.model.ContainersRequest;
 import lombok.AccessLevel;
+import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
 import java.io.IOException;
@@ -13,6 +14,7 @@ import java.util.Map;
 @RequiredArgsConstructor(access = AccessLevel.PRIVATE)
 public class ContainersApplication implements AutoCloseable {
 
+    @Getter
     Log log;
     HtIntegratedDocker integratedDocker;
 
