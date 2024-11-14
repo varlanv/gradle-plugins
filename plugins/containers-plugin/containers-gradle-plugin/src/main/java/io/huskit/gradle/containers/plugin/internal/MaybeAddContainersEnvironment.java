@@ -1,8 +1,8 @@
 package io.huskit.gradle.containers.plugin.internal;
 
+import io.huskit.common.Log;
 import io.huskit.containers.model.ProjectDescription;
 import io.huskit.gradle.containers.plugin.internal.buildservice.ContainersBuildService;
-import io.huskit.log.Log;
 import lombok.RequiredArgsConstructor;
 import org.gradle.api.Task;
 import org.gradle.api.provider.Provider;
@@ -18,13 +18,13 @@ public class MaybeAddContainersEnvironment {
 
     public void maybeAdd() {
         dependentTask.doFirst(
-                ContainersTask.doFirstActionName(),
-                new AddContainersEnvironment(
-                        log,
-                        projectDescription,
-                        containersBuildServiceProvider,
-                        dockerContainersExtension.getContainersRequestedByUser()
-                )
+            ContainersTask.doFirstActionName(),
+            new AddContainersEnvironment(
+                log,
+                projectDescription,
+                containersBuildServiceProvider,
+                dockerContainersExtension.getContainersRequestedByUser()
+            )
         );
     }
 }

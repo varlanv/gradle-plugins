@@ -1,5 +1,6 @@
 package io.huskit.gradle.containers.plugin.internal;
 
+import io.huskit.common.ProfileLog;
 import io.huskit.containers.integration.FakeHtIntegratedDocker;
 import io.huskit.containers.integration.HtIntegratedDocker;
 import io.huskit.containers.integration.HtStartedContainer;
@@ -7,8 +8,6 @@ import io.huskit.containers.model.ProjectDescription;
 import io.huskit.gradle.common.plugin.model.string.CapitalizedString;
 import io.huskit.gradle.containers.plugin.internal.buildservice.ContainersBuildService;
 import io.huskit.gradle.containers.plugin.internal.spec.ContainerRequestSpec;
-import io.huskit.log.GradleProjectLog;
-import io.huskit.log.ProfileLog;
 import org.gradle.api.DefaultTask;
 import org.gradle.api.provider.ListProperty;
 import org.gradle.api.provider.Property;
@@ -19,7 +18,6 @@ import org.gradle.work.DisableCachingByDefault;
 import org.jetbrains.annotations.VisibleForTesting;
 
 import java.util.Map;
-import java.util.stream.Collectors;
 
 @DisableCachingByDefault(because = "Caching of containers is not supported")
 public abstract class ContainersTask extends DefaultTask {
@@ -60,14 +58,14 @@ public abstract class ContainersTask extends DefaultTask {
     public Map<String, HtStartedContainer> startAndReturnContainers(HtIntegratedDocker integratedDocker) {
         var projectDescription = getProjectDescription().get();
         var log = new GradleProjectLog(
-                ContainersTask.class,
-                projectDescription.path(),
-                projectDescription.name()
+            ContainersTask.class,
+            projectDescription.path(),
+            projectDescription.name()
         );
         return ProfileLog.withProfile(
-                "io.huskit.gradle.containers.plugin.internal.ContainersTask.getStartedContainers",
-                log,
-                () -> getStartedContainers(integratedDocker, log, projectDescription));
+            "io.huskit.gradle.containers.plugin.internal.ContainersTask.getStartedContainers",
+            log,
+            () -> getStartedContainers(integratedDocker, log, projectDescription));
     }
 
     private Map<String, HtStartedContainer> getStartedContainers(HtIntegratedDocker integratedDocker,
@@ -78,19 +76,21 @@ public abstract class ContainersTask extends DefaultTask {
             return Map.of();
         }
         var startedContainers = getContainersBuildService().get().containers(
-                new ContainersServiceRequest(
-                        log,
-                        projectDescription,
-                        getRequestedContainers(),
-                        integratedDocker
-                )
+            new ContainersServiceRequest(
+                log,
+                projectDescription,
+                getRequestedContainers(),
+                integratedDocker
+            )
         );
         if (startedContainers.isEmpty()) {
-            log.info("No containers were started");
+            log.info(() -> "No containers were started");
         } else {
-            log.info("Started [{}] containers: [{}]", startedContainers.size(), startedContainers.values().stream()
+            log.info(
+                () -> "Started [%s] containers: [%s]".formatted(startedContainers.size(), startedContainers.values().stream()
                     .map(HtStartedContainer::id)
-                    .collect(Collectors.toList())
+                    .toList()
+                )
             );
         }
         return startedContainers;

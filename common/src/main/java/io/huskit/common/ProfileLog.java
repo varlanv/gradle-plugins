@@ -1,6 +1,5 @@
-package io.huskit.log;
+package io.huskit.common;
 
-import io.huskit.common.Nothing;
 import io.huskit.common.function.ThrowingRunnable;
 import io.huskit.common.function.ThrowingSupplier;
 import lombok.AccessLevel;
@@ -34,12 +33,12 @@ public class ProfileLog<T> implements Runnable, Supplier<T> {
     public T get() {
         var time = System.currentTimeMillis();
         T result = delegate.get();
-        log.error("[{}] exec time: [{}]", description, Duration.ofMillis(System.currentTimeMillis() - time));
+        log.error(() -> "[%s] exec time: [%s]".formatted(description, Duration.ofMillis(System.currentTimeMillis() - time)));
         return result;
     }
 
     public static <T> T withProfile(String description, ThrowingSupplier<T> supplier) {
-        return withProfile(description, new Slf4jLog(), supplier);
+        return withProfile(description, Log.std(), supplier);
     }
 
     public static <T> T withProfile(String description, Log log, ThrowingSupplier<T> supplier) {
@@ -47,7 +46,7 @@ public class ProfileLog<T> implements Runnable, Supplier<T> {
     }
 
     public static void withProfile(String description, ThrowingRunnable runnable) {
-        withProfile(description, new Slf4jLog(), runnable);
+        withProfile(description, Log.std(), runnable);
     }
 
     public static void withProfile(String description, Log log, ThrowingRunnable runnable) {

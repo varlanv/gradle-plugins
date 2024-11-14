@@ -33,13 +33,11 @@ enableFeaturePreview("TYPESAFE_PROJECT_ACCESSORS")
 includeBuild("internal-convention-plugin")
 
 include(
-        "logging:logging-api",
-        "logging:logging-gradle",
-        "common",
-        "common-test",
-        "functional-test",
-        "plugins:common-plugin",
-        "containers:containers-core",
-        "containers:containers-huskit",
-        "plugins:containers-plugin:containers-gradle-plugin",
+    "common",
+    "common-test",
+    "functional-test",
+    "plugins:common-plugin",
+    "containers:containers-core",
+    "containers:containers-huskit",
+    "plugins:containers-plugin:containers-gradle-plugin",
 )

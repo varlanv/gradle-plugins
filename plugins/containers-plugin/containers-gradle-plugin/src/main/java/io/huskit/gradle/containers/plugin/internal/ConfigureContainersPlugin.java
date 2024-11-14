@@ -1,8 +1,8 @@
 package io.huskit.gradle.containers.plugin.internal;
 
+import io.huskit.common.Log;
 import io.huskit.containers.model.ProjectDescription;
 import io.huskit.gradle.common.plugin.model.NewOrExistingExtension;
-import io.huskit.log.Log;
 import lombok.RequiredArgsConstructor;
 import org.gradle.api.services.BuildServiceRegistry;
 import org.gradle.api.tasks.TaskContainer;
@@ -22,25 +22,25 @@ public class ConfigureContainersPlugin implements Runnable {
     @Override
     public void run() {
         var containersExtension = new PrepareContainersExtension(
-                projectDescription,
-                extensions
+            projectDescription,
+            extensions
         ).get();
         afterEvaluateSupplier.accept(
-                () -> {
-                    var containersBuildServiceProvider = new RegisterContainersBuildService(
-                            log,
-                            projectDescription,
-                            sharedServices,
-                            containersExtension
-                    ).register();
-                    new ConfigureContainers(
-                            log,
-                            projectDescription,
-                            containersExtension,
-                            tasks,
-                            containersBuildServiceProvider
-                    ).run();
-                }
+            () -> {
+                var containersBuildServiceProvider = new RegisterContainersBuildService(
+                    log,
+                    projectDescription,
+                    sharedServices,
+                    containersExtension
+                ).register();
+                new ConfigureContainers(
+                    log,
+                    projectDescription,
+                    containersExtension,
+                    tasks,
+                    containersBuildServiceProvider
+                ).run();
+            }
         );
     }
 }

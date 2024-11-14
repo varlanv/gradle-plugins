@@ -1,9 +1,9 @@
 package io.huskit.containers.core;
 
+import io.huskit.common.Log;
 import io.huskit.containers.integration.HtIntegratedDocker;
 import io.huskit.containers.integration.HtStartedContainer;
 import io.huskit.containers.model.ContainersRequest;
-import io.huskit.log.Log;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 
@@ -18,8 +18,8 @@ public class ContainersApplication implements AutoCloseable {
 
     public static ContainersApplication application(Log commonLog, HtIntegratedDocker integratedDocker) {
         return new ContainersApplication(
-                commonLog,
-                integratedDocker
+            commonLog,
+            integratedDocker
         );
     }
 

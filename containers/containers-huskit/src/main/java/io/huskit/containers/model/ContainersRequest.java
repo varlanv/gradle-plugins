@@ -1,7 +1,7 @@
 package io.huskit.containers.model;
 
+import io.huskit.common.Log;
 import io.huskit.containers.integration.ContainerSpec;
-import io.huskit.log.Log;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
@@ -11,7 +11,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public final class ContainersRequest {
 
-    Log taskLog;
+    Log log;
     ProjectDescription projectDescription;
     List<ContainerSpec> requestedContainers;
 }

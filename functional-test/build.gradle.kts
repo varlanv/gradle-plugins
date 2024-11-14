@@ -10,8 +10,6 @@ huskitConvention {
 dependencies {
     implementation(projects.common)
     implementation(projects.commonTest)
-    implementation(projects.logging.loggingApi)
-    implementation(projects.logging.loggingGradle)
     implementation(projects.containers.containersHuskit)
     implementation(projects.plugins.commonPlugin)
     implementation(projects.plugins.containersPlugin.containersGradlePlugin)

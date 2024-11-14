@@ -1,5 +1,6 @@
 package io.huskit.gradle.containers.plugin.internal.buildservice;
 
+import io.huskit.common.ProfileLog;
 import io.huskit.common.Volatile;
 import io.huskit.containers.core.ContainersApplication;
 import io.huskit.containers.integration.HtIntegratedDocker;
@@ -8,9 +9,8 @@ import io.huskit.containers.model.ContainersRequest;
 import io.huskit.gradle.common.plugin.model.DefaultInternalExtensionName;
 import io.huskit.gradle.containers.plugin.internal.ContainersBuildServiceParams;
 import io.huskit.gradle.containers.plugin.internal.ContainersServiceRequest;
+import io.huskit.gradle.containers.plugin.internal.GradleLog;
 import io.huskit.gradle.containers.plugin.internal.spec.ContainerRequestSpec;
-import io.huskit.log.GradleLog;
-import io.huskit.log.ProfileLog;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import org.gradle.api.services.BuildService;
@@ -54,13 +54,18 @@ public abstract class ContainersBuildService implements BuildService<ContainersB
 
     @Override
     public void close() throws Exception {
-        singleBuildState.application().maybe().ifPresent(app -> {
-            ProfileLog.withProfile("io.huskit.gradle.containers.core.ContainersApplication.close", app::close);
-            new GradleLog(ContainersBuildService.class)
-                .error("------------------------------------------Finished in [{}]ms key [{}]----------------------------------------",
-                    Duration.ofMillis(System.currentTimeMillis() - singleBuildState.timeStarted().require()),
-                    sharedBuildState.counter().getAndIncrement());
-        });
+        singleBuildState.application().ifPresent(
+            app -> {
+                ProfileLog.withProfile("io.huskit.gradle.containers.core.ContainersApplication.close", app::close);
+                new GradleLog(ContainersBuildService.class)
+                    .error(
+                        () -> "------------------------------------------Finished in [%s]ms key [%s]----------------------------------------"
+                            .formatted(
+                                Duration.ofMillis(System.currentTimeMillis() - singleBuildState.timeStarted().require()),
+                                sharedBuildState.counter().getAndIncrement())
+                    );
+            }
+        );
     }
 
     @Getter

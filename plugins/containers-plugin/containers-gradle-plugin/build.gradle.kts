@@ -13,8 +13,6 @@ gradlePlugin {
 
 dependencies {
     implementation(projects.common)
-    implementation(projects.logging.loggingGradle)
-    implementation(projects.logging.loggingApi)
     implementation(projects.containers.containersCore)
     implementation(projects.containers.containersHuskit)
     implementation(projects.plugins.commonPlugin)

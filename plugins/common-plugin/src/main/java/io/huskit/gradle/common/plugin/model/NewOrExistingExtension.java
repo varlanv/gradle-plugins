@@ -1,6 +1,6 @@
 package io.huskit.gradle.common.plugin.model;
 
-import io.huskit.log.Log;
+import io.huskit.common.Log;
 import lombok.RequiredArgsConstructor;
 import org.gradle.api.plugins.ExtensionContainer;
 
@@ -20,7 +20,7 @@ public class NewOrExistingExtension {
                                           Supplier<List<Object>> argsSupplier) {
         V extension = (V) extensions.findByName(name);
         if (extension == null) {
-            log.info("Extension [{}] not found, creating new instance", name);
+            log.info(() -> "Extension [%s] not found, creating new instance".formatted(name));
             List<Object> args = argsSupplier.get();
             if (args.isEmpty()) {
                 extension = (V) extensions.create(publicType, name, instanceType);
@@ -28,7 +28,7 @@ public class NewOrExistingExtension {
                 extension = (V) extensions.create(publicType, name, instanceType, args.toArray());
             }
         } else {
-            log.info("Extension [{}] found, using existing instance", name);
+            log.info(() -> "Extension [%s] found, using existing instance".formatted(name));
         }
         return extension;
     }

@@ -19,7 +19,6 @@ tasks.named<ShadowJar>("shadowJar", {
 
 dependencies {
     implementation(projects.common)
-    implementation(projects.logging.loggingApi)
     implementation(libs.json)
     testImplementation(libs.github.docker.java)
     testImplementation(libs.github.docker.transport)

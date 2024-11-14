@@ -10,6 +10,8 @@ import java.util.function.Supplier;
 
 public interface Log {
 
+    void info(Supplier<String> message);
+
     void debug(Supplier<String> message);
 
     void error(Supplier<String> message);
@@ -38,6 +40,8 @@ public interface Log {
 
         List<String> debugMessages();
 
+        List<String> infoMessages();
+
         List<String> errorMessages();
     }
 }
@@ -45,7 +49,14 @@ public interface Log {
 final class FakeLog implements Log.Fake {
 
     Queue<String> debugMessages = new ConcurrentLinkedQueue<>();
+    Queue<String> infoMessages = new ConcurrentLinkedQueue<>();
     Queue<String> errorMessages = new ConcurrentLinkedQueue<>();
+
+    @Override
+    public void info(Supplier<String> message) {
+        var msg = message.get();
+        infoMessages.add(msg);
+    }
 
     @Override
     public void debug(Supplier<String> message) {
@@ -65,6 +76,11 @@ final class FakeLog implements Log.Fake {
     }
 
     @Override
+    public List<String> infoMessages() {
+        return List.copyOf(infoMessages);
+    }
+
+    @Override
     public List<String> errorMessages() {
         return List.copyOf(errorMessages);
     }
@@ -73,7 +89,15 @@ final class FakeLog implements Log.Fake {
 final class FakeVerboseLog implements Log.Fake {
 
     Queue<String> debugMessages = new ConcurrentLinkedQueue<>();
+    Queue<String> infoMessages = new ConcurrentLinkedQueue<>();
     Queue<String> errorMessages = new ConcurrentLinkedQueue<>();
+
+    @Override
+    public void info(Supplier<String> message) {
+        var msg = message.get();
+        System.out.println("INFO: " + msg);
+        infoMessages.add(msg);
+    }
 
     @Override
     public void debug(Supplier<String> message) {
@@ -98,11 +122,21 @@ final class FakeVerboseLog implements Log.Fake {
     public List<String> errorMessages() {
         return List.copyOf(errorMessages);
     }
+
+    @Override
+    public List<String> infoMessages() {
+        return List.copyOf(infoMessages);
+    }
 }
 
 final class NoopLog implements Log {
 
     static final Log INSTANCE = new NoopLog();
+
+    @Override
+    public void info(Supplier<String> message) {
+        // no-op
+    }
 
     @Override
     public void debug(Supplier<String> message) {
@@ -116,6 +150,11 @@ final class NoopLog implements Log {
 }
 
 final class StdLog implements Log {
+
+    @Override
+    public void info(Supplier<String> message) {
+        System.out.println(message.get());
+    }
 
     @Override
     public void debug(Supplier<String> message) {
@@ -133,6 +172,13 @@ class ConditionalLog implements Log {
 
     Log delegate;
     MemoizedSupplier<Boolean> condition;
+
+    @Override
+    public void info(Supplier<String> message) {
+        if (condition.get()) {
+            delegate.info(message);
+        }
+    }
 
     @Override
     public void debug(Supplier<String> message) {
