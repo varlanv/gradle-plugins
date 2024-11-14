@@ -1,41 +1,28 @@
 package io.huskit.containers.http;
 
-import io.huskit.common.HtConstants;
 import io.huskit.common.Log;
 import io.huskit.common.function.MemoizedSupplier;
-import io.huskit.common.io.BufferLines;
 import lombok.*;
 import lombok.experimental.NonFinal;
 
 import java.nio.ByteBuffer;
-import java.nio.channels.AsynchronousFileChannel;
 import java.nio.channels.CompletionHandler;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.Paths;
-import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.EnumSet;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.function.Supplier;
 
-final class NpipeDocker implements DockerSocket {
+final class HttpDockerSocket implements DockerSocket {
 
-    Log log;
     ScheduledExecutorService executor;
-    MemoizedSupplier<NpipeChannel> stateSupplier;
+    MemoizedSupplier<HttpChannel> stateSupplier;
 
-    public NpipeDocker(String socketFile, ScheduledExecutorService executor, Log log) {
-        this.log = log;
+    HttpDockerSocket(Supplier<HttpAsyncChannel> asyncChannelSupplier, ScheduledExecutorService executor, Log log) {
         this.executor = executor;
-        this.stateSupplier = MemoizedSupplier.of(() -> new NpipeChannel(socketFile, executor, log, 16384));
+        this.stateSupplier = MemoizedSupplier.of(() -> new HttpChannel(asyncChannelSupplier, executor, log, 16384));
 
-    }
-
-    NpipeDocker(String socketFile, ScheduledExecutorService executor) {
-        this(socketFile, executor, Log.noop());
     }
 
     @Override
@@ -55,7 +42,7 @@ final class NpipeDocker implements DockerSocket {
 
     @Override
     public void release() {
-        stateSupplier.ifInitialized(NpipeChannel::close);
+        stateSupplier.ifInitialized(HttpChannel::close);
         executor.shutdownNow();
     }
 }
@@ -93,45 +80,36 @@ final class NpipeRead<T> {
     }
 }
 
-final class NpipeChannel implements AutoCloseable {
+final class HttpChannel implements AutoCloseable {
 
     @NonFinal
     @Getter
-    volatile AsynchronousFileChannel channel;
-    String socketFile;
+    volatile HttpAsyncChannel channel;
+    Supplier<HttpAsyncChannel> asyncChannelSupplier;
     ScheduledExecutorService executor;
-    NpipeChannelIn in;
-    NpipeChannelOut out;
+    DockerChannelIn in;
+    DockerChannelOut out;
     SyncCallback syncCallback;
 
-    NpipeChannel(String socketFile, ScheduledExecutorService executor, Log log, Integer bufferSize) {
-        this.socketFile = socketFile;
+    HttpChannel(Supplier<HttpAsyncChannel> asyncChannelSupplier,
+                ScheduledExecutorService executor,
+                Log log,
+                Integer bufferSize) {
+        this.asyncChannelSupplier = asyncChannelSupplier;
         this.executor = executor;
-        this.channel = openChannel();
+        this.channel = asyncChannelSupplier.get();
         this.syncCallback = new SyncCallback(log);
-        this.in = new NpipeChannelIn(
-            () -> channel,
+        var memoizedChannel = MemoizedSupplier.of(() -> channel);
+        this.in = new DockerChannelIn(
+            memoizedChannel,
             syncCallback,
             log
         );
-        this.out = new NpipeChannelOut(
-            () -> channel,
+        this.out = new DockerChannelOut(
+            memoizedChannel,
             bufferSize,
             log
         );
-    }
-
-    NpipeChannel(Log log, ScheduledExecutorService executor, Integer bufferSize) {
-        this(
-            HtConstants.NPIPE_SOCKET,
-            executor,
-            log,
-            bufferSize
-        );
-    }
-
-    CompletableFuture<BufferLines> writeAndRead(Request request) {
-        return in.write(request).thenCompose(ignore -> out.read());
     }
 
     <T> CompletableFuture<T> writeAndReadAsync(PushRequest<T> pushRequest) {
@@ -162,20 +140,9 @@ final class NpipeChannel implements AutoCloseable {
     @SneakyThrows
     void resetConnection() {
         channel.close();
-        channel = openChannel();
+        channel = asyncChannelSupplier.get();
     }
 
-    @SneakyThrows
-    private AsynchronousFileChannel openChannel() {
-        return AsynchronousFileChannel.open(
-            Paths.get(socketFile),
-            EnumSet.of(
-                StandardOpenOption.READ,
-                StandardOpenOption.WRITE
-            ),
-            executor
-        );
-    }
 
     @Override
     public void close() throws Exception {
@@ -187,9 +154,9 @@ final class NpipeChannel implements AutoCloseable {
 }
 
 @RequiredArgsConstructor
-final class NpipeChannelIn {
+final class DockerChannelIn {
 
-    Supplier<AsynchronousFileChannel> channel;
+    Supplier<HttpAsyncChannel> channel;
     SyncCallback syncCallback;
     Log log;
 
@@ -234,31 +201,19 @@ final class NpipeChannelIn {
     }
 }
 
-final class NpipeChannelOut {
+final class DockerChannelOut {
 
-    Supplier<AsynchronousFileChannel> channel;
+    Supplier<HttpAsyncChannel> channel;
     ByteBuffer byteBuffer;
     Log log;
 
-    public NpipeChannelOut(Supplier<AsynchronousFileChannel> channel, Integer bufferSize, Log log) {
+    public DockerChannelOut(Supplier<HttpAsyncChannel> channel, Integer bufferSize, Log log) {
         if (bufferSize <= 0) {
             throw new IllegalArgumentException("Buffer size must be greater than 0");
         }
         this.channel = channel;
         this.byteBuffer = ByteBuffer.allocate(bufferSize);
         this.log = log;
-    }
-
-    @SneakyThrows
-    CompletableFuture<BufferLines> read() {
-        return CompletableFuture.supplyAsync(
-            () -> new BufferLines(
-                () -> {
-                    var buffer = readToBuffer();
-                    return Arrays.copyOf(buffer.array(), buffer.limit());
-                }
-            )
-        );
     }
 
     CompletableFuture<ByteBuffer> readToBufferAsync() {
@@ -292,12 +247,6 @@ final class NpipeChannelOut {
             }
         );
         return completion;
-    }
-
-    @SneakyThrows
-    private ByteBuffer readToBuffer() {
-        channel.get().read(byteBuffer.clear(), 0).get();
-        return byteBuffer.flip();
     }
 }
 

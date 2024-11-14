@@ -19,7 +19,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import static org.assertj.core.api.BDDAssertions.then;
 import static org.assertj.core.api.BDDAssertions.thenThrownBy;
 
-class NpipeChannelTest implements UnitTest {
+class HttpChannelTest implements UnitTest {
 
     @NonFinal
     ScheduledExecutorService executor;
@@ -103,8 +103,11 @@ class NpipeChannelTest implements UnitTest {
     private <T> T writeToSubject(PushRequest<T> pushRequest) {
         return useTempFile(
             file -> {
-                try (var subject = new NpipeChannel(
-                    file.toAbsolutePath().toString(),
+                try (var subject = new HttpChannel(
+                    () -> HttpAsyncChannel.npipe(
+                        file.toAbsolutePath().toString(),
+                        executor
+                    ),
                     executor,
                     Log.fakeVerbose(),
                     pushRequest.request().http().body().length)) {

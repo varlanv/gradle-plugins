@@ -12,10 +12,12 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.condition.EnabledOnOs;
 import org.junit.jupiter.api.condition.OS;
 
+import java.net.UnixDomainSocketAddress;
 import java.nio.ByteBuffer;
 import java.nio.channels.AsynchronousFileChannel;
 import java.nio.channels.CompletionHandler;
 import java.nio.channels.FileChannel;
+import java.nio.channels.SocketChannel;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
@@ -26,13 +28,13 @@ import java.util.HashMap;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicInteger;
 
-@EnabledOnOs(OS.WINDOWS)
-public class NpipeDockerIntegrationTest implements DockerIntegrationTest {
+public class HttpDockerSocketIntegrationTest implements DockerIntegrationTest {
 
     String dockerNpipe = "\\\\.\\pipe\\docker_engine";
 
     @Test
     @Disabled
+    @EnabledOnOs(OS.WINDOWS)
     void async_file_channel_raw_logs_follow() throws Exception {
         var containerId = "550993efd418";
         var request = "GET /containers/" + containerId + "/logs?stdout=true&stderr=true&follow=true " +
@@ -71,6 +73,7 @@ public class NpipeDockerIntegrationTest implements DockerIntegrationTest {
 
     @Test
     @Disabled
+    @EnabledOnOs(OS.WINDOWS)
     void test_async_blocking_with_logs_follow() throws Exception {
         var containerId = "41bca39fe688f235f3ac9cc9ce446b8f620cffc3f576b23be04b31e91cdd9d79";
         var request = "GET /containers/" + containerId + "/logs?stdout=true&stderr=true&follow=true " +
@@ -122,6 +125,7 @@ public class NpipeDockerIntegrationTest implements DockerIntegrationTest {
 
     @Test
     @Disabled
+    @EnabledOnOs(OS.WINDOWS)
     void async_file_channel_raw() throws Exception {
         var request = "GET /containers/json?all=true HTTP/1.1\r\nHost: localhost\r\n\r\n";
         try (var channel = AsynchronousFileChannel.open(
@@ -161,6 +165,7 @@ public class NpipeDockerIntegrationTest implements DockerIntegrationTest {
 
     @Test
     @Disabled
+    @EnabledOnOs(OS.WINDOWS)
     void async_file_channel_raw_log_follow() throws Exception {
         var containerId = "c22b114e40ebd3de59593a11181bdddd490c886a60b20efe9be174d9b8f3d49b";
         var request = "GET " + "/containers/" + containerId + "/logs?stdout=true&stderr=true&follow=true HTTP/1.1\r\nHost: localhost\r\nConnection: keep-alive\r\n\r\n";
@@ -195,6 +200,7 @@ public class NpipeDockerIntegrationTest implements DockerIntegrationTest {
 
     @Test
     @Disabled
+    @EnabledOnOs(OS.WINDOWS)
     void async_file_channel_raw1() throws Exception {
         var createRequest = "POST /containers/create HTTP/1.1\r\n" +
             "Host: localhost\r\n" +
@@ -255,6 +261,7 @@ public class NpipeDockerIntegrationTest implements DockerIntegrationTest {
 
     @Test
     @Disabled
+    @EnabledOnOs(OS.WINDOWS)
     void file_channel_raw() throws Exception {
         var request = "GET /containers/json?all=true HTTP/1.1\r\nHost: localhost\r\n\r\n";
         try (var channel = FileChannel.open(
@@ -277,11 +284,17 @@ public class NpipeDockerIntegrationTest implements DockerIntegrationTest {
     }
 
     @Test
-    void containers_json() throws Exception {
+    @EnabledOnOs(OS.WINDOWS)
+    void containers_json_win() throws Exception {
         var httpRequests = new HttpRequests();
-        var subject = new NpipeDocker(
-            HtConstants.NPIPE_SOCKET,
-            Executors.newScheduledThreadPool(1)
+        var scheduledExecutorService = Executors.newScheduledThreadPool(1);
+        var subject = new HttpDockerSocket(
+            () -> HttpAsyncChannel.npipe(
+                HtConstants.NPIPE_SOCKET,
+                scheduledExecutorService
+            ),
+            scheduledExecutorService,
+            Log.noop()
         );
         try {
             var actual = subject.sendPushAsync(
@@ -301,12 +314,60 @@ public class NpipeDockerIntegrationTest implements DockerIntegrationTest {
     }
 
     @Test
+    @Disabled
+    void tst() throws Exception {
+        try (var channel = SocketChannel.open(UnixDomainSocketAddress.of(HtConstants.UNIX_SOCKET))) {
+            channel.write(ByteBuffer.wrap("GET /containers/json?all=true HTTP/1.1\r\nHost: localhost\r\n\r\n".getBytes(StandardCharsets.UTF_8)));
+            var buffer = ByteBuffer.allocate(4096);
+            channel.read(buffer);
+            buffer.flip();
+            var decode = StandardCharsets.UTF_8.decode(buffer).toString();
+            System.out.println(decode);
+        }
+    }
+
+    @Test
+    @EnabledOnOs(OS.LINUX)
+    void containers_json_unix() throws Exception {
+        var httpRequests = new HttpRequests();
+        var scheduledExecutorService = Executors.newScheduledThreadPool(2);
+        var subject = new HttpDockerSocket(
+            () -> HttpAsyncChannel.unixDomainSocket(
+                HtConstants.UNIX_SOCKET,
+                scheduledExecutorService
+            ),
+            scheduledExecutorService,
+            Log.fakeVerbose()
+        );
+        try {
+            var actual = subject.sendPushAsync(
+                    new PushRequest<>(
+                        new Request(
+                            httpRequests.get(
+                                HtUrl.of("/containers/json?all=true")
+                            )
+                        ),
+                        new PushJsonArray()
+                    )
+                )
+                .join();
+        } finally {
+            subject.release();
+        }
+    }
+
+    @Test
+    @EnabledOnOs(OS.WINDOWS)
     void containers_json_many() throws Exception {
         var httpRequests = new HttpRequests();
-        var subject = new NpipeDocker(
-            HtConstants.NPIPE_SOCKET,
-            Executors.newScheduledThreadPool(1),
-            Log.fakeVerbose()
+        var scheduledExecutorService = Executors.newScheduledThreadPool(1);
+        var subject = new HttpDockerSocket(
+            () -> HttpAsyncChannel.npipe(
+                HtConstants.NPIPE_SOCKET,
+                scheduledExecutorService
+            ),
+            scheduledExecutorService,
+            Log.noop()
         );
         try {
             var count = 10;
@@ -335,13 +396,18 @@ public class NpipeDockerIntegrationTest implements DockerIntegrationTest {
 
     @Test
     @Disabled
+    @EnabledOnOs(OS.WINDOWS)
     void containers_logs() throws Exception {
         var containerId = "82d6ca1f9bef9cbd84db417ccdec0045ec95121e13b994ee47f85dbc97b359ad";
         var httpRequests = new HttpRequests();
-        var subject = new NpipeDocker(
-            HtConstants.NPIPE_SOCKET,
-            Executors.newScheduledThreadPool(1),
-            Log.fakeVerbose()
+        var scheduledExecutorService = Executors.newScheduledThreadPool(1);
+        var subject = new HttpDockerSocket(
+            () -> HttpAsyncChannel.npipe(
+                HtConstants.NPIPE_SOCKET,
+                scheduledExecutorService
+            ),
+            scheduledExecutorService,
+            Log.noop()
         );
         try {
             var actual = subject.sendPushAsync(

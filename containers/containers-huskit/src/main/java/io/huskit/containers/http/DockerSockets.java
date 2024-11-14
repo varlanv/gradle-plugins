@@ -14,7 +14,23 @@ final class DockerSockets {
     public DockerSocket pickDefault(ScheduledExecutorService executor, Log log) {
         return DEFAULT_SOCKET.syncSetOrGet(() -> {
             if (Os.WINDOWS.isCurrent()) {
-                return new NpipeDocker(HtConstants.NPIPE_SOCKET, executor, log);
+                return new HttpDockerSocket(
+                    () -> HttpAsyncChannel.npipe(
+                        HtConstants.NPIPE_SOCKET,
+                        executor
+                    ),
+                    executor,
+                    log
+                );
+            } else if (Os.LINUX.isCurrent()) {
+                return new HttpDockerSocket(
+                    () -> HttpAsyncChannel.unixDomainSocket(
+                        HtConstants.UNIX_SOCKET,
+                        executor
+                    ),
+                    executor,
+                    log
+                );
             } else {
                 throw new IllegalStateException("Unsupported OS");
             }

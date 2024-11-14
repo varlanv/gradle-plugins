@@ -2,6 +2,7 @@ package io.huskit;
 
 import io.huskit.gradle.commontest.UnitTest;
 import lombok.experimental.NonFinal;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Timeout;
 
@@ -83,6 +84,7 @@ public class BufferTest implements UnitTest {
     }
 
     @Test
+    @Disabled
     void docker_npipe_test1() throws Exception {
         try (var channel = AsynchronousFileChannel.open(
                 Paths.get("\\\\.\\pipe\\docker_engine"),

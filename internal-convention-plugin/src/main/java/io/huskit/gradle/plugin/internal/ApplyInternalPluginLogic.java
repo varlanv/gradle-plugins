@@ -57,7 +57,7 @@ public class ApplyInternalPluginLogic {
     @SuppressWarnings("UnstableApiUsage")
     public void apply() {
         var isGradlePlugin = projectPath.startsWith(":plugins") && projectPath.endsWith("-plugin");
-        var targetJavaVersion = 11;
+        var targetJavaVersion = 17;
 
         // Apply common plugins
         if (isGradlePlugin) {
